@@ -1,0 +1,75 @@
+title: 情報セキュリティ10大脅威 2019
+chapters:
+- type: Explain
+  title: 概要
+  pages:
+  - path: index.html
+    title: 「情報セキュリティ10大脅威 2019」の概要
+
+- type: Explain
+  title: 個人への脅威
+  pages:
+  - path: personal-1.html
+    title: クレジットカード情報の不正利用
+  - path: personal-2.html
+    title: フィッシングによる個人情報等の詐取
+  - path: personal-3.html
+    title: 不正アプリによるスマートフォン利用者への被害
+
+- type: Exam
+  title: 確認試験1
+  questions:
+  - type: Radio
+    score: 40
+    passScore: 40
+    text: 以下の選択肢より、誤っているものを選択しなさい。
+    choices:
+    - text: 不正トラベルによる被害は、世界的な認知の広まりにより、減少してきている。
+      correct: true
+    - text: Apple ID、Microsoftアカウント等、複数のサービスを利用できる認証情報が狙われる傾向にある。
+    - text: 不正アプリをインストールさせるための手口として、実在の企業をかたり誘導する等、手口が巧妙化している。
+
+- type: Explain
+  title: 組織への脅威
+  pages:
+  - path: organization-1.html
+    title: 標的型攻撃による被害
+  - path: organization-2.html
+    title: ビジネスメール詐欺による被害
+  - path: organization-3.html
+    title: ランサムウェアによる被害
+
+- type: Exam
+  title: 確認試験2
+  questions:
+  - type: Checkbox
+    score: 60
+    text: 以下の選択肢より、組織での脅威を選びなさい。
+    choices:
+    - text: クレジットカード情報の不正利用
+    - text: ビジネスメール詐欺による被害
+      correct: true
+    - text: ランサムウェアによる被害
+      correct: true
+
+- type: Survey
+  title: アンケート
+  questions:
+  - type: Radio
+    text: 本教育の内容は難しさは如何でしたか？
+    required: true
+    choices:
+      - 簡単だった。
+      - ちょうど良かった。
+      - 難しかった。
+  - type: Radio
+    text: 本教育のボリュームは如何でしたか？
+    required: true
+    choices:
+      - 少なくて物足りない。
+      - ちょうど良かった。
+      - 多すぎて大変。
+  - type: Textarea
+    text: 何かあれば、ご自由に意見を記入してください。
+    required: true
+

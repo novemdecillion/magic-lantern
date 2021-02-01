@@ -1,0 +1,12 @@
+fragment course on Course {
+  courseId
+  slide {
+    ...slideConfig
+  }
+}
+
+query courses {
+  courses {
+    ...course
+  }
+}

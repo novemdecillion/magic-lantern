@@ -1,0 +1,27 @@
+<div class="app-container" [class.app-is-mobile]="mobileQuery.matches">
+  <mat-toolbar class="app-toolbar" color="primary">
+    <button mat-icon-button (click)="snav.toggle()">
+      <img src="favicon.svg" width="32" height="32">
+    </button>
+    <button mat-button routerLink="/home"><h1 class="app-name">Magic Lantern</h1></button>
+    <span class="flex-fill"></span>
+
+    <button mat-icon-button [matMenuTriggerFor]="menu">
+      <mat-icon>account_circle</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item>ログアウト</button>
+    </mat-menu>
+  </mat-toolbar>
+  <mat-sidenav-container class="app-sidenav-container" [style.marginTop.px]="mobileQuery.matches ? 56 : 0">
+    <mat-sidenav #snav [mode]="mobileQuery.matches ? 'over' : 'side'" [fixedInViewport]="mobileQuery.matches"
+      fixedTopGap="56" opened="true">
+      <mat-nav-list class="px-1">
+        <a mat-list-item routerLink="/student/courses"><mat-icon>school</mat-icon>受講</a>
+      </mat-nav-list>
+    </mat-sidenav>
+    <mat-sidenav-content class="px-1">
+      <router-outlet></router-outlet>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

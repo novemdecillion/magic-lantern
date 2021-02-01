@@ -1,0 +1,416 @@
+# Magic Lantern
+
+
+## ユースケース
+
+### 全体像
+```plantuml
+skinparam backgroundColor whitesmoke
+left to right direction
+
+:keycloak:
+:システム管理者: as admin
+:グループ管理者: as manager
+:利用者: as student
+
+(ユーザを管理する) as manageUser
+
+package "Magic Lantern" {
+    (お知らせを管理する) as manageNotice
+    (スライドを登録する) as manageSlide
+
+    (グループを管理する) as manageGroup
+
+    (講習を管理する) as manageCourse
+    (受講する) as takeCourse
+}
+
+manageUser -d- keycloak 
+manageUser -r- admin
+admin -r-|> manager
+manager -r-|> student
+admin -- manageGroup
+admin -- manageSlide
+manager -- manageCourse
+manager -- manageNotice
+student -- takeCourse
+
+'manageUser ..> manageGroup: <<precedes>>
+'manageGroup ..> manageCourse: <<precedes>>
+'manageSlide ..> manageCourse: <<precedes>>
+'manageCourse .r.> takeCourse: <<precedes>>
+```
+
+
+### お知らせを管理する
+
+```plantuml
+skinparam backgroundColor whitesmoke
+left to right direction
+
+:グループ管理者: as manager
+(お知らせを管理する) as manageNotice
+(お知らせを登録する) as addNotice
+(お知らせを変更する) as editNotice
+(お知らせを削除) as deleteNotice
+
+manager -- manageNotice
+manageNotice ..> addNotice: <<include>>
+manageNotice ..> editNotice: <<include>>
+manageNotice ..> deleteNotice: <<include>>
+addNotice .l.> editNotice: <<precedes>>
+addNotice .r.> deleteNotice: <<precedes>>
+```
+
+* グループ管理者は、グループに周知する情報を「お知らせ」として追加、変更、削除ができる。
+    * システム管理者は、全員への「お知らせ」ができる。
+* システムは、お知らせで指定された開始日や終了日の期間に、お知らせを表示する。
+  * 開始日が未指定なら、即日表示される。
+  * 終了日が未指定なら、永遠に表示される。
+
+<!--
+
+### ユーザを管理する
+
+* システム管理者は、以下の場合に、Keycloakの間でユーザ情報の同期を行う。
+  * システムの起動時で、ユーザが存在しない場合。
+  * コンフィグに設定した周期。デフォルトは3時間周期。
+  * システム管理権限ユーザが、画面でユーザ同期を実行した場合。
+* Keycloakより取得したユーザがシステムに存在しない場合、そのユーザをシステムに追加する。またシステムには存在していて、Keycloakより取得できなかったユーザは削除する。
+
+### 教材を管理する
+
+```plantuml
+skinparam backgroundColor whitesmoke
+left to right direction
+
+:システム管理権限: as admin
+(教材を管理する) as manageSlide
+(教材を登録する) as addTextbook
+(教材の有効/無効を切替える) as enableTextbook
+(教材をバージョンアップする) as updateTextbook
+(教材を削除) as deleteTextbook
+
+admin -- manageSlide
+manageSlide ..> addTextbook: <<include>>
+manageSlide ..> updateTextbook: <<include>>
+manageSlide ..> deleteTextbook: <<include>>
+manageSlide ..> enableTextbook: <<include>>
+
+addTextbook .l.> updateTextbook: <<precedes>>
+addTextbook ..> enableTextbook: <<precedes>>
+addTextbook .r.> deleteTextbook: <<precedes>>
+```
+
+* システム管理権限ユーザは、システムに教材を格納したZIPをアップロードして、教材を登録できる。
+* システム管理権限ユーザは、修正した教材をアップロードして、教材をバージョンアップできる。
+* システム管理権限ユーザは、不要な教材を削除できる。
+  * この場合、教材に紐づく講座や成績などのデータも削除される。
+* システム管理権限ユーザは、一時的に受講を中止させたい教材を無効化できる。
+  * 教材の内容に疑義があり、確認がとれるまでの間の緊急措置などに使用する。
+
+### グループを管理する
+```plantuml
+skinparam backgroundColor whitesmoke
+left to right direction
+
+:グループ管理権限: as groupManager
+(グループを管理する) as manageGroup
+(グループをインポートする) as addPeriod
+(グループを登録する) as addGroup
+(グループを編集する) as editGroup
+(グループを削除する) as deleteGroup
+(グループにユーザを追加する) as assignUserToGroup
+(ユーザに権限を割当てる) as assignAuthorityToUserInGroup
+(グループからユーザを削除する) as deassignUserToGroup
+
+groupManager -- manageGroup
+manageGroup ..> addGroup: <<include>>
+manageGroup ..> deleteGroup: <<include>>
+manageGroup ..> addPeriod: <<include>>
+manageGroup ..> editGroup: <<include>>
+
+addGroup .l.> deleteGroup: <<precedes>>
+addGroup .r.> editGroup: <<precedes>>
+
+editGroup ..> assignUserToGroup: <<include>>
+editGroup ..> assignAuthorityToUserInGroup: <<include>>
+editGroup ..> deassignUserToGroup: <<include>>
+
+assignUserToGroup .l.> assignAuthorityToUserInGroup: <<precedes>>
+assignUserToGroup .r.> deassignUserToGroup: <<precedes>>
+
+```
+* グループには以下の2種類が存在する。
+  * 全体グループ
+    * 全てのユーザは、自動的に「全体グループ」に所属する。
+    * 全体グループを削除することも、ユーザの所属を解除することもできない。
+    * 全体グループではユーザが権限を所有していない状態が存在する。
+    * 全体グループでは、ユーザに以下の権限を割り当てることができる。
+      * システム管理
+      * グループ管理
+      * 講座管理
+      * 講座監督
+      * 受講
+  * 個別グループ
+    * 本権限で作成したグループを「個別グループ」と呼ぶ。
+    * 個別グループは世代が存在し、切替日が過ぎると、次の世代のグループが有効になる。
+    * 個別グループでは、ユーザに以下の権限を割り当てることができる。
+      * 講座管理
+      * 講座監督
+      * 受講
+* ユーザは複数のグループに所属させることができる。
+
+### 講座を管理する
+
+```plantuml
+skinparam backgroundColor whitesmoke
+left to right direction
+
+:講座管理権限: as lessonManager
+(講座を管理する) as manageCourse
+(講座を登録する) as addLesson
+(講座を削除する) as deleteLesson
+
+lessonManager -- manageCourse
+manageCourse ..> addLesson: <<include>>
+manageCourse ..> deleteLesson: <<include>>
+
+addLesson .r.> deleteLesson: <<precedes>>
+
+```
+* 全体グループの講座管理権限の保有者は、全体グループおよび個別のグループを指定して、講座の管理を行うことができる。
+* 個別グループの講座管理権限の保有者は、所属する個別グループに対して、講座の管理を行うことができる。
+
+### 受講する
+
+```plantuml
+skinparam backgroundColor whitesmoke
+left to right direction
+
+:受講権限: as student
+
+(受講する) as takeCourse
+(テキストを読む) as readText
+(確認テストを受ける) as takeTest
+(アンケートに回答する) as takeSurvey
+(中断する) as suspendText
+
+student -- takeCourse
+takeCourse -- readText: <<include>>
+takeCourse -- takeTest: <<include>>
+takeCourse -- takeSurvey: <<include>>
+
+readText -- suspendText: <<include>>
+takeTest -- suspendText: <<include>>
+takeSurvey -- suspendText: <<include>>
+
+```
+
+### 受講状況を管理する
+
+```plantuml
+skinparam backgroundColor whitesmoke
+left to right direction
+
+:講座監督権限: as lessonDirector
+
+(受講状況を管理する) as directLesson
+
+(受講状況を把握する) as showLessonGrade
+(ユーザを未着手にする) as returnToInitial
+(ユーザを対象外を解除する) as considerCompletion
+(ユーザを対象外にする) as exculudeLessonToUser
+
+lessonDirector -- directLesson
+directLesson ..> showLessonGrade: <<include>>
+directLesson ..> returnToInitial: <<include>>
+directLesson ..> considerCompletion: <<include>>
+directLesson ..> exculudeLessonToUser: <<include>>
+
+```
+
+-->
+
+---
+## 概念モデル
+
+```plantuml
+skinparam backgroundcolor whitesmoke
+
+entity "お知らせ" as Notice {
+    お知らせID
+    --
+    メッセージ
+    掲載開始日
+    掲載終了日
+}
+
+
+entity "スライド" as Slide {
+
+}
+
+package グループ  <<Cloud>> {
+    entity "施行日" as DayOfEnforcement {
+        切替日
+        --
+    } 
+
+    entity "グループ" as Group {    
+        団体ID
+        --
+        団体名
+    }
+}
+
+package ユーザ  <<Cloud>> {
+    entity "ユーザ" as User {
+        ログインID
+        --
+        姓
+        名
+    }
+
+    entity "受講履歴" as CourseHistory {
+
+    }
+}
+
+DayOfEnforcement *-r- Group
+Group o- Slide: "講習"
+Group o-- User: "役割"
+
+User o- CourseHistory
+
+
+
+
+' DayOfEnforcement }|--|{ Band
+' Band }o--o| Band
+' Band }|--|{ User
+' 
+' (Band, User) -- Role
+' 
+' (Slide, User) -- Record
+' 
+' (Slide, Band) -- Class
+
+
+
+'entity "権限" as authority {
+'  名前
+'}
+'
+'entity "ユーザ" as user {
+'  ユーザID
+'  --
+'  アカウントID
+'  姓
+'  名
+'  メール
+'}
+'
+'package グループ {
+'  entity "グループ世代" as group_versions {
+'    グループ世代ID
+'    --
+'    切替日
+'  }
+'
+'  entity "グループ" as group_origins {    
+'    グループID
+'  }
+'
+'  entity "世代別グループ" as group_transitions {
+'    世代別グループID
+'    --
+'    グループ名
+'  }
+'
+'}
+'
+'package 教材 {
+'  entity "教材" as textbook {
+'    教材ID
+'    --
+'    教材名
+'    有効フラグ
+'    開始日
+'    終了日
+'  }
+'  entity "教材バージョン" as textbook_versions {
+'    教材ID
+'    教材バージョンID
+'    --
+'    教材設定
+'  }
+'}
+'
+'entity "成績" as grade {
+'  成績ID
+'  --
+'  教材バージョンID
+'  開始日
+'  終了日
+'  進捗状況
+'  テスト結果
+'  アンケート結果
+'}
+'entity "講座" as lesson {
+'  講座ID
+'  --
+'}
+'
+'group_origins ||-u-|{ group_transitions
+'group_versions ||-r-o{ group_transitions
+'
+'user ||--o{ grade
+'
+'user }o-u-o{ authority
+'group_transitions }o-r-o{ authority
+'
+'textbook ||-u-o{ lesson
+'group_origins }o--o{ lesson
+'
+'textbook ||-r-o{ grade
+'textbook ||-l-|{ textbook_versions
+```
+
+---
+## 構成
+
+### ノード構成
+
+```plantuml
+skinparam backgroundColor whitesmoke
+
+rectangle "e-Learningシステム" {
+  interface HTTP as HTTP1
+  [e-Learningアプリ] as Learning
+  HTTP1 - Learning
+  interface "JDBC" as JDBC1
+  JDBC1 - [Neo4j]
+}
+
+rectangle "メール" {
+  interface SMTP
+  [SMTPサーバ] as SMTPServer <<オプション>> 
+  SMTP - SMTPServer
+}
+
+rectangle "認証" {
+  interface HTTP as HTTP2
+  [Keycloak]
+  HTTP2 - Keycloak
+}
+
+actor "ユーザ" as User
+User --> HTTP1
+Learning --> HTTP2
+Learning --> JDBC1
+Learning -> SMTP
+SMTPServer -r-> User
+
+```
+

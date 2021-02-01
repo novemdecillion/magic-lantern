@@ -1,0 +1,25 @@
+@import '../../../../node_modules/bootstrap/scss/bootstrap-utilities.scss';
+
+:host {
+  @extend .d-flex;
+  @extend .flex-column;
+  height: 100%;
+}
+
+iframe {
+  @extend .flex-grow-1;
+//  width: 100%;
+//  box-sizing: border-box;
+  border: 0px;
+}
+
+.panel {
+  position:absolute;
+  left: 0;
+  right: 0;
+  // top:0;
+  bottom: 10px;
+  // width:250px;
+  // height:150px;
+  margin:auto;
+}

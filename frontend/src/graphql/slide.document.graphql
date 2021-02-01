@@ -1,0 +1,12 @@
+fragment slideConfig on SlideConfig {
+  title
+  chapters {
+    title
+  }
+}
+
+query slides {
+  slides {
+    ...slideConfig
+  }
+}

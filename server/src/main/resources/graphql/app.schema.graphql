@@ -1,0 +1,8 @@
+type Query {
+  slides: [SlideConfig!]
+  courses: [Course!]
+}
+
+#type Mutation {
+#
+#}

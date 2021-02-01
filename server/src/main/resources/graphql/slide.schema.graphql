@@ -1,0 +1,8 @@
+type Chapter {
+  title: String!
+}
+
+type SlideConfig {
+  title: String!
+  chapters: [Chapter!]
+}

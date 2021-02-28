@@ -1,4 +1,4 @@
-package io.github.novemdecillion.group
+package io.github.novemdecillion.domain
 
 import io.github.novemdecillion.slide.SlideConfig
 import org.jmolecules.architecture.onion.classical.DomainModelRing

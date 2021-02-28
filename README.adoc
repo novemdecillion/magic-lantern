@@ -1,10 +1,11 @@
 # Magic Lantern
 
-
 ## ユースケース
 
 ### 全体像
-```plantuml
+
+[plantuml]
+----
 skinparam backgroundColor whitesmoke
 left to right direction
 
@@ -39,12 +40,13 @@ student -- takeCourse
 'manageGroup ..> manageCourse: <<precedes>>
 'manageSlide ..> manageCourse: <<precedes>>
 'manageCourse .r.> takeCourse: <<precedes>>
-```
+----
 
 
 ### お知らせを管理する
 
-```plantuml
+[plantuml]
+----
 skinparam backgroundColor whitesmoke
 left to right direction
 
@@ -60,27 +62,28 @@ manageNotice ..> editNotice: <<include>>
 manageNotice ..> deleteNotice: <<include>>
 addNotice .l.> editNotice: <<precedes>>
 addNotice .r.> deleteNotice: <<precedes>>
-```
+----
 
 * グループ管理者は、グループに周知する情報を「お知らせ」として追加、変更、削除ができる。
-    * システム管理者は、全員への「お知らせ」ができる。
+** システム管理者は、全員への「お知らせ」ができる。
 * システムは、お知らせで指定された開始日や終了日の期間に、お知らせを表示する。
-  * 開始日が未指定なら、即日表示される。
-  * 終了日が未指定なら、永遠に表示される。
+** 開始日が未指定なら、即日表示される。
+** 終了日が未指定なら、永遠に表示される。
 
-<!--
+////
 
 ### ユーザを管理する
 
 * システム管理者は、以下の場合に、Keycloakの間でユーザ情報の同期を行う。
-  * システムの起動時で、ユーザが存在しない場合。
-  * コンフィグに設定した周期。デフォルトは3時間周期。
-  * システム管理権限ユーザが、画面でユーザ同期を実行した場合。
+** システムの起動時で、ユーザが存在しない場合。
+** コンフィグに設定した周期。デフォルトは3時間周期。
+** システム管理権限ユーザが、画面でユーザ同期を実行した場合。
 * Keycloakより取得したユーザがシステムに存在しない場合、そのユーザをシステムに追加する。またシステムには存在していて、Keycloakより取得できなかったユーザは削除する。
 
 ### 教材を管理する
 
-```plantuml
+[plantuml]
+----
 skinparam backgroundColor whitesmoke
 left to right direction
 
@@ -100,7 +103,7 @@ manageSlide ..> enableTextbook: <<include>>
 addTextbook .l.> updateTextbook: <<precedes>>
 addTextbook ..> enableTextbook: <<precedes>>
 addTextbook .r.> deleteTextbook: <<precedes>>
-```
+----
 
 * システム管理権限ユーザは、システムに教材を格納したZIPをアップロードして、教材を登録できる。
 * システム管理権限ユーザは、修正した教材をアップロードして、教材をバージョンアップできる。
@@ -110,7 +113,8 @@ addTextbook .r.> deleteTextbook: <<precedes>>
   * 教材の内容に疑義があり、確認がとれるまでの間の緊急措置などに使用する。
 
 ### グループを管理する
-```plantuml
+[plantuml]
+----
 skinparam backgroundColor whitesmoke
 left to right direction
 
@@ -140,30 +144,31 @@ editGroup ..> deassignUserToGroup: <<include>>
 assignUserToGroup .l.> assignAuthorityToUserInGroup: <<precedes>>
 assignUserToGroup .r.> deassignUserToGroup: <<precedes>>
 
-```
+----
 * グループには以下の2種類が存在する。
-  * 全体グループ
-    * 全てのユーザは、自動的に「全体グループ」に所属する。
-    * 全体グループを削除することも、ユーザの所属を解除することもできない。
-    * 全体グループではユーザが権限を所有していない状態が存在する。
-    * 全体グループでは、ユーザに以下の権限を割り当てることができる。
-      * システム管理
-      * グループ管理
-      * 講座管理
-      * 講座監督
-      * 受講
-  * 個別グループ
-    * 本権限で作成したグループを「個別グループ」と呼ぶ。
-    * 個別グループは世代が存在し、切替日が過ぎると、次の世代のグループが有効になる。
-    * 個別グループでは、ユーザに以下の権限を割り当てることができる。
-      * 講座管理
-      * 講座監督
-      * 受講
+** 全体グループ
+*** 全てのユーザは、自動的に「全体グループ」に所属する。
+*** 全体グループを削除することも、ユーザの所属を解除することもできない。
+*** 全体グループではユーザが権限を所有していない状態が存在する。
+*** 全体グループでは、ユーザに以下の権限を割り当てることができる。
+**** システム管理
+**** グループ管理
+**** 講座管理
+**** 講座監督
+**** 受講
+** 個別グループ
+** 本権限で作成したグループを「個別グループ」と呼ぶ。
+** 個別グループは世代が存在し、切替日が過ぎると、次の世代のグループが有効になる。
+** 個別グループでは、ユーザに以下の権限を割り当てることができる。
+*** 講座管理
+*** 講座監督
+*** 受講
 * ユーザは複数のグループに所属させることができる。
 
 ### 講座を管理する
 
-```plantuml
+[plantuml]
+----
 skinparam backgroundColor whitesmoke
 left to right direction
 
@@ -178,13 +183,14 @@ manageCourse ..> deleteLesson: <<include>>
 
 addLesson .r.> deleteLesson: <<precedes>>
 
-```
+----
 * 全体グループの講座管理権限の保有者は、全体グループおよび個別のグループを指定して、講座の管理を行うことができる。
 * 個別グループの講座管理権限の保有者は、所属する個別グループに対して、講座の管理を行うことができる。
 
 ### 受講する
 
-```plantuml
+[plantuml]
+----
 skinparam backgroundColor whitesmoke
 left to right direction
 
@@ -205,11 +211,12 @@ readText -- suspendText: <<include>>
 takeTest -- suspendText: <<include>>
 takeSurvey -- suspendText: <<include>>
 
-```
+----
 
 ### 受講状況を管理する
 
-```plantuml
+[plantuml]
+----
 skinparam backgroundColor whitesmoke
 left to right direction
 
@@ -228,14 +235,15 @@ directLesson ..> returnToInitial: <<include>>
 directLesson ..> considerCompletion: <<include>>
 directLesson ..> exculudeLessonToUser: <<include>>
 
-```
+----
 
--->
+////
 
----
+
 ## 概念モデル
 
-```plantuml
+[plantuml]
+----
 skinparam backgroundcolor whitesmoke
 
 entity "お知らせ" as Notice {
@@ -375,14 +383,15 @@ User o- CourseHistory
 '
 'textbook ||-r-o{ grade
 'textbook ||-l-|{ textbook_versions
-```
+----
 
----
+
 ## 構成
 
 ### ノード構成
 
-```plantuml
+[plantuml]
+----
 skinparam backgroundColor whitesmoke
 
 rectangle "e-Learningシステム" {
@@ -412,5 +421,5 @@ Learning --> JDBC1
 Learning -> SMTP
 SMTPServer -r-> User
 
-```
+----
 

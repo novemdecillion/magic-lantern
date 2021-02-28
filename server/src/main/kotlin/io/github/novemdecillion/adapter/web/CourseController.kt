@@ -1,7 +1,7 @@
-package io.github.novemdecillion.group.web
+package io.github.novemdecillion.adapter.web
 
 import graphql.kickstart.tools.GraphQLQueryResolver
-import io.github.novemdecillion.group.Course
+import io.github.novemdecillion.domain.Course
 import io.github.novemdecillion.slide.ExplainChapter
 import io.github.novemdecillion.slide.SlideConfig
 import org.springframework.stereotype.Component

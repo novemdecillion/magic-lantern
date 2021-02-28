@@ -1,8 +1,8 @@
 package io.github.novemdecillion
 
-import io.github.novemdecillion.slide.web.AppSlideProperties
-import io.github.novemdecillion.user.Record
-import io.github.novemdecillion.user.User
+import io.github.novemdecillion.adapter.web.AppSlideProperties
+import io.github.novemdecillion.domain.CourseHistory
+import io.github.novemdecillion.domain.User
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeEach
@@ -80,16 +80,16 @@ class RepositoryTests {
     client.save(
       User("user0001", "user", "0001",
         setOf(
-          Record("slide0001"),
-          Record("slide0002"),
-          Record("slide0003")
+          CourseHistory("slide0001"),
+          CourseHistory("slide0002"),
+          CourseHistory("slide0003")
         )))
 
     val users = client.findAll(User::class.java).map { println(it); it }
     Assertions.assertThat(users.size).isEqualTo(1)
-    Assertions.assertThat(users[0].records?.size).isEqualTo(3)
+    Assertions.assertThat(users[0].courseHistories?.size).isEqualTo(3)
 
-    val records = client.findAll(Record::class.java).map { println(it); it }
+    val records = client.findAll(CourseHistory::class.java).map { println(it); it }
     Assertions.assertThat(records.size).isEqualTo(3)
   }
 
@@ -100,17 +100,17 @@ class RepositoryTests {
 
     client.saveAll(
       listOf(
-        Record("slide0001", user),
-        Record("slide0002", user),
-        Record("slide0003", user)
+        CourseHistory("slide0001", user),
+        CourseHistory("slide0002", user),
+        CourseHistory("slide0003", user)
       )
     )
 
     val users = client.findAll(User::class.java).map { println(it); it }
     Assertions.assertThat(users.size).isEqualTo(1)
-    Assertions.assertThat(users[0].records?.size).isEqualTo(3)
+    Assertions.assertThat(users[0].courseHistories?.size).isEqualTo(3)
 
-    val records = client.findAll(Record::class.java).map { println(it); it }
+    val records = client.findAll(CourseHistory::class.java).map { println(it); it }
     Assertions.assertThat(records.size).isEqualTo(3)
   }
 

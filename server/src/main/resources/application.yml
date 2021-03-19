@@ -10,17 +10,25 @@ spring:
   cloud:
     gateway:
       routes:
-        - uri: http://localhost:4200
+        - order: 1
+          uri: no://op
           predicates:
-            - Path=/**
+            - Path=/public/**
+            - Path=/webjars/**
+            - Path=/favicon.ico
+            - Path=/admin/**
+        - uri: http://localhost:4200
+          order: 2
+          predicates:
+            - Path=/api/**
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost/magic-lantern
+    username: admin
+    password: password123
 
   codec:
     max-in-memory-size: 10MB
-  neo4j:
-    uri: bolt://localhost:7687
-    authentication:
-      username: neo4j
-      password: password
   security:
     oauth2:
       client:
@@ -39,6 +47,7 @@ spring:
           issuer-uri: http://localhost:50010/auth/realms/example
 
   thymeleaf:
+    cache: false
     prefix: file:slides/
     template-resolver-order: 1
 

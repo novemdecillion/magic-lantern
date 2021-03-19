@@ -26,7 +26,7 @@ import java.net.URI
 
 @SpringBootTest(webEnvironment = RANDOM_PORT)
 @AutoConfigureWebTestClient(timeout = "36000")
-class LearningApplicationTests {
+class ApplicationTests {
 //  @Autowired
 //  lateinit var httpWebHandlerAdapter: HttpWebHandlerAdapter
 

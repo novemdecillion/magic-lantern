@@ -4,8 +4,6 @@ import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import org.apache.commons.math3.fraction.Fraction
 import org.jmolecules.architecture.onion.classical.DomainModelRing
-import org.springframework.data.neo4j.core.schema.Id
-import org.springframework.data.neo4j.core.schema.Node
 import java.lang.IllegalArgumentException
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
@@ -216,10 +214,8 @@ data class SlideConfig(
   }
 }
 
-@Node
 @DomainModelRing
 class Slide(
-  @field:Id
   val slideId: String,
   val config: SlideConfig,
 ) {

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ja"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5"
+      th:fragment="layout(body)">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Cache-Control" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+
+  <title th:text="${appTitle}"></title>
+
+  <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
+
+  <link th:href="@{/public/style.css}" rel="stylesheet">
+
+  <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"
+        rel="stylesheet">
+
+  <link th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.css}"
+        rel="stylesheet">
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-light px-1 fixed-top">
+  <div class="container-fluid">
+    <a th:href="@{/}" class="navbar-brand fs-3">
+      <span class="d-block fs-4" th:text="${appTitle}"></span>
+    </a>
+
+    <th:block sec:authorize="isAuthenticated()">
+
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+              aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto">
+          <a sec:authorize="hasRole('ROLE_ADMIN')" class="nav-link active" href="/topic" role="button">トピック管理</a>
+        </ul>
+
+        <div class="d-flex  navbar-nav">
+          <a class="nav-link active" href="/contact" role="button">お問い合わせ</a>
+          <div class="dropdown">
+            <a class="nav-link dropdown-toggle" href="#" id="personDropdown"
+               role="button" data-bs-toggle="dropdown"
+               aria-expanded="false">
+              <span sec:authentication="principal.username"></span>
+              <i class="bi bi-person-circle"></i>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="personDropdown">
+              <li sec:authorize="hasRole('ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/change-password}">パスワード変更</a>
+              </li>
+              <li sec:authorize="hasRole('ROLE_ADMIN')">
+                <hr class="dropdown-divider">
+              </li>
+              <li>
+                <form th:action="@{/logout}" method="post">
+                  <button class="dropdown-item" type="submit">ログアウト</button>
+                </form>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </th:block>
+  </div>
+</nav>
+
+<div th:insert="${body}" style="margin-top: 140px"></div>
+
+<script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
+
+</body>
+</html>

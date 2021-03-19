@@ -18,7 +18,7 @@ import org.springframework.web.reactive.function.server.EntityResponse
 @Controller
 @SpringBootApplication
 @ConfigurationPropertiesScan
-class LearningApplication {
+class Application {
   @Bean
   fun testRouter(prop: AppSlideProperties): RouterFunction<ServerResponse> = router {
     GET("hello") {
@@ -28,5 +28,5 @@ class LearningApplication {
 }
 
 fun main(args: Array<String>) {
-  runApplication<LearningApplication>(*args)
+  runApplication<Application>(*args)
 }

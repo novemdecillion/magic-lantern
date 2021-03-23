@@ -48,10 +48,3 @@ class SlideShowConfig {
     }
   }
 }
-
-@Component
-class SlideController: GraphQLQueryResolver {
-  fun slides(): List<SlideConfig> {
-    return listOf(SlideConfig("テスト", listOf(ExplainChapter("概要", listOf()))))
-  }
-}

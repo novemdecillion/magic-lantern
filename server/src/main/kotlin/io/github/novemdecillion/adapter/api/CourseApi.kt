@@ -1,4 +1,4 @@
-package io.github.novemdecillion.adapter.web
+package io.github.novemdecillion.adapter.api
 
 import graphql.kickstart.tools.GraphQLQueryResolver
 import io.github.novemdecillion.slide.SlideConfig
@@ -6,7 +6,7 @@ import org.springframework.stereotype.Component
 import java.util.*
 
 @Component
-class CourseController: GraphQLQueryResolver {
+class CourseApi: GraphQLQueryResolver {
   data class Course(
     val courseId: UUID,
     val slide: SlideConfig

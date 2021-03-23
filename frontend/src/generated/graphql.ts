@@ -16,8 +16,15 @@ export type Scalars = {
 
 
 
+export type User = {
+  __typename?: 'User';
+  username: Scalars['String'];
+  authorities: Array<Scalars['String']>;
+};
+
 export type Query = {
   __typename?: 'Query';
+  currentUser?: Maybe<User>;
   slides?: Maybe<Array<SlideConfig>>;
   courses?: Maybe<Array<Course>>;
 };
@@ -38,6 +45,22 @@ export type SlideConfig = {
   title: Scalars['String'];
   chapters?: Maybe<Array<Chapter>>;
 };
+
+export type UserFragment = (
+  { __typename?: 'User' }
+  & Pick<User, 'username' | 'authorities'>
+);
+
+export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CurrentUserQuery = (
+  { __typename?: 'Query' }
+  & { currentUser?: Maybe<(
+    { __typename?: 'User' }
+    & UserFragment
+  )> }
+);
 
 export type CourseFragment = (
   { __typename?: 'Course' }
@@ -79,6 +102,12 @@ export type SlidesQuery = (
   )>> }
 );
 
+export const UserFragmentDoc = gql`
+    fragment user on User {
+  username
+  authorities
+}
+    `;
 export const SlideConfigFragmentDoc = gql`
     fragment slideConfig on SlideConfig {
   title
@@ -95,6 +124,24 @@ export const CourseFragmentDoc = gql`
   }
 }
     ${SlideConfigFragmentDoc}`;
+export const CurrentUserDocument = gql`
+    query currentUser {
+  currentUser {
+    ...user
+  }
+}
+    ${UserFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class CurrentUserGQL extends Apollo.Query<CurrentUserQuery, CurrentUserQueryVariables> {
+    document = CurrentUserDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const CoursesDocument = gql`
     query courses {
   courses {

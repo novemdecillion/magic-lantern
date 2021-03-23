@@ -3,7 +3,8 @@ package io.github.novemdecillion.adapter.keycloak
 import io.github.novemdecillion.util.logger
 import org.keycloak.OAuth2Constants
 import org.keycloak.representations.AccessTokenResponse
-import org.keycloak.representations.account.UserRepresentation
+import org.keycloak.representations.idm.UserRepresentation
+import org.keycloak.representations.idm.CredentialRepresentation
 import org.keycloak.representations.idm.ErrorRepresentation
 import org.springframework.http.HttpStatus
 import org.springframework.http.MediaType
@@ -33,7 +34,10 @@ open class KeycloakClient(protected val webClient: WebClient, private val realm:
       )
       .retrieve()
       .onStatus(::isServerError, ::serverError)
-      .bodyToMono()
+      .bodyToMono<AccessTokenResponse>()
+//      .doOnNext {
+//        log.info("expires_in: ${it.expiresIn}, refresh_expires_in: ${it.refreshExpiresIn}")
+//      }
   }
 
   protected fun isServerError(status: HttpStatus) : Boolean {
@@ -142,6 +146,39 @@ class KeycloakAdminCliClient(webClient: WebClient) : KeycloakClient(webClient, "
       .flatMap { user ->
         createUser(token, realm, user)
       }
+  }
+
+  fun resetPassword(token: String, realm: String, userId: String, password: String, temporary: Boolean = false): Mono<Boolean> {
+    val credential = CredentialRepresentation()
+      .also {
+        it.type = "password"
+        it.value = password
+        it.isTemporary = temporary
+      }
+    return webClient.put().uri("/admin/realms/$realm/users/$userId/reset-password")
+      .headers {
+        it.setBearerAuth(token)
+      }
+      .bodyValue(credential)
+      .retrieve()
+      .onStatus(::isServerError, ::serverError)
+      .bodyToMono<Boolean>()
+      .switchIfEmpty(Mono.just(true))
+  }
+
+  fun updateUser(token: String, realm: String, user: UserRepresentation): Mono<Boolean> {
+    return webClient
+      .put()
+      .uri("/admin/realms/$realm/users/${user.id}")
+      .contentType(MediaType.APPLICATION_JSON)
+      .headers {
+        it.setBearerAuth(token)
+      }
+      .bodyValue(user)
+      .retrieve()
+      .onStatus(::isServerError, ::serverError)
+      .bodyToMono<Boolean>()
+      .switchIfEmpty(Mono.just(true))
   }
 
   fun deleteUser(token: String, realm: String, userId: String): Mono<Boolean> {

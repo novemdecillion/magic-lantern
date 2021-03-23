@@ -9,11 +9,19 @@ import { HttpClientModule, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest,
 import { MaterialModule } from './material.module';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
-import { HomeComponent } from './base/home/home.component';
+import { HomeComponent } from './root/home/home.component';
+import { StoreModule } from '@ngrx/store';
+import { EffectsModule } from '@ngrx/effects';
+import { reducers, metaReducers } from './root/store';
+import { AppEffects } from './root/store/effects/app.effect';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
   intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    if (!req.headers.has('X-Requested-With')) {
+      req.headers.append('X-Requested-With', 'XMLHttpRequest');
+    }
+
     return next.handle(req).pipe(
       // tapオペレータでレスポンスの流れを傍受する
       tap(resp => {
@@ -44,7 +52,11 @@ export class AuthInterceptor implements HttpInterceptor {
     BrowserAnimationsModule,
     GraphQLModule,
     HttpClientModule,
-    MaterialModule
+    MaterialModule,
+    StoreModule.forRoot(reducers, {
+      metaReducers
+    }),
+    EffectsModule.forRoot([AppEffects])
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

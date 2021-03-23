@@ -3,7 +3,7 @@ package io.github.novemdecillion.adapter.keycloak
 import io.github.novemdecillion.util.logger
 import org.apache.commons.lang3.RandomStringUtils
 import org.junit.jupiter.api.Test
-import org.keycloak.representations.account.UserRepresentation
+import org.keycloak.representations.idm.UserRepresentation
 import org.reactivestreams.Subscriber
 import org.springframework.http.HttpStatus
 import org.springframework.web.reactive.function.client.WebClient
@@ -60,8 +60,13 @@ class KeycloakTest {
   @Test
   fun users() {
     client.accessToken("admin", "password123")
-      .flatMapMany {
-        client.userRepresentation(it.token, realm)
+      .flatMapMany { accessToken ->
+        client.userRepresentation(accessToken.token, realm)
+//          .flatMap { user ->
+//            user.isEnabled = true
+//            client.updateUser(accessToken.token, realm, user)
+//              .map { user }
+//          }
       }
       .map {
         println(it.username)
@@ -91,6 +96,7 @@ class KeycloakTest {
                 it.email = "$username@example.com"
                 it.firstName = username.substring(0..5)
                 it.lastName = username.substring(6)
+                it.isEnabled = true
               }
             client.createUser(token, realm, user)
           }

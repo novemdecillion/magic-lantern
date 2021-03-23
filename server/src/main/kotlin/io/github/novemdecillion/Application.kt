@@ -19,12 +19,12 @@ import org.springframework.web.reactive.function.server.EntityResponse
 @SpringBootApplication
 @ConfigurationPropertiesScan
 class Application {
-  @Bean
-  fun testRouter(prop: AppSlideProperties): RouterFunction<ServerResponse> = router {
-    GET("hello") {
-      EntityResponse.fromObject("I'm fine!").build()
-    }
-  }
+//  @Bean
+//  fun testRouter(prop: AppSlideProperties): RouterFunction<ServerResponse> = router {
+//    GET("hello") {
+//      EntityResponse.fromObject("I'm fine!").build()
+//    }
+//  }
 }
 
 fun main(args: Array<String>) {

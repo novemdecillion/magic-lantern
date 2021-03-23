@@ -1,0 +1,10 @@
+fragment user on User {
+  username
+  authorities
+}
+
+query currentUser {
+  currentUser {
+    ...user
+  }
+}

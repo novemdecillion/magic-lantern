@@ -1,8 +1,10 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+//import com.github.gradle.node.npm.task.NpmTask
 
 plugins {
   id("org.springframework.boot") version "2.4.3"
   id("io.spring.dependency-management") version "1.0.11.RELEASE"
+//  id("com.github.node-gradle.node") version "3.0.1"
   id("idea")
   kotlin("jvm") version "1.4.30"
   kotlin("plugin.spring") version "1.4.30"
@@ -44,6 +46,7 @@ dependencies {
   // Web
   implementation("org.springframework.boot:spring-boot-starter-webflux")
   implementation("org.springframework.boot:spring-boot-starter-thymeleaf")
+  implementation("org.thymeleaf.extras:thymeleaf-extras-springsecurity5")
   implementation(platform("org.springframework.cloud:spring-cloud-dependencies:2020.0.1"))
   implementation("org.springframework.cloud:spring-cloud-starter-gateway")
 
@@ -59,7 +62,7 @@ dependencies {
   // JavaScript
   runtimeOnly("org.webjars:webjars-locator:0.40")
   runtimeOnly("org.webjars:bootstrap:5.0.0-beta2")
-  runtimeOnly("org.webjars:bootstrap-icons:1.3.0")
+  runtimeOnly("org.webjars.npm:bootstrap-icons:1.3.0")
 
   developmentOnly("org.springframework.boot:spring-boot-devtools")
 
@@ -87,6 +90,30 @@ tasks.withType<Test> {
   useJUnitPlatform()
 }
 
+
+//tasks.register<NpmTask>("sassCompile") {
+//  group = "npm"
+//  dependsOn(tasks.npmInstall)
+//  args.set(listOf("run", "sass:build"))
+//}
+//
+//tasks.register<NpmTask>("sassWatchStart") {
+//  group = "npm"
+//  dependsOn(tasks.npmInstall)
+//  args.set(listOf("run", "sass:watch:start"))
+//}
+//
+//tasks.register<NpmTask>("sassWatchStop") {
+//  group = "npm"
+//  dependsOn(tasks.npmInstall)
+//  args.set(listOf("run", "sass:watch:stop"))
+//}
+//
+//node {
+//  download.set(true)
+//}
+
+
 mybatisGenerator {
   driver = "org.testcontainers.jdbc.ContainerDatabaseDriver"
   url = "jdbc:tc:postgresql:11:///build-test"
@@ -98,5 +125,6 @@ mybatisGenerator {
 idea {
   module {
     isDownloadSources = true
+    inheritOutputDirs = true
   }
 }

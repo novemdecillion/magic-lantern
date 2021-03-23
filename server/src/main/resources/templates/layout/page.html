@@ -9,24 +9,22 @@
   <meta http-equiv="Cache-Control" content="no-cache">
   <meta http-equiv="Expires" content="0">
 
-  <title th:text="${appTitle}"></title>
+  <title>Magic Lantern</title>
 
   <link rel="icon" type="image/svg+xml" th:href="@{/favicon.svg}">
 
-  <link th:href="@{/public/style.css}" rel="stylesheet">
-
-  <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}"
-        rel="stylesheet">
-
+  <link th:href="@{/webjars/bootstrap/css/bootstrap.min.css}" rel="stylesheet">
   <link th:href="@{/webjars/bootstrap-icons/font/bootstrap-icons.css}"
         rel="stylesheet">
+  <link th:href="@{/public/style.css}" rel="stylesheet">
 </head>
 <body>
 
-<nav class="navbar navbar-expand-md navbar-light px-1 fixed-top">
+<nav class="navbar navbar-expand-md navbar-dark bg-dark px-1 fixed-top">
   <div class="container-fluid">
-    <a th:href="@{/}" class="navbar-brand fs-3">
-      <span class="d-block fs-4" th:text="${appTitle}"></span>
+    <a th:href="@{/}" class="navbar-brand fs-3 d-inline">
+      <img th:src="@{/favicon.svg}" width="32" height="32">
+      <span class="fs-4">Magic Lantern</span>
     </a>
 
     <th:block sec:authorize="isAuthenticated()">
@@ -37,11 +35,9 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto">
-          <a sec:authorize="hasRole('ROLE_ADMIN')" class="nav-link active" href="/topic" role="button">トピック管理</a>
         </ul>
 
         <div class="d-flex  navbar-nav">
-          <a class="nav-link active" href="/contact" role="button">お問い合わせ</a>
           <div class="dropdown">
             <a class="nav-link dropdown-toggle" href="#" id="personDropdown"
                role="button" data-bs-toggle="dropdown"
@@ -50,13 +46,13 @@
               <i class="bi bi-person-circle"></i>
             </a>
             <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="personDropdown">
-              <li sec:authorize="hasRole('ROLE_ADMIN')"><a class="dropdown-item" th:href="@{/change-password}">パスワード変更</a>
+              <li><a class="dropdown-item" th:href="@{/admin/change-password}">パスワード変更</a>
               </li>
-              <li sec:authorize="hasRole('ROLE_ADMIN')">
+              <li>
                 <hr class="dropdown-divider">
               </li>
               <li>
-                <form th:action="@{/logout}" method="post">
+                <form th:action="@{/admin/logout}" method="post">
                   <button class="dropdown-item" type="submit">ログアウト</button>
                 </form>
               </li>
@@ -69,7 +65,7 @@
   </div>
 </nav>
 
-<div th:insert="${body}" style="margin-top: 140px"></div>
+<div th:insert="${body}" style="margin-top: 100px"></div>
 
 <script th:src="@{/webjars/bootstrap/js/bootstrap.bundle.min.js}"></script>
 

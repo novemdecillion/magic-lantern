@@ -6,9 +6,9 @@
     <button mat-button class="ps-0" routerLink="/home"><h1 class="app-name">Magic Lantern</h1></button>
     <span class="flex-fill"></span>
 
-    <button mat-icon-button [matMenuTriggerFor]="menu">
+    <button mat-button [matMenuTriggerFor]="menu">
       <mat-icon>account_circle</mat-icon>
-      <span></span>
+      {{ (user$ | async)?.userName }}
     </button>
     <mat-menu #menu="matMenu">
       <a mat-menu-item href="/logout">ログアウト</a>
@@ -18,6 +18,9 @@
     <mat-sidenav #snav [mode]="mobileQuery.matches ? 'over' : 'side'" [fixedInViewport]="mobileQuery.matches"
       fixedTopGap="56" opened="true">
       <mat-nav-list class="px-1">
+        <a mat-list-item routerLink="/admin/users"><mat-icon>people</mat-icon>ユーザ</a>
+
+
         <a mat-list-item routerLink="/student/courses"><mat-icon>school</mat-icon>受講</a>
       </mat-nav-list>
     </mat-sidenav>

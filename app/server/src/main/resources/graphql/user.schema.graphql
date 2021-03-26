@@ -1,0 +1,12 @@
+type Authority {
+  groupId: ID!
+  role: String!
+}
+
+type User {
+  userId: ID!
+  userName: String!
+  realm: String
+  enabled: Boolean
+  authorities: [String!]!
+}

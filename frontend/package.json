@@ -27,6 +27,7 @@
     "@apollo/client": "^3.3.12",
     "@ngrx/effects": "^11.0.1",
     "@ngrx/store": "^11.0.1",
+    "@ngrx/store-devtools": "^11.0.1",
     "apollo-angular": "^2.4.0",
     "apply-loader": "^2.0.0",
     "bootstrap": "^5.0.0-beta2",

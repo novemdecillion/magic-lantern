@@ -1,5 +1,5 @@
 overwrite: true
-schema: "../server/src/main/resources/graphql/*.graphql"
+schema: "../app/server/src/main/resources/graphql/*.graphql"
 documents: "src/**/*.graphql"
 generates:
   src/generated/graphql.ts:

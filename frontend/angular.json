@@ -25,6 +25,7 @@
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
+            "aot": true,
             "assets": [
               "src/favicon.svg",
               "src/assets"
@@ -43,7 +44,6 @@
                   "with": "src/environments/environment.prod.ts"
                 }
               ],
-              "aot": true,
               "optimization": true,
               "outputHashing": "all",
               "sourceMap": false,

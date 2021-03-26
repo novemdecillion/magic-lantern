@@ -1,0 +1,92 @@
+#debug: true
+
+app:
+  slide:
+    root-path: file:slides/
+  sync-users:
+    cron: 0 0 * * * *
+    oauth2:
+      keycloak:
+        admin-name: admin
+        admin-password: password123
+
+server:
+  port: 8085
+
+spring:
+  application:
+    name: magic-lantern-server
+
+  codec:
+    max-in-memory-size: 10MB
+
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost/magic-lantern
+    username: admin
+    password: password123
+
+#  devtools:
+#    restart:
+#      exclude: META-INF/maven/**,META-INF/resources/**,**/*Test.class,**/*Tests.class,git.properties,META-INF/build-info.properties
+
+  flyway:
+    clean-on-validation-error: true
+
+  scheduling:
+    enabled: false
+
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            # https://www.keycloak.org/docs/latest/securing_apps/index.html#endpoints-2
+            issuer-uri: http://localhost:50010/auth/realms/example
+            # https://www.keycloak.org/docs/11.0/securing_apps/index.html
+            user-name-attribute: preferred_username
+        registration:
+          keycloak:
+            client-id: test-for-java
+            client-name: Test for Java
+            scope: openid
+
+#      resourceserver:
+#        jwt:
+#          issuer-uri: http://localhost:50010/auth/realms/example
+
+  thymeleaf:
+    cache: false
+    prefix: file:slides/
+    template-resolver-order: 1
+
+  webflux:
+    static-path-pattern: /public/**
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+
+graphql:
+  servlet:
+    mapping: /api/v1
+    # Gatewayの背後で動作するので不要
+    corsEnabled: false
+  tools:
+    schema-location-pattern: graphql/*.schema.graphql
+
+#voyager:
+#  enabled: true
+#  endpoint: /api/v1
+#  cdn:
+#    enabled: false
+
+logging:
+  level:
+    root: info
+#    graphql: debug
+    org:
+      jooq:
+        tools:
+          LoggerListener: debug

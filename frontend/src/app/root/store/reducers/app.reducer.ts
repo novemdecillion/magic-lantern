@@ -7,10 +7,10 @@ export const appReducer = createReducer(
   on(AppActions.loadCurrentUser, state => {
     return { ...state, loading: true }
   }),
-  on(AppActions.loadCurrentUserSuccess, state => {
-    return { ...state, loading: true }
+  on(AppActions.loadCurrentUserSuccess, (state, {user}) => {
+    return { ...state, loading: false, user }
   }),
   on(AppActions.loadCurrentUserFail, state => {
-    return { ...state, loading: true }
+    return { ...state, loading: false, user: null }
   }),
 );

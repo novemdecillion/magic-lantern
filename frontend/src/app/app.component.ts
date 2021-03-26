@@ -2,7 +2,7 @@ import { MediaMatcher } from '@angular/cdk/layout';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { SlideConfigFragment, SlidesGQL } from 'src/generated/graphql';
-import { State, getUser } from './root/store';
+import { State, getUser } from './root/store/index';
 import * as AppActions from './root/store/actions/app.action'
 
 @Component({

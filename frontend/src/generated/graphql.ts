@@ -16,15 +16,10 @@ export type Scalars = {
 
 
 
-export type User = {
-  __typename?: 'User';
-  username: Scalars['String'];
-  authorities: Array<Scalars['String']>;
-};
-
 export type Query = {
   __typename?: 'Query';
   currentUser?: Maybe<User>;
+  users?: Maybe<Array<User>>;
   slides?: Maybe<Array<SlideConfig>>;
   courses?: Maybe<Array<Course>>;
 };
@@ -46,21 +41,20 @@ export type SlideConfig = {
   chapters?: Maybe<Array<Chapter>>;
 };
 
-export type UserFragment = (
-  { __typename?: 'User' }
-  & Pick<User, 'username' | 'authorities'>
-);
+export type Authority = {
+  __typename?: 'Authority';
+  groupId: Scalars['ID'];
+  role: Scalars['String'];
+};
 
-export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type CurrentUserQuery = (
-  { __typename?: 'Query' }
-  & { currentUser?: Maybe<(
-    { __typename?: 'User' }
-    & UserFragment
-  )> }
-);
+export type User = {
+  __typename?: 'User';
+  userId: Scalars['ID'];
+  userName: Scalars['String'];
+  realm?: Maybe<Scalars['String']>;
+  enabled?: Maybe<Scalars['Boolean']>;
+  authorities: Array<Scalars['String']>;
+};
 
 export type CourseFragment = (
   { __typename?: 'Course' }
@@ -102,12 +96,33 @@ export type SlidesQuery = (
   )>> }
 );
 
-export const UserFragmentDoc = gql`
-    fragment user on User {
-  username
-  authorities
-}
-    `;
+export type UserFragment = (
+  { __typename?: 'User' }
+  & Pick<User, 'userId' | 'userName' | 'realm' | 'enabled' | 'authorities'>
+);
+
+export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CurrentUserQuery = (
+  { __typename?: 'Query' }
+  & { currentUser?: Maybe<(
+    { __typename?: 'User' }
+    & UserFragment
+  )> }
+);
+
+export type UsersQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type UsersQuery = (
+  { __typename?: 'Query' }
+  & { users?: Maybe<Array<(
+    { __typename?: 'User' }
+    & UserFragment
+  )>> }
+);
+
 export const SlideConfigFragmentDoc = gql`
     fragment slideConfig on SlideConfig {
   title
@@ -124,24 +139,15 @@ export const CourseFragmentDoc = gql`
   }
 }
     ${SlideConfigFragmentDoc}`;
-export const CurrentUserDocument = gql`
-    query currentUser {
-  currentUser {
-    ...user
-  }
+export const UserFragmentDoc = gql`
+    fragment user on User {
+  userId
+  userName
+  realm
+  enabled
+  authorities
 }
-    ${UserFragmentDoc}`;
-
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class CurrentUserGQL extends Apollo.Query<CurrentUserQuery, CurrentUserQueryVariables> {
-    document = CurrentUserDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
-  }
+    `;
 export const CoursesDocument = gql`
     query courses {
   courses {
@@ -173,6 +179,42 @@ export const SlidesDocument = gql`
   })
   export class SlidesGQL extends Apollo.Query<SlidesQuery, SlidesQueryVariables> {
     document = SlidesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const CurrentUserDocument = gql`
+    query currentUser {
+  currentUser {
+    ...user
+  }
+}
+    ${UserFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class CurrentUserGQL extends Apollo.Query<CurrentUserQuery, CurrentUserQueryVariables> {
+    document = CurrentUserDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const UsersDocument = gql`
+    query users {
+  users {
+    ...user
+  }
+}
+    ${UserFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class UsersGQL extends Apollo.Query<UsersQuery, UsersQueryVariables> {
+    document = UsersDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

@@ -1,0 +1,23 @@
+<mat-card>
+  <mat-card-header class="bg-primary bg-gradient text-light">
+    <mat-card-title class="my-1">ユーザ一覧</mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    <table mat-table [dataSource]="users" class="w-100">
+      <ng-container matColumnDef="userName">
+        <th mat-header-cell *matHeaderCellDef> 氏名 </th>
+        <td mat-cell *matCellDef="let element"> {{element.userName}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="enabled">
+        <th mat-header-cell *matHeaderCellDef> 有効 </th>
+        <td mat-cell *matCellDef="let element"> {{element.enabled ? '○' : ''}} </td>
+      </ng-container>
+
+      <tr mat-header-row *matAutoHeaderRowDef></tr>
+      <tr mat-row *matAutoRowDef="let row"></tr>
+
+    </table>
+
+  </mat-card-content>
+</mat-card>

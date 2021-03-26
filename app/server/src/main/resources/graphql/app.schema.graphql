@@ -1,0 +1,11 @@
+type Query {
+  currentUser: User
+  users: [User!]
+
+  slides: [SlideConfig!]
+  courses: [Course!]
+}
+
+#type Mutation {
+#
+#}

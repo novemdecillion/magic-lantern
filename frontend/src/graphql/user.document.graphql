@@ -1,0 +1,19 @@
+fragment user on User {
+  userId
+  userName
+  realm
+  enabled
+  authorities
+}
+
+query currentUser {
+  currentUser {
+    ...user
+  }
+}
+
+query users {
+  users {
+    ...user
+  }
+}

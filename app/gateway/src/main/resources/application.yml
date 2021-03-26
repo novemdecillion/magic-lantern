@@ -1,0 +1,26 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway
+  cloud:
+    gateway:
+      routes:
+        - order: 1
+          uri: http://localhost:8085
+          predicates:
+            - Path=/api/**, /public/**, /webjars/**, /login, /login/**, /logout, /oauth2/**
+          filters:
+            - PreserveHostHeader
+        - uri: http://localhost:4200
+          order: 2
+          predicates:
+            - Path=/**
+          filters:
+            - PreserveHostHeader
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

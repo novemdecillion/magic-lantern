@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { StudentRoutingModule } from './student-routing.module';
 import { CourseListComponent } from './course-list/course-list.component';
 import { SlideshowComponent } from './slideshow/slideshow.component';
-import { MaterialModule } from '../material.module';
+import { MaterialModule } from '../material/material.module';
 
 @NgModule({
   declarations: [CourseListComponent, SlideshowComponent],

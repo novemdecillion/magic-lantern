@@ -7,6 +7,7 @@ package io.github.novemdecillion.adapter.jooq.tables.daos
 import io.github.novemdecillion.adapter.jooq.tables.AccountGroupAuthorityTable
 import io.github.novemdecillion.adapter.jooq.tables.pojos.AccountGroupAuthorityEntity
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountGroupAuthorityRecord
+import io.github.novemdecillion.domain.Role
 
 import java.util.UUID
 
@@ -53,10 +54,10 @@ open class AccountGroupAuthorityDao(configuration: Configuration?) : DAOImpl<Acc
     /**
      * Fetch records that have <code>role BETWEEN lowerInclusive AND upperInclusive</code>
      */
-    fun fetchRangeOfRoleTable(lowerInclusive: String?, upperInclusive: String?): List<AccountGroupAuthorityEntity> = fetchRange(AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY.ROLE, lowerInclusive, upperInclusive)
+    fun fetchRangeOfRoleTable(lowerInclusive: Role?, upperInclusive: Role?): List<AccountGroupAuthorityEntity> = fetchRange(AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY.ROLE, lowerInclusive, upperInclusive)
 
     /**
      * Fetch records that have <code>role IN (values)</code>
      */
-    fun fetchByRoleTable(vararg values: String): List<AccountGroupAuthorityEntity> = fetch(AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY.ROLE, *values)
+    fun fetchByRoleTable(vararg values: Role): List<AccountGroupAuthorityEntity> = fetch(AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY.ROLE, *values)
 }

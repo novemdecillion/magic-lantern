@@ -11,11 +11,11 @@ import org.springframework.transaction.annotation.Transactional
 
 @Service
 class UserDetailsService(val dslContext: DSLContext): org.springframework.security.core.userdetails.UserDetailsService {
-  @Transactional(readOnly = true)
+  @Transactional(readOnly = true, rollbackFor = [Exception::class])
   override fun loadUserByUsername(username: String): UserDetails? {
     return dslContext.selectFrom(ACCOUNT)
       .where(ACCOUNT.ACCOUNT_NAME.equal(username)
-        .and(ACCOUNT.REALM.isNull)
+        .and(ACCOUNT.REALM_ID.isNull)
         .and(ACCOUNT.ENABLED.equal(true)))
       .fetchOneInto(AccountEntity::class.java)
       ?.let {

@@ -6,7 +6,13 @@ type Authority {
 type User {
   userId: ID!
   userName: String!
-  realm: String
+  realmId: String
   enabled: Boolean
   authorities: [String!]!
+}
+
+type Realm {
+  realmId: String!
+  realmName: String
+  syncAt: LocalDateTime
 }

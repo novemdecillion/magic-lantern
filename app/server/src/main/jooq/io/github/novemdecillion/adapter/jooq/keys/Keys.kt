@@ -10,12 +10,14 @@ import io.github.novemdecillion.adapter.jooq.tables.FlywaySchemaHistoryTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupOriginTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionTable
+import io.github.novemdecillion.adapter.jooq.tables.RealmTable
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountGroupAuthorityRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.FlywaySchemaHistoryRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupGenerationRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupOriginRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupTransitionRecord
+import io.github.novemdecillion.adapter.jooq.tables.records.RealmRecord
 
 import org.jooq.ForeignKey
 import org.jooq.UniqueKey
@@ -29,12 +31,13 @@ import org.jooq.impl.Internal
 // -------------------------------------------------------------------------
 
 val ACCOUNT_PKEY: UniqueKey<AccountRecord> = Internal.createUniqueKey(AccountTable.ACCOUNT, DSL.name("account_pkey"), arrayOf(AccountTable.ACCOUNT.ACCOUNT_ID), true)
-val ACCOUNT_REALM_ACCOUNT_NAME_KEY: UniqueKey<AccountRecord> = Internal.createUniqueKey(AccountTable.ACCOUNT, DSL.name("account_realm_account_name_key"), arrayOf(AccountTable.ACCOUNT.REALM, AccountTable.ACCOUNT.ACCOUNT_NAME), true)
+val ACCOUNT_REALM_ID_ACCOUNT_NAME_KEY: UniqueKey<AccountRecord> = Internal.createUniqueKey(AccountTable.ACCOUNT, DSL.name("account_realm_id_account_name_key"), arrayOf(AccountTable.ACCOUNT.REALM_ID, AccountTable.ACCOUNT.ACCOUNT_NAME), true)
 val ACCOUNT_GROUP_AUTHORITY_PKEY: UniqueKey<AccountGroupAuthorityRecord> = Internal.createUniqueKey(AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY, DSL.name("account_group_authority_pkey"), arrayOf(AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID, AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID), true)
 val FLYWAY_SCHEMA_HISTORY_PK: UniqueKey<FlywaySchemaHistoryRecord> = Internal.createUniqueKey(FlywaySchemaHistoryTable.FLYWAY_SCHEMA_HISTORY, DSL.name("flyway_schema_history_pk"), arrayOf(FlywaySchemaHistoryTable.FLYWAY_SCHEMA_HISTORY.INSTALLED_RANK), true)
 val GROUP_GENERATION_PKEY: UniqueKey<GroupGenerationRecord> = Internal.createUniqueKey(GroupGenerationTable.GROUP_GENERATION, DSL.name("group_generation_pkey"), arrayOf(GroupGenerationTable.GROUP_GENERATION.GROUP_GENERATION_ID), true)
 val GROUP_ORIGIN_PKEY: UniqueKey<GroupOriginRecord> = Internal.createUniqueKey(GroupOriginTable.GROUP_ORIGIN, DSL.name("group_origin_pkey"), arrayOf(GroupOriginTable.GROUP_ORIGIN.GROUP_ORIGIN_ID), true)
 val GROUP_TRANSITION_PKEY: UniqueKey<GroupTransitionRecord> = Internal.createUniqueKey(GroupTransitionTable.GROUP_TRANSITION, DSL.name("group_transition_pkey"), arrayOf(GroupTransitionTable.GROUP_TRANSITION.GROUP_TRANSITION_ID), true)
+val REALM_PKEY: UniqueKey<RealmRecord> = Internal.createUniqueKey(RealmTable.REALM, DSL.name("realm_pkey"), arrayOf(RealmTable.REALM.REALM_ID), true)
 
 // -------------------------------------------------------------------------
 // FOREIGN KEY definitions

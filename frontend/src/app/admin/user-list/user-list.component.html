@@ -1,12 +1,24 @@
 <mat-card>
   <mat-card-header class="bg-primary bg-gradient text-light">
-    <mat-card-title class="my-1">ユーザ一覧</mat-card-title>
+    <mat-card-title class="my-1">
+      <span class="mdi mdi-human-male-female"></span>
+      ユーザ
+    </mat-card-title>
+
+    <button mat-mini-fab matTooltip="再ロード" class="ms-auto" (click)="onLoad()">
+      <span class="mdi mdi-sync mdi-spin" [class.mdi-spin]="isLoading"></span>
+    </button>
   </mat-card-header>
   <mat-card-content>
-    <table mat-table [dataSource]="users" class="w-100">
+    <table mat-table [dataSource]="dataSource" class="w-100">
       <ng-container matColumnDef="userName">
         <th mat-header-cell *matHeaderCellDef> 氏名 </th>
         <td mat-cell *matCellDef="let element"> {{element.userName}} </td>
+      </ng-container>
+
+      <ng-container matColumnDef="realm">
+        <th mat-header-cell *matHeaderCellDef> 認証サーバ </th>
+        <td mat-cell *matCellDef="let element"> {{element.realmName}} </td>
       </ng-container>
 
       <ng-container matColumnDef="enabled">
@@ -18,6 +30,9 @@
       <tr mat-row *matAutoRowDef="let row"></tr>
 
     </table>
-
+    <mat-paginator
+      [pageSize]="20"
+      [pageSizeOptions]="[20, 50, 100]" showFirstLastButtons>
+    </mat-paginator>
   </mat-card-content>
 </mat-card>

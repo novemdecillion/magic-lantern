@@ -4,6 +4,8 @@ import org.jmolecules.architecture.onion.classical.DomainModelRing
 import java.time.LocalDate
 import java.util.*
 
+val ENTIRE_GROUP_ID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+
 /**
  * 講習
  */

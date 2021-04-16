@@ -1,17 +1,21 @@
 package io.github.novemdecillion.adapter.api
 
+import graphql.kickstart.tools.GraphQLMutationResolver
 import graphql.kickstart.tools.GraphQLQueryResolver
+import io.github.novemdecillion.adapter.db.AccountRepository
 import io.github.novemdecillion.adapter.db.UserRepository
+import io.github.novemdecillion.adapter.jooq.tables.pojos.RealmEntity
+import io.github.novemdecillion.adapter.oauth2.SyncKeycloakUsersService
 import io.github.novemdecillion.domain.User
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository
-import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
 import org.springframework.stereotype.Component
 
 @Component
-class UserApi(val userRepository: UserRepository): GraphQLQueryResolver {
+class UserApi(val userRepository: UserRepository,
+              val accountRepository: AccountRepository,
+              val syncUsersService: SyncKeycloakUsersService
+): GraphQLQueryResolver, GraphQLMutationResolver {
 
   fun currentUser(): User? {
     val authentication = SecurityContextHolder.getContext().authentication
@@ -21,11 +25,27 @@ class UserApi(val userRepository: UserRepository): GraphQLQueryResolver {
     }
     else null
 
-    return userRepository.findByAccountNameAndRealm(authentication.name, realm)
+    return userRepository.findByAccountNameAndRealmWithAuthority(authentication.name, realm)
   }
 
   fun users(): List<User> {
-    return userRepository.findAll()
+    return userRepository.findAllWithAuthority()
   }
 
+  fun userCount(): Int {
+    return userRepository.count()
+  }
+
+  fun realms(): List<RealmEntity> {
+    return accountRepository.selectRealm()
+  }
+
+  fun syncRealm(realmId: String?): Boolean {
+    realmId
+      ?.also {
+        syncUsersService.syncRealm(it)
+      }
+      ?: syncUsersService.sync()
+    return true
+  }
 }

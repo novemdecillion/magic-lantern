@@ -2,7 +2,7 @@ import { MediaMatcher } from '@angular/cdk/layout';
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { SlideConfigFragment, SlidesGQL } from 'src/generated/graphql';
-import { State, getUser } from './root/store/index';
+import { State, getUser, getServiceAvailable } from './root/store/index';
 import * as AppActions from './root/store/actions/app.action'
 
 @Component({
@@ -12,6 +12,7 @@ import * as AppActions from './root/store/actions/app.action'
 })
 export class AppComponent implements OnInit {
   user$ = this.store.pipe(select(getUser));
+  serviceAvailable$ = this.store.pipe(select(getServiceAvailable));
 
   slides: SlideConfigFragment[] = [];
 

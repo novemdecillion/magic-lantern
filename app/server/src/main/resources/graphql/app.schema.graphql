@@ -1,11 +1,17 @@
+scalar LocalDateTime
+scalar LocalDate
+scalar LocalTime
+
 type Query {
   currentUser: User
   users: [User!]
+  userCount: Int
+  realms: [Realm!]
 
   slides: [SlideConfig!]
   courses: [Course!]
 }
 
-#type Mutation {
-#
-#}
+type Mutation {
+  syncRealm(realmId: String): Boolean
+}

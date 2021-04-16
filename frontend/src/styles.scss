@@ -1,7 +1,17 @@
 /* You can add global styles to this file, and also import other style files */
 
+// $material-design-icons-font-directory-path: '~material-design-icons-iconfont/dist/fonts/';
+// @import '~material-design-icons-iconfont/src/material-design-icons';
+@import '~@mdi/font/scss/materialdesignicons.scss';
+
+.mdi {
+  font-size: 24px;
+}
+
+
 // Bootstrap
 @import '../node_modules/bootstrap/scss/bootstrap-utilities.scss';
+@import '../node_modules/bootstrap/scss/alert';
 
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }

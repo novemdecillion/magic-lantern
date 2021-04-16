@@ -17,11 +17,9 @@ interface IAccount : Serializable {
     var accountName: String?
     var password: String?
     var userName: String?
-    var givenName: String?
-    var familyName: String?
-    var eastern: Boolean?
     var email: String?
-    var realm: String?
+    var locale: String?
+    var realmId: String?
     var enabled: Boolean?
 
     // -------------------------------------------------------------------------

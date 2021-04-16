@@ -51,7 +51,7 @@ class KeycloakAdminCliClient(restClient: RestTemplate) : KeycloakClient(restClie
     headers.setBearerAuth(token)
     val request = HttpEntity<MultiValueMap<String, String>>(headers)
     var offset = 0
-    val users = mutableListOf<UserRepresentation>()
+    val users = mutableMapOf<String, UserRepresentation>()
 
     do {
       val response  = restClient.exchange<List<UserRepresentation>>(
@@ -59,7 +59,10 @@ class KeycloakAdminCliClient(restClient: RestTemplate) : KeycloakClient(restClie
         HttpMethod.GET, request)
         .body
         ?: listOf()
-      users.addAll(response)
+      response
+        .map {
+          users.put(it.username, it)
+        }
       offset += response.size
       log.info("ユーザ取得件数: $offset / $userCount")
 
@@ -73,7 +76,7 @@ class KeycloakAdminCliClient(restClient: RestTemplate) : KeycloakClient(restClie
         offset = 0
       }
     } while (offset < userCount)
-    return users
+    return users.values
   }
 
 //  fun mappingsRepresentation(token: String, realm: String, userId: String) : Mono<MappingsRepresentation> {

@@ -6,7 +6,7 @@ package io.github.novemdecillion.adapter.jooq.tables
 
 import io.github.novemdecillion.adapter.jooq.DefaultSchema
 import io.github.novemdecillion.adapter.jooq.keys.ACCOUNT_PKEY
-import io.github.novemdecillion.adapter.jooq.keys.ACCOUNT_REALM_ACCOUNT_NAME_KEY
+import io.github.novemdecillion.adapter.jooq.keys.ACCOUNT_REALM_ID_ACCOUNT_NAME_KEY
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountRecord
 
 import java.util.UUID
@@ -17,7 +17,7 @@ import org.jooq.Field
 import org.jooq.ForeignKey
 import org.jooq.Name
 import org.jooq.Record
-import org.jooq.Row10
+import org.jooq.Row8
 import org.jooq.Schema
 import org.jooq.Table
 import org.jooq.TableField
@@ -83,29 +83,19 @@ open class AccountTable(
     val USER_NAME: TableField<AccountRecord, String?> = createField(DSL.name("user_name"), SQLDataType.VARCHAR(255).nullable(false), this, "")
 
     /**
-     * The column <code>account.given_name</code>.
-     */
-    val GIVEN_NAME: TableField<AccountRecord, String?> = createField(DSL.name("given_name"), SQLDataType.VARCHAR(255), this, "")
-
-    /**
-     * The column <code>account.family_name</code>.
-     */
-    val FAMILY_NAME: TableField<AccountRecord, String?> = createField(DSL.name("family_name"), SQLDataType.VARCHAR(255), this, "")
-
-    /**
-     * The column <code>account.eastern</code>.
-     */
-    val EASTERN: TableField<AccountRecord, Boolean?> = createField(DSL.name("eastern"), SQLDataType.BOOLEAN, this, "")
-
-    /**
      * The column <code>account.email</code>.
      */
     val EMAIL: TableField<AccountRecord, String?> = createField(DSL.name("email"), SQLDataType.VARCHAR(255), this, "")
 
     /**
-     * The column <code>account.realm</code>.
+     * The column <code>account.locale</code>.
      */
-    val REALM: TableField<AccountRecord, String?> = createField(DSL.name("realm"), SQLDataType.VARCHAR(255), this, "")
+    val LOCALE: TableField<AccountRecord, String?> = createField(DSL.name("locale"), SQLDataType.VARCHAR(255), this, "")
+
+    /**
+     * The column <code>account.realm_id</code>.
+     */
+    val REALM_ID: TableField<AccountRecord, String?> = createField(DSL.name("realm_id"), SQLDataType.VARCHAR(255), this, "")
 
     /**
      * The column <code>account.enabled</code>.
@@ -133,7 +123,7 @@ open class AccountTable(
     constructor(child: Table<out Record>, key: ForeignKey<out Record, AccountRecord>): this(Internal.createPathAlias(child, key), child, key, ACCOUNT, null)
     override fun getSchema(): Schema = DefaultSchema.DEFAULT_SCHEMA
     override fun getPrimaryKey(): UniqueKey<AccountRecord> = ACCOUNT_PKEY
-    override fun getKeys(): List<UniqueKey<AccountRecord>> = listOf(ACCOUNT_PKEY, ACCOUNT_REALM_ACCOUNT_NAME_KEY)
+    override fun getKeys(): List<UniqueKey<AccountRecord>> = listOf(ACCOUNT_PKEY, ACCOUNT_REALM_ID_ACCOUNT_NAME_KEY)
     override fun `as`(alias: String): AccountTable = AccountTable(DSL.name(alias), this)
     override fun `as`(alias: Name): AccountTable = AccountTable(alias, this)
 
@@ -148,7 +138,7 @@ open class AccountTable(
     override fun rename(name: Name): AccountTable = AccountTable(name, null)
 
     // -------------------------------------------------------------------------
-    // Row10 type methods
+    // Row8 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row10<UUID?, String?, String?, String?, String?, String?, Boolean?, String?, String?, Boolean?> = super.fieldsRow() as Row10<UUID?, String?, String?, String?, String?, String?, Boolean?, String?, String?, Boolean?>
+    override fun fieldsRow(): Row8<UUID?, String?, String?, String?, String?, String?, String?, Boolean?> = super.fieldsRow() as Row8<UUID?, String?, String?, String?, String?, String?, String?, Boolean?>
 }

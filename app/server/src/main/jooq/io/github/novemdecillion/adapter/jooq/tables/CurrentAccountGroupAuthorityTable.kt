@@ -6,6 +6,7 @@ package io.github.novemdecillion.adapter.jooq.tables
 
 import io.github.novemdecillion.adapter.jooq.DefaultSchema
 import io.github.novemdecillion.adapter.jooq.tables.records.CurrentAccountGroupAuthorityRecord
+import io.github.novemdecillion.domain.Role
 
 import java.util.UUID
 
@@ -19,6 +20,7 @@ import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.TableOptions
 import org.jooq.impl.DSL
+import org.jooq.impl.EnumConverter
 import org.jooq.impl.Internal
 import org.jooq.impl.SQLDataType
 import org.jooq.impl.TableImpl
@@ -70,7 +72,7 @@ open class CurrentAccountGroupAuthorityTable(
     /**
      * The column <code>current_account_group_authority.role</code>.
      */
-    val ROLE: TableField<CurrentAccountGroupAuthorityRecord, String?> = createField(DSL.name("role"), SQLDataType.VARCHAR(255), this, "")
+    val ROLE: TableField<CurrentAccountGroupAuthorityRecord, Role?> = createField(DSL.name("role"), SQLDataType.VARCHAR(255), this, "", EnumConverter<String, Role>(String::class.java, Role::class.java))
 
     /**
      * The column <code>current_account_group_authority.group_origin_id</code>.
@@ -113,5 +115,5 @@ open class CurrentAccountGroupAuthorityTable(
     // -------------------------------------------------------------------------
     // Row4 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row4<UUID?, UUID?, String?, UUID?> = super.fieldsRow() as Row4<UUID?, UUID?, String?, UUID?>
+    override fun fieldsRow(): Row4<UUID?, UUID?, Role?, UUID?> = super.fieldsRow() as Row4<UUID?, UUID?, Role?, UUID?>
 }

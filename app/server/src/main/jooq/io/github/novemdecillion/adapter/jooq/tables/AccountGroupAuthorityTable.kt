@@ -9,6 +9,7 @@ import io.github.novemdecillion.adapter.jooq.keys.ACCOUNT_GROUP_AUTHORITY_PKEY
 import io.github.novemdecillion.adapter.jooq.keys.ACCOUNT_GROUP_AUTHORITY__ACCOUNT_GROUP_AUTHORITY_ACCOUNT_ID_FKEY
 import io.github.novemdecillion.adapter.jooq.keys.ACCOUNT_GROUP_AUTHORITY__ACCOUNT_GROUP_AUTHORITY_GROUP_TRANSITION_ID_FKEY
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountGroupAuthorityRecord
+import io.github.novemdecillion.domain.Role
 
 import java.util.UUID
 
@@ -25,6 +26,7 @@ import org.jooq.TableField
 import org.jooq.TableOptions
 import org.jooq.UniqueKey
 import org.jooq.impl.DSL
+import org.jooq.impl.EnumConverter
 import org.jooq.impl.Internal
 import org.jooq.impl.SQLDataType
 import org.jooq.impl.TableImpl
@@ -76,7 +78,7 @@ open class AccountGroupAuthorityTable(
     /**
      * The column <code>account_group_authority.role</code>.
      */
-    val ROLE: TableField<AccountGroupAuthorityRecord, String?> = createField(DSL.name("role"), SQLDataType.VARCHAR(255).nullable(false), this, "")
+    val ROLE: TableField<AccountGroupAuthorityRecord, Role?> = createField(DSL.name("role"), SQLDataType.VARCHAR(255).nullable(false), this, "", EnumConverter<String, Role>(String::class.java, Role::class.java))
 
     private constructor(alias: Name, aliased: Table<AccountGroupAuthorityRecord>?): this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<AccountGroupAuthorityRecord>?, parameters: Array<Field<*>?>?): this(alias, null, null, aliased, parameters)
@@ -132,5 +134,5 @@ open class AccountGroupAuthorityTable(
     // -------------------------------------------------------------------------
     // Row3 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row3<UUID?, UUID?, String?> = super.fieldsRow() as Row3<UUID?, UUID?, String?>
+    override fun fieldsRow(): Row3<UUID?, UUID?, Role?> = super.fieldsRow() as Row3<UUID?, UUID?, Role?>
 }

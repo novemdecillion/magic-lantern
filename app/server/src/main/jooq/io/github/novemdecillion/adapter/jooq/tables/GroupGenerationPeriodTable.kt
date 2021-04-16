@@ -43,7 +43,7 @@ open class GroupGenerationPeriodTable(
     aliased,
     parameters,
     DSL.comment(""),
-    TableOptions.view("create view \"group_generation_period\" as  SELECT group_generation.group_generation_id,\n    group_generation.start_date,\n    (lead(group_generation.start_date) OVER (ORDER BY group_generation.start_date) - 1) AS end_date\n   FROM group_generation\n  WHERE (group_generation.start_date IS NOT NULL);")
+    TableOptions.view("create view \"group_generation_period\" as  SELECT group_generation.group_generation_id,\n    group_generation.start_date,\n    (lead(group_generation.start_date) OVER (ORDER BY group_generation.start_date) - 1) AS end_date\n   FROM group_generation;")
 ) {
     companion object {
 

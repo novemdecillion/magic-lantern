@@ -25,6 +25,7 @@
     "@angular/platform-browser-dynamic": "^11.2.6",
     "@angular/router": "^11.2.6",
     "@apollo/client": "^3.3.12",
+    "@mdi/font": "^5.9.55",
     "@ngrx/effects": "^11.0.1",
     "@ngrx/store": "^11.0.1",
     "@ngrx/store-devtools": "^11.0.1",
@@ -32,6 +33,7 @@
     "apply-loader": "^2.0.0",
     "bootstrap": "^5.0.0-beta2",
     "graphql": "^15.5.0",
+    "material-design-icons-iconfont": "^6.1.0",
     "rxjs": "^6.6.6",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2"

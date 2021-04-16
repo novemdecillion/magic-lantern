@@ -69,10 +69,12 @@ management:
         include: health,info,metrics
 
 graphql:
+  extended-scalars: DateTime, Date, Time, Long
   servlet:
     mapping: /api/v1
     # Gatewayの背後で動作するので不要
-    corsEnabled: false
+    # cors-enabled: false
+    context-setting: PER_REQUEST_WITH_INSTRUMENTATION
   tools:
     schema-location-pattern: graphql/*.schema.graphql
 

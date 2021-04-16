@@ -5,6 +5,7 @@ package io.github.novemdecillion.adapter.jooq.tables.pojos
 
 
 import io.github.novemdecillion.adapter.jooq.tables.interfaces.IUserAggregate
+import io.github.novemdecillion.domain.Role
 
 import java.util.UUID
 
@@ -18,14 +19,12 @@ data class UserAggregateEntity(
     override var accountName: String? = null, 
     override var password: String? = null, 
     override var userName: String? = null, 
-    override var givenName: String? = null, 
-    override var familyName: String? = null, 
-    override var eastern: Boolean? = null, 
     override var email: String? = null, 
-    override var realm: String? = null, 
+    override var locale: String? = null, 
+    override var realmId: String? = null, 
     override var enabled: Boolean? = null, 
     override var groupOriginId: UUID? = null, 
-    override var role: String? = null
+    override var role: Role? = null
 ): IUserAggregate {
 
 
@@ -36,11 +35,9 @@ data class UserAggregateEntity(
         sb.append(", ").append(accountName)
         sb.append(", ").append(password)
         sb.append(", ").append(userName)
-        sb.append(", ").append(givenName)
-        sb.append(", ").append(familyName)
-        sb.append(", ").append(eastern)
         sb.append(", ").append(email)
-        sb.append(", ").append(realm)
+        sb.append(", ").append(locale)
+        sb.append(", ").append(realmId)
         sb.append(", ").append(enabled)
         sb.append(", ").append(groupOriginId)
         sb.append(", ").append(role)
@@ -58,11 +55,9 @@ data class UserAggregateEntity(
         accountName = from.accountName
         password = from.password
         userName = from.userName
-        givenName = from.givenName
-        familyName = from.familyName
-        eastern = from.eastern
         email = from.email
-        realm = from.realm
+        locale = from.locale
+        realmId = from.realmId
         enabled = from.enabled
         groupOriginId = from.groupOriginId
         role = from.role

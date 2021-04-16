@@ -1,9 +1,15 @@
 fragment user on User {
   userId
   userName
-  realm
+  realmId
   enabled
   authorities
+}
+
+fragment realm on Realm {
+  realmId
+  realmName
+  syncAt
 }
 
 query currentUser {
@@ -13,7 +19,17 @@ query currentUser {
 }
 
 query users {
+  userCount
   users {
     ...user
+  }
+  realms {
+    ...realm
+  }
+}
+
+query realms {
+  realms {
+    ...realm
   }
 }

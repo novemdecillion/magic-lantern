@@ -4,18 +4,23 @@ create table account (
   password character varying(255),
 
   user_name character varying(255) not null,
-  given_name character varying(255),
-  family_name character varying(255),
-  eastern boolean,
-
   email character varying(255),
 
-  realm character varying(255),
-
+  locale character varying(255),
+  realm_id character varying(255),
   enabled boolean not null default true,
 
   primary key (account_id),
-  unique (realm, account_name)
+  unique (realm_id, account_name)
+);
+
+create table realm (
+  realm_id character varying(255),
+  realm_name character varying(255),
+  enabled boolean not null default true,
+  sync_at timestamp,
+
+  primary key (realm_id)
 );
 
 create table group_generation (
@@ -64,14 +69,12 @@ create materialized view current_group_transition as
   select group_transition.*
   from group_transition
     left join group_generation_period on group_transition.group_generation_id = group_generation_period.group_generation_id
-      and start_date < now() and (end_date is null or now() < end_date);
+      and ((start_date < now() and (end_date is null or now() < end_date)) or start_date is null);
 
 create materialized view current_account_group_authority as
-  select account_group_authority.*, group_transition.group_origin_id
+  select account_group_authority.*, current_group_transition.group_origin_id
   from account_group_authority
-    left join group_transition on account_group_authority.group_transition_id = group_transition.group_transition_id
-    left join group_generation_period on group_transition.group_generation_id = group_generation_period.group_generation_id
-      and ((start_date < now() and (end_date is null or now() < end_date)) or start_date is null);
+    left join current_group_transition on account_group_authority.group_transition_id = current_group_transition.group_transition_id;
 
 create view user_aggregate as
   select account.*, current_account_group_authority.group_origin_id, current_account_group_authority.role

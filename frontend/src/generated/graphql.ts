@@ -12,7 +12,13 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  LocalDateTime: any;
+  LocalDate: any;
+  LocalTime: any;
 };
+
+
+
 
 
 
@@ -20,6 +26,8 @@ export type Query = {
   __typename?: 'Query';
   currentUser?: Maybe<User>;
   users?: Maybe<Array<User>>;
+  userCount?: Maybe<Scalars['Int']>;
+  realms?: Maybe<Array<Realm>>;
   slides?: Maybe<Array<SlideConfig>>;
   courses?: Maybe<Array<Course>>;
 };
@@ -51,9 +59,16 @@ export type User = {
   __typename?: 'User';
   userId: Scalars['ID'];
   userName: Scalars['String'];
-  realm?: Maybe<Scalars['String']>;
+  realmId?: Maybe<Scalars['String']>;
   enabled?: Maybe<Scalars['Boolean']>;
   authorities: Array<Scalars['String']>;
+};
+
+export type Realm = {
+  __typename?: 'Realm';
+  realmId: Scalars['String'];
+  realmName?: Maybe<Scalars['String']>;
+  syncAt?: Maybe<Scalars['LocalDateTime']>;
 };
 
 export type CourseFragment = (
@@ -98,7 +113,12 @@ export type SlidesQuery = (
 
 export type UserFragment = (
   { __typename?: 'User' }
-  & Pick<User, 'userId' | 'userName' | 'realm' | 'enabled' | 'authorities'>
+  & Pick<User, 'userId' | 'userName' | 'realmId' | 'enabled' | 'authorities'>
+);
+
+export type RealmFragment = (
+  { __typename?: 'Realm' }
+  & Pick<Realm, 'realmId' | 'realmName' | 'syncAt'>
 );
 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
@@ -117,9 +137,24 @@ export type UsersQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type UsersQuery = (
   { __typename?: 'Query' }
+  & Pick<Query, 'userCount'>
   & { users?: Maybe<Array<(
     { __typename?: 'User' }
     & UserFragment
+  )>>, realms?: Maybe<Array<(
+    { __typename?: 'Realm' }
+    & RealmFragment
+  )>> }
+);
+
+export type RealmsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type RealmsQuery = (
+  { __typename?: 'Query' }
+  & { realms?: Maybe<Array<(
+    { __typename?: 'Realm' }
+    & RealmFragment
   )>> }
 );
 
@@ -143,9 +178,16 @@ export const UserFragmentDoc = gql`
     fragment user on User {
   userId
   userName
-  realm
+  realmId
   enabled
   authorities
+}
+    `;
+export const RealmFragmentDoc = gql`
+    fragment realm on Realm {
+  realmId
+  realmName
+  syncAt
 }
     `;
 export const CoursesDocument = gql`
@@ -204,17 +246,40 @@ export const CurrentUserDocument = gql`
   }
 export const UsersDocument = gql`
     query users {
+  userCount
   users {
     ...user
   }
+  realms {
+    ...realm
+  }
 }
-    ${UserFragmentDoc}`;
+    ${UserFragmentDoc}
+${RealmFragmentDoc}`;
 
   @Injectable({
     providedIn: 'root'
   })
   export class UsersGQL extends Apollo.Query<UsersQuery, UsersQueryVariables> {
     document = UsersDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const RealmsDocument = gql`
+    query realms {
+  realms {
+    ...realm
+  }
+}
+    ${RealmFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class RealmsGQL extends Apollo.Query<RealmsQuery, RealmsQueryVariables> {
+    document = RealmsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

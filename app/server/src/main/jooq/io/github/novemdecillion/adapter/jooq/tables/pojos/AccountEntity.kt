@@ -18,11 +18,9 @@ data class AccountEntity(
     override var accountName: String? = null, 
     override var password: String? = null, 
     override var userName: String? = null, 
-    override var givenName: String? = null, 
-    override var familyName: String? = null, 
-    override var eastern: Boolean? = null, 
     override var email: String? = null, 
-    override var realm: String? = null, 
+    override var locale: String? = null, 
+    override var realmId: String? = null, 
     override var enabled: Boolean? = null
 ): IAccount {
 
@@ -34,11 +32,9 @@ data class AccountEntity(
         sb.append(", ").append(accountName)
         sb.append(", ").append(password)
         sb.append(", ").append(userName)
-        sb.append(", ").append(givenName)
-        sb.append(", ").append(familyName)
-        sb.append(", ").append(eastern)
         sb.append(", ").append(email)
-        sb.append(", ").append(realm)
+        sb.append(", ").append(locale)
+        sb.append(", ").append(realmId)
         sb.append(", ").append(enabled)
 
         sb.append(")")
@@ -54,11 +50,9 @@ data class AccountEntity(
         accountName = from.accountName
         password = from.password
         userName = from.userName
-        givenName = from.givenName
-        familyName = from.familyName
-        eastern = from.eastern
         email = from.email
-        realm = from.realm
+        locale = from.locale
+        realmId = from.realmId
         enabled = from.enabled
     }
 

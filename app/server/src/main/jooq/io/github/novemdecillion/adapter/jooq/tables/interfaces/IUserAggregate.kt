@@ -4,6 +4,8 @@
 package io.github.novemdecillion.adapter.jooq.tables.interfaces
 
 
+import io.github.novemdecillion.domain.Role
+
 import java.io.Serializable
 import java.util.UUID
 
@@ -17,14 +19,12 @@ interface IUserAggregate : Serializable {
     var accountName: String?
     var password: String?
     var userName: String?
-    var givenName: String?
-    var familyName: String?
-    var eastern: Boolean?
     var email: String?
-    var realm: String?
+    var locale: String?
+    var realmId: String?
     var enabled: Boolean?
     var groupOriginId: UUID?
-    var role: String?
+    var role: Role?
 
     // -------------------------------------------------------------------------
     // FROM and INTO

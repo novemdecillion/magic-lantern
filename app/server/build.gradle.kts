@@ -1,5 +1,6 @@
+import org.jooq.meta.jaxb.ForcedType
+
 plugins {
-  id("io.github.novemdecillion.mybatis-generator")
   id("io.github.novemdecillion.jooq-generator")
 }
 
@@ -14,8 +15,6 @@ dependencies {
   implementation(project(":utils:keycloak-client"))
 
   // DB
-//  implementation("org.mybatis.spring.boot:mybatis-spring-boot-starter:2.1.4")
-//  implementation("org.mybatis.dynamic-sql:mybatis-dynamic-sql:1.2.1")
   implementation("org.springframework.boot:spring-boot-starter-jooq")
   runtimeOnly("org.postgresql:postgresql")
   runtimeOnly("org.flywaydb:flyway-core")
@@ -32,6 +31,8 @@ dependencies {
   // GraphQL
   implementation("com.graphql-java-kickstart:graphql-spring-boot-starter:${graphqlSpringBootVersion}")
   implementation("com.graphql-java-kickstart:voyager-spring-boot-starter:${graphqlSpringBootVersion}")
+//  implementation("com.graphql-java:graphql-java-extended-scalars:16.0.1")
+  implementation("com.zhokhov.graphql:graphql-datetime-spring-boot-starter:4.0.0")
 
   // JavaScript
   runtimeOnly("org.webjars:webjars-locator:0.40")
@@ -42,20 +43,12 @@ dependencies {
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
   implementation("org.asciidoctor:asciidoctorj:2.4.3")
   implementation("org.apache.commons:commons-math3:3.6.1")
-
+  implementation("com.fasterxml.uuid:java-uuid-generator:4.0.1")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
   testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
   testImplementation("org.jsoup:jsoup:1.13.1")
-}
-
-mybatisGenerator {
-  driver = "org.testcontainers.jdbc.ContainerDatabaseDriver"
-  url = "jdbc:tc:postgresql:11:///build-test"
-  user = "admin"
-  password = "password123"
-  targetPackage ="io.github.novemdecillion.adapter.mybatis"
 }
 
 jooqGenerator {
@@ -64,4 +57,11 @@ jooqGenerator {
   user = "admin"
   password = "password123"
   packageName ="io.github.novemdecillion.adapter.jooq"
+  appendForcedTypes = listOf(
+    ForcedType()
+      .also {
+        it.isEnumConverter = true
+        it.includeExpression = """.*\.ROLE"""
+        it.userType = "io.github.novemdecillion.domain.Role"
+      })
 }

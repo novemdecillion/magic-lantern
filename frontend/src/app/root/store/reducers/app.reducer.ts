@@ -8,9 +8,9 @@ export const appReducer = createReducer(
     return { ...state, loading: true }
   }),
   on(AppActions.loadCurrentUserSuccess, (state, {user}) => {
-    return { ...state, loading: false, user }
+    return { ...state, loading: false, user, serviceAvailable: true }
   }),
-  on(AppActions.loadCurrentUserFail, state => {
-    return { ...state, loading: false, user: null }
+  on(AppActions.serviceUnavailableError, state => {
+    return { ...state, loading: false, user: null, serviceAvailable: false }
   }),
 );

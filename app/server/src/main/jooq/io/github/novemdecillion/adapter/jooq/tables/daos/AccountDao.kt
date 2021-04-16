@@ -75,36 +75,6 @@ open class AccountDao(configuration: Configuration?) : DAOImpl<AccountRecord, Ac
     fun fetchByUserNameTable(vararg values: String): List<AccountEntity> = fetch(AccountTable.ACCOUNT.USER_NAME, *values)
 
     /**
-     * Fetch records that have <code>given_name BETWEEN lowerInclusive AND upperInclusive</code>
-     */
-    fun fetchRangeOfGivenNameTable(lowerInclusive: String?, upperInclusive: String?): List<AccountEntity> = fetchRange(AccountTable.ACCOUNT.GIVEN_NAME, lowerInclusive, upperInclusive)
-
-    /**
-     * Fetch records that have <code>given_name IN (values)</code>
-     */
-    fun fetchByGivenNameTable(vararg values: String): List<AccountEntity> = fetch(AccountTable.ACCOUNT.GIVEN_NAME, *values)
-
-    /**
-     * Fetch records that have <code>family_name BETWEEN lowerInclusive AND upperInclusive</code>
-     */
-    fun fetchRangeOfFamilyNameTable(lowerInclusive: String?, upperInclusive: String?): List<AccountEntity> = fetchRange(AccountTable.ACCOUNT.FAMILY_NAME, lowerInclusive, upperInclusive)
-
-    /**
-     * Fetch records that have <code>family_name IN (values)</code>
-     */
-    fun fetchByFamilyNameTable(vararg values: String): List<AccountEntity> = fetch(AccountTable.ACCOUNT.FAMILY_NAME, *values)
-
-    /**
-     * Fetch records that have <code>eastern BETWEEN lowerInclusive AND upperInclusive</code>
-     */
-    fun fetchRangeOfEasternTable(lowerInclusive: Boolean?, upperInclusive: Boolean?): List<AccountEntity> = fetchRange(AccountTable.ACCOUNT.EASTERN, lowerInclusive, upperInclusive)
-
-    /**
-     * Fetch records that have <code>eastern IN (values)</code>
-     */
-    fun fetchByEasternTable(vararg values: Boolean): List<AccountEntity> = fetch(AccountTable.ACCOUNT.EASTERN, *values.toTypedArray())
-
-    /**
      * Fetch records that have <code>email BETWEEN lowerInclusive AND upperInclusive</code>
      */
     fun fetchRangeOfEmailTable(lowerInclusive: String?, upperInclusive: String?): List<AccountEntity> = fetchRange(AccountTable.ACCOUNT.EMAIL, lowerInclusive, upperInclusive)
@@ -115,14 +85,24 @@ open class AccountDao(configuration: Configuration?) : DAOImpl<AccountRecord, Ac
     fun fetchByEmailTable(vararg values: String): List<AccountEntity> = fetch(AccountTable.ACCOUNT.EMAIL, *values)
 
     /**
-     * Fetch records that have <code>realm BETWEEN lowerInclusive AND upperInclusive</code>
+     * Fetch records that have <code>locale BETWEEN lowerInclusive AND upperInclusive</code>
      */
-    fun fetchRangeOfRealmTable(lowerInclusive: String?, upperInclusive: String?): List<AccountEntity> = fetchRange(AccountTable.ACCOUNT.REALM, lowerInclusive, upperInclusive)
+    fun fetchRangeOfLocaleTable(lowerInclusive: String?, upperInclusive: String?): List<AccountEntity> = fetchRange(AccountTable.ACCOUNT.LOCALE, lowerInclusive, upperInclusive)
 
     /**
-     * Fetch records that have <code>realm IN (values)</code>
+     * Fetch records that have <code>locale IN (values)</code>
      */
-    fun fetchByRealmTable(vararg values: String): List<AccountEntity> = fetch(AccountTable.ACCOUNT.REALM, *values)
+    fun fetchByLocaleTable(vararg values: String): List<AccountEntity> = fetch(AccountTable.ACCOUNT.LOCALE, *values)
+
+    /**
+     * Fetch records that have <code>realm_id BETWEEN lowerInclusive AND upperInclusive</code>
+     */
+    fun fetchRangeOfRealmIdTable(lowerInclusive: String?, upperInclusive: String?): List<AccountEntity> = fetchRange(AccountTable.ACCOUNT.REALM_ID, lowerInclusive, upperInclusive)
+
+    /**
+     * Fetch records that have <code>realm_id IN (values)</code>
+     */
+    fun fetchByRealmIdTable(vararg values: String): List<AccountEntity> = fetch(AccountTable.ACCOUNT.REALM_ID, *values)
 
     /**
      * Fetch records that have <code>enabled BETWEEN lowerInclusive AND upperInclusive</code>

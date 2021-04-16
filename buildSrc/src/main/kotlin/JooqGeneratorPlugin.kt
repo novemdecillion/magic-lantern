@@ -64,10 +64,8 @@ open class JooqGeneratorPlugin : Plugin<Project> {
               } else {
                 "${project.projectDir.absolutePath}${extension.directory}"
               }
-              val packageName = if (extension.packageName.isEmpty()) {
+              val packageName = extension.packageName.ifEmpty {
                 "${project.group}"
-              } else {
-                extension.packageName
               }
 
               val config = Configuration()
@@ -89,7 +87,11 @@ open class JooqGeneratorPlugin : Plugin<Project> {
                         .withInputSchema("public")
                         .withOutputSchemaToDefault(true)
 //                        .withExcludes(excludes)
-//                        .withForcedTypes(appendForcedTypes)
+                        .also { database ->
+                          extension.appendForcedTypes?.also {
+                            database.withForcedTypes(it)
+                          }
+                        }
                     )
                     .withGenerate(
                       Generate()

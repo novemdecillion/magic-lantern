@@ -5,6 +5,7 @@ package io.github.novemdecillion.adapter.jooq.tables.pojos
 
 
 import io.github.novemdecillion.adapter.jooq.tables.interfaces.IAccountGroupAuthority
+import io.github.novemdecillion.domain.Role
 
 import java.util.UUID
 
@@ -16,7 +17,7 @@ import java.util.UUID
 data class AccountGroupAuthorityEntity(
     override var accountId: UUID? = null, 
     override var groupTransitionId: UUID? = null, 
-    override var role: String? = null
+    override var role: Role? = null
 ): IAccountGroupAuthority {
 
 

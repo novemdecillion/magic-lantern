@@ -10,27 +10,10 @@ import org.springframework.context.annotation.Configuration
 
 import org.springframework.scheduling.annotation.EnableScheduling
 
-
-
-
-//import org.springframework.cloud.gateway.webflux.ProxyExchange
-
-@Configuration
-@EnableScheduling
-@ConditionalOnProperty(value = ["spring.scheduling.enabled"], matchIfMissing = true, havingValue = "true")
-class SchedulingConfiguration
-
 @Controller
 @SpringBootApplication
 @ConfigurationPropertiesScan
-class ServerApplication {
-//  @Bean
-//  fun testRouter(prop: AppSlideProperties): RouterFunction<ServerResponse> = router {
-//    GET("hello") {
-//      EntityResponse.fromObject("I'm fine!").build()
-//    }
-//  }
-}
+class ServerApplication
 
 fun main(args: Array<String>) {
   runApplication<ServerApplication>(*args)

@@ -1,15 +1,16 @@
-scalar LocalDateTime
-scalar LocalDate
-scalar LocalTime
+scalar DateTime
+scalar Date
+scalar Time
 
 type Query {
-  currentUser: User
-  users: [User!]
-  userCount: Int
-  realms: [Realm!]
+  currentUser: User!
+  users: [User!]!
+  userCount: Int!
+  realms: [Realm!]!
 
-  slides: [SlideConfig!]
-  courses: [Course!]
+  slides: [SlideConfig!]!
+  courses: [Course!]!
+  groups: [Group!]!
 }
 
 type Mutation {

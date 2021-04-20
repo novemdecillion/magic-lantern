@@ -3,8 +3,7 @@ import { CoursesGQL, CourseFragment } from 'src/generated/graphql';
 
 @Component({
   selector: 'app-course-list',
-  templateUrl: './course-list.component.html',
-  styleUrls: ['./course-list.component.scss']
+  templateUrl: './course-list.component.html'
 })
 export class CourseListComponent implements OnInit {
   displayedColumns: string[] = ['title'];
@@ -19,6 +18,7 @@ export class CourseListComponent implements OnInit {
   }
 
   extractTitle(data: CourseFragment, name: string): string | undefined {
-    return data.slide?.title;
+    // return data?.slide?.title;
+    return undefined
   }
 }

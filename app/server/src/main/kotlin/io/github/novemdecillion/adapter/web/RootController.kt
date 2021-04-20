@@ -12,8 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping
 @Controller
 class RootController(
   val accountRepository: AccountRepository,
-  clientRegistrationRepository: InMemoryClientRegistrationRepository,
-  oauth2ClientProperties: OAuth2ClientProperties
+  clientRegistrationRepository: InMemoryClientRegistrationRepository
 ) {
   val clientRegistrations: List<ClientRegistration> = clientRegistrationRepository.map { it }
 
@@ -25,9 +24,4 @@ class RootController(
     model.addAttribute("oauth2", realms)
     return "/app/login"
   }
-
-//  @GetMapping
-//  fun showTopPage(): String {
-//    return "/admin/top"
-//  }
 }

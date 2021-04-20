@@ -1,4 +1,0 @@
-type Course {
-  courseId: ID!,
-  slide: SlideConfig!
-}

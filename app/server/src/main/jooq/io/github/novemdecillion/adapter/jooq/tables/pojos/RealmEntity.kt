@@ -6,7 +6,7 @@ package io.github.novemdecillion.adapter.jooq.tables.pojos
 
 import io.github.novemdecillion.adapter.jooq.tables.interfaces.IRealm
 
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 
 /**
@@ -17,7 +17,7 @@ data class RealmEntity(
     override var realmId: String? = null, 
     override var realmName: String? = null, 
     override var enabled: Boolean? = null, 
-    override var syncAt: LocalDateTime? = null
+    override var syncAt: OffsetDateTime? = null
 ): IRealm {
 
 

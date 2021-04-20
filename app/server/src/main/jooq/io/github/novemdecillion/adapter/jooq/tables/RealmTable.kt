@@ -8,7 +8,7 @@ import io.github.novemdecillion.adapter.jooq.DefaultSchema
 import io.github.novemdecillion.adapter.jooq.keys.REALM_PKEY
 import io.github.novemdecillion.adapter.jooq.tables.records.RealmRecord
 
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 import kotlin.collections.List
 
@@ -79,7 +79,7 @@ open class RealmTable(
     /**
      * The column <code>realm.sync_at</code>.
      */
-    val SYNC_AT: TableField<RealmRecord, LocalDateTime?> = createField(DSL.name("sync_at"), SQLDataType.LOCALDATETIME(6), this, "")
+    val SYNC_AT: TableField<RealmRecord, OffsetDateTime?> = createField(DSL.name("sync_at"), SQLDataType.TIMESTAMPWITHTIMEZONE(6), this, "")
 
     private constructor(alias: Name, aliased: Table<RealmRecord>?): this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<RealmRecord>?, parameters: Array<Field<*>?>?): this(alias, null, null, aliased, parameters)
@@ -119,5 +119,5 @@ open class RealmTable(
     // -------------------------------------------------------------------------
     // Row4 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row4<String?, String?, Boolean?, LocalDateTime?> = super.fieldsRow() as Row4<String?, String?, Boolean?, LocalDateTime?>
+    override fun fieldsRow(): Row4<String?, String?, Boolean?, OffsetDateTime?> = super.fieldsRow() as Row4<String?, String?, Boolean?, OffsetDateTime?>
 }

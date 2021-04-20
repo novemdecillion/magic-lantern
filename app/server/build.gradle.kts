@@ -31,8 +31,8 @@ dependencies {
   // GraphQL
   implementation("com.graphql-java-kickstart:graphql-spring-boot-starter:${graphqlSpringBootVersion}")
   implementation("com.graphql-java-kickstart:voyager-spring-boot-starter:${graphqlSpringBootVersion}")
-//  implementation("com.graphql-java:graphql-java-extended-scalars:16.0.1")
-  implementation("com.zhokhov.graphql:graphql-datetime-spring-boot-starter:4.0.0")
+  implementation("com.graphql-java:graphql-java-extended-scalars:16.0.1")
+//  implementation("com.zhokhov.graphql:graphql-datetime-spring-boot-starter:4.0.0")
 
   // JavaScript
   runtimeOnly("org.webjars:webjars-locator:0.40")

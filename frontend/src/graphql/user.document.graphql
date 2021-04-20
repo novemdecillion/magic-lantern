@@ -9,6 +9,7 @@ fragment user on User {
 fragment realm on Realm {
   realmId
   realmName
+  enabled
   syncAt
 }
 
@@ -32,4 +33,8 @@ query realms {
   realms {
     ...realm
   }
+}
+
+mutation syncRealm($realmId: String) {
+  syncRealm(realmId: $realmId)
 }

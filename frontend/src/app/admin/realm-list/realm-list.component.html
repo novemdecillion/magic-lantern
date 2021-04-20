@@ -1,3 +1,4 @@
+<!--
 <mat-card>
   <mat-card-header class="bg-primary bg-gradient text-light">
     <mat-card-title class="my-1">
@@ -10,15 +11,42 @@
     </button>
   </mat-card-header>
   <mat-card-content>
-    <table mat-table [dataSource]="dataSource" class="w-100">
+    <caption style="caption-side: right; text-align: end;">
+      <mat-form-field>
+        <input type="text" matInput placeholder="検索" #filterInput (keyup)="applyFilter(filterInput.value)" >
+      </mat-form-field>
+    </caption>
+
+    <table mat-table matSort [dataSource]="dataSource" class="w-100">
       <ng-container matColumnDef="realm">
-        <th mat-header-cell *matHeaderCellDef>認証サーバ </th>
-        <td mat-cell *matCellDef="let element"> {{element.realmName}} </td>
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>認証サーバ</th>
+        <td mat-cell *matCellDef="let element">
+          {{element.realmName}}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="enabled">
+        <th mat-header-cell *matHeaderCellDef mat-sort-header>有効</th>
+        <td mat-cell *matCellDef="let element"> {{element.enabled ? '○': '×'}} </td>
       </ng-container>
 
       <ng-container matColumnDef="syncAt">
         <th mat-header-cell *matHeaderCellDef>最終同期日時</th>
-        <td mat-cell *matCellDef="let element"> {{element.syncAt}} </td>
+        <td mat-cell *matCellDef="let element">
+          {{element.syncAt}}
+        </td>
+      </ng-container>
+
+      <ng-container matColumnDef="operation">
+        <th mat-header-cell *matHeaderCellDef style="width: 24px;" ></th>
+        <td mat-cell *matCellDef="let element" style="padding-right: 0px;">
+          <button mat-icon-button [matMenuTriggerFor]="menu">
+            <span class="mdi mdi-dots-vertical"></span>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="onSync(element.realmId)">手動同期</button>
+          </mat-menu>
+        </td>
       </ng-container>
 
       <tr mat-header-row *matAutoHeaderRowDef></tr>
@@ -31,3 +59,21 @@
     </mat-paginator>
   </mat-card-content>
 </mat-card>
+-->
+
+<app-list-page [titleTemplateRef]="titleTemplate" [dataLoader]="dataLoader" [columns]="columns">
+</app-list-page>
+
+<ng-template #titleTemplate>
+  <span class="mdi mdi-certificate"></span>
+  認証サーバ
+</ng-template>
+
+<ng-template #operationTemplate let-row="row">
+  <button mat-icon-button [matMenuTriggerFor]="menu">
+    <span class="mdi mdi-dots-vertical"></span>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="onSync(row.realmId)">手動同期</button>
+  </mat-menu>
+</ng-template>

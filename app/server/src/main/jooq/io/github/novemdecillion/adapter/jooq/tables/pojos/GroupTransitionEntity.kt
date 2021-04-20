@@ -17,7 +17,8 @@ data class GroupTransitionEntity(
     override var groupTransitionId: UUID? = null, 
     override var groupGenerationId: UUID? = null, 
     override var groupOriginId: UUID? = null, 
-    override var groupName: String? = null
+    override var groupName: String? = null, 
+    override var parentGroupTransitionId: UUID? = null
 ): IGroupTransition {
 
 
@@ -28,6 +29,7 @@ data class GroupTransitionEntity(
         sb.append(", ").append(groupGenerationId)
         sb.append(", ").append(groupOriginId)
         sb.append(", ").append(groupName)
+        sb.append(", ").append(parentGroupTransitionId)
 
         sb.append(")")
         return sb.toString()
@@ -42,6 +44,7 @@ data class GroupTransitionEntity(
         groupGenerationId = from.groupGenerationId
         groupOriginId = from.groupOriginId
         groupName = from.groupName
+        parentGroupTransitionId = from.parentGroupTransitionId
     }
 
     override fun <E : IGroupTransition> into(into: E): E {

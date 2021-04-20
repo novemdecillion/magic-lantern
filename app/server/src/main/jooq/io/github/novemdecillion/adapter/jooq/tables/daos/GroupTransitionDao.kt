@@ -73,4 +73,14 @@ open class GroupTransitionDao(configuration: Configuration?) : DAOImpl<GroupTran
      * Fetch records that have <code>group_name IN (values)</code>
      */
     fun fetchByGroupNameTable(vararg values: String): List<GroupTransitionEntity> = fetch(GroupTransitionTable.GROUP_TRANSITION.GROUP_NAME, *values)
+
+    /**
+     * Fetch records that have <code>parent_group_transition_id BETWEEN lowerInclusive AND upperInclusive</code>
+     */
+    fun fetchRangeOfParentGroupTransitionIdTable(lowerInclusive: UUID?, upperInclusive: UUID?): List<GroupTransitionEntity> = fetchRange(GroupTransitionTable.GROUP_TRANSITION.PARENT_GROUP_TRANSITION_ID, lowerInclusive, upperInclusive)
+
+    /**
+     * Fetch records that have <code>parent_group_transition_id IN (values)</code>
+     */
+    fun fetchByParentGroupTransitionIdTable(vararg values: UUID): List<GroupTransitionEntity> = fetch(GroupTransitionTable.GROUP_TRANSITION.PARENT_GROUP_TRANSITION_ID, *values)
 }

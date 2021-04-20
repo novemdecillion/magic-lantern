@@ -17,6 +17,7 @@ interface IGroupTransition : Serializable {
     var groupGenerationId: UUID?
     var groupOriginId: UUID?
     var groupName: String?
+    var parentGroupTransitionId: UUID?
 
     // -------------------------------------------------------------------------
     // FROM and INTO

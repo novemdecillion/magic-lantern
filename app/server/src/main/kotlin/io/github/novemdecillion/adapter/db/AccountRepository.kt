@@ -6,29 +6,42 @@ import io.github.novemdecillion.adapter.jooq.tables.records.AccountRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.RealmRecord
 import io.github.novemdecillion.adapter.jooq.tables.references.ACCOUNT
 import io.github.novemdecillion.adapter.jooq.tables.references.REALM
+import io.github.novemdecillion.domain.User
 import org.jooq.DSLContext
 import org.springframework.stereotype.Repository
 
 @Repository
 class AccountRepository(private val dslContext: DSLContext) {
-  fun insert(account: AccountEntity) {
+  fun recordMapper(account: AccountEntity): AccountRecord {
     val record = AccountRecord()
-      .also { it.from(account) }
-    dslContext.insertQuery(ACCOUNT)
-      .also {
-        it.setRecord(record)
-        it.execute()
-      }
+    account.accountId?.also { record.accountId = it }
+    account.accountName?.also { record.accountName = it }
+    account.password?.also { record.password = it }
+    account.userName?.also { record.userName = it }
+    account.email?.also { record.email = it }
+    account.locale?.also { record.locale = it }
+    account.realmId?.also { record.realmId = it }
+    account.enabled?.also { record.enabled = it }
+    return record
+  }
+
+  fun insert(account: AccountEntity) {
+    val record = recordMapper(account)
+    dslContext.insertInto(ACCOUNT)
+      .set(record)
+      .execute()
   }
 
   fun update(account: AccountEntity) {
-    val record = AccountRecord()
-      .also { it.from(account) }
-    dslContext.updateQuery(ACCOUNT)
-      .also {
-        it.setRecord(record)
-        it.execute()
+    val record = recordMapper(account)
+    dslContext.update(ACCOUNT)
+      .set(record)
+      .let {
+        if (null != account.accountId) {
+          it.where(ACCOUNT.ACCOUNT_ID.equal(account.accountId))
+        } else it
       }
+      .execute()
   }
 
   fun updateEnableByAccountNameAndRealm(accountNames: Collection<String>, realm: String?, enabled: Boolean) {
@@ -61,28 +74,32 @@ class AccountRepository(private val dslContext: DSLContext) {
       .fetchInto(AccountEntity::class.java)
   }
 
-  fun insert(realm: RealmEntity) {
+  fun recordMapper(realm: RealmEntity): RealmRecord {
     val record = RealmRecord()
-    record.realmId = realm.realmId
+    realm.realmId?.also { record.realmId = it }
     realm.realmName?.also { record.realmName = it }
     realm.enabled?.also { record.enabled = it }
     realm.syncAt?.also { record.syncAt = it }
+    return record
+  }
 
-    dslContext.insertQuery(REALM)
-      .also {
-        it.setRecord(record)
-        it.execute()
-      }
+  fun insert(realm: RealmEntity) {
+    val record = recordMapper(realm)
+    dslContext.insertInto(REALM)
+      .set(record)
+      .execute()
   }
 
   fun update(realm: RealmEntity) {
-    val record = RealmRecord()
-      .also { it.from(realm) }
-    dslContext.updateQuery(REALM)
-      .also {
-        it.setRecord(record)
-        it.execute()
+    val record = recordMapper(realm)
+    dslContext.update(REALM)
+      .set(record)
+      .let {
+        if (null != realm.realmId) {
+          it.where(REALM.REALM_ID.equal(realm.realmId))
+        } else it
       }
+      .execute()
   }
 
   fun selectRealm(): List<RealmEntity> {

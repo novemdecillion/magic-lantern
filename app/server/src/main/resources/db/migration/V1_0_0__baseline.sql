@@ -18,7 +18,7 @@ create table realm (
   realm_id character varying(255),
   realm_name character varying(255),
   enabled boolean not null default true,
-  sync_at timestamp,
+  sync_at timestamp with time zone,
 
   primary key (realm_id)
 );
@@ -41,6 +41,7 @@ create table group_transition (
   group_generation_id uuid not null,
   group_origin_id uuid not null,
   group_name character varying(255) not null,
+  parent_group_transition_id uuid,
 
   primary key (group_transition_id),
   foreign key (group_generation_id)

@@ -13,7 +13,7 @@ import org.jooq.Field
 import org.jooq.ForeignKey
 import org.jooq.Name
 import org.jooq.Record
-import org.jooq.Row4
+import org.jooq.Row5
 import org.jooq.Schema
 import org.jooq.Table
 import org.jooq.TableField
@@ -77,6 +77,11 @@ open class CurrentGroupTransitionTable(
      */
     val GROUP_NAME: TableField<CurrentGroupTransitionRecord, String?> = createField(DSL.name("group_name"), SQLDataType.VARCHAR(255), this, "")
 
+    /**
+     * The column <code>current_group_transition.parent_group_transition_id</code>.
+     */
+    val PARENT_GROUP_TRANSITION_ID: TableField<CurrentGroupTransitionRecord, UUID?> = createField(DSL.name("parent_group_transition_id"), SQLDataType.UUID, this, "")
+
     private constructor(alias: Name, aliased: Table<CurrentGroupTransitionRecord>?): this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<CurrentGroupTransitionRecord>?, parameters: Array<Field<*>?>?): this(alias, null, null, aliased, parameters)
 
@@ -111,7 +116,7 @@ open class CurrentGroupTransitionTable(
     override fun rename(name: Name): CurrentGroupTransitionTable = CurrentGroupTransitionTable(name, null)
 
     // -------------------------------------------------------------------------
-    // Row4 type methods
+    // Row5 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row4<UUID?, UUID?, UUID?, String?> = super.fieldsRow() as Row4<UUID?, UUID?, UUID?, String?>
+    override fun fieldsRow(): Row5<UUID?, UUID?, UUID?, String?, UUID?> = super.fieldsRow() as Row5<UUID?, UUID?, UUID?, String?, UUID?>
 }

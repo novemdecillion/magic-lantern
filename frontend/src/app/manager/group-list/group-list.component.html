@@ -1,0 +1,29 @@
+<mat-card>
+  <mat-card-header class="bg-primary bg-gradient text-light">
+    <mat-card-title class="my-1" >
+      <span class="mdi mdi-account-group"></span>
+      グループ
+    </mat-card-title>
+
+    <button mat-mini-fab matTooltip="再ロード" class="ms-auto" (click)="onLoadData()">
+      <span class="mdi mdi-sync mdi-spin" [class.mdi-spin]="isLoading"></span>
+    </button>
+  </mat-card-header>
+
+  <mat-card-content>
+    <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+      <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+        <span class="mdi mdi-minus"></span>
+        {{node.group.groupName}}
+      </mat-tree-node>
+      <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
+        <button mat-icon-button matTreeNodeToggle>
+          <span class="mdi" [class.mdi-chevron-down]="treeControl.isExpanded(node)" [class.mdi-chevron-right]="!treeControl.isExpanded(node)">
+          </span>
+        </button>
+        {{node.group.groupName}}
+      </mat-tree-node>
+    </mat-tree>
+
+  </mat-card-content>
+</mat-card>

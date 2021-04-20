@@ -5,7 +5,7 @@ package io.github.novemdecillion.adapter.jooq.tables.interfaces
 
 
 import java.io.Serializable
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 
 /**
@@ -16,7 +16,7 @@ interface IRealm : Serializable {
     var realmId: String?
     var realmName: String?
     var enabled: Boolean?
-    var syncAt: LocalDateTime?
+    var syncAt: OffsetDateTime?
 
     // -------------------------------------------------------------------------
     // FROM and INTO

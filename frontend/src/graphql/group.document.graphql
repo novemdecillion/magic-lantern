@@ -1,0 +1,30 @@
+fragment course on Course {
+  courseId
+#  slide {
+#    ...slideConfig
+#  }
+}
+
+fragment group on Group {
+  groupId
+  groupOriginId
+  groupGenerationId
+  groupName
+  parentGroupTransitionId
+  memberIds
+  courses
+}
+
+query courses {
+  courses {
+    ...course
+  }
+}
+
+query groups {
+  groups {
+    ...group
+  }
+}
+
+

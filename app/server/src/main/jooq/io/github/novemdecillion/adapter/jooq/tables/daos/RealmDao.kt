@@ -8,7 +8,7 @@ import io.github.novemdecillion.adapter.jooq.tables.RealmTable
 import io.github.novemdecillion.adapter.jooq.tables.pojos.RealmEntity
 import io.github.novemdecillion.adapter.jooq.tables.records.RealmRecord
 
-import java.time.LocalDateTime
+import java.time.OffsetDateTime
 
 import kotlin.collections.List
 
@@ -67,10 +67,10 @@ open class RealmDao(configuration: Configuration?) : DAOImpl<RealmRecord, RealmE
     /**
      * Fetch records that have <code>sync_at BETWEEN lowerInclusive AND upperInclusive</code>
      */
-    fun fetchRangeOfSyncAtTable(lowerInclusive: LocalDateTime?, upperInclusive: LocalDateTime?): List<RealmEntity> = fetchRange(RealmTable.REALM.SYNC_AT, lowerInclusive, upperInclusive)
+    fun fetchRangeOfSyncAtTable(lowerInclusive: OffsetDateTime?, upperInclusive: OffsetDateTime?): List<RealmEntity> = fetchRange(RealmTable.REALM.SYNC_AT, lowerInclusive, upperInclusive)
 
     /**
      * Fetch records that have <code>sync_at IN (values)</code>
      */
-    fun fetchBySyncAtTable(vararg values: LocalDateTime): List<RealmEntity> = fetch(RealmTable.REALM.SYNC_AT, *values)
+    fun fetchBySyncAtTable(vararg values: OffsetDateTime): List<RealmEntity> = fetch(RealmTable.REALM.SYNC_AT, *values)
 }

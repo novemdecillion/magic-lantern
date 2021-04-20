@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
 import java.time.LocalDateTime
+import java.time.OffsetDateTime
 import java.util.*
 
 data class AccountProperties(val adminName: String, val adminPassword: String)
@@ -130,7 +131,7 @@ class SyncKeycloakUsersService(
         accountRepository.updateEnableByAccountNameAndRealm(it, realm, false)
       }
     val disabledCount = storedAccountNames.size
-    accountRepository.update(RealmEntity(realmId = registration.registrationId, syncAt = LocalDateTime.now()))
+    accountRepository.update(RealmEntity(realmId = registration.registrationId, syncAt = OffsetDateTime.now()))
     log.info("Keycloakサーバ(${registration.clientName})とのユーザ情報の同期を終了します。新規${newComerCount}人, 更新${updateCount}人, 無効化${disabledCount}人")
   }
 

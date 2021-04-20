@@ -31,6 +31,7 @@ data class Group(
   val groupOriginId: UUID,
   val groupGenerationId: UUID,
   val groupName: String,
+  val parentGroupTransitionId: UUID?,
   val memberIds: Set<String> = setOf(),
   val courses: Set<Course> = setOf()
 )

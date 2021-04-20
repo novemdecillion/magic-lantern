@@ -12,9 +12,9 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
-  LocalDateTime: any;
-  LocalDate: any;
-  LocalTime: any;
+  DateTime: any;
+  Date: any;
+  Time: any;
 };
 
 
@@ -24,18 +24,39 @@ export type Scalars = {
 
 export type Query = {
   __typename?: 'Query';
-  currentUser?: Maybe<User>;
-  users?: Maybe<Array<User>>;
-  userCount?: Maybe<Scalars['Int']>;
-  realms?: Maybe<Array<Realm>>;
-  slides?: Maybe<Array<SlideConfig>>;
-  courses?: Maybe<Array<Course>>;
+  currentUser: User;
+  users: Array<User>;
+  userCount: Scalars['Int'];
+  realms: Array<Realm>;
+  slides: Array<SlideConfig>;
+  courses: Array<Course>;
+  groups: Array<Group>;
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  syncRealm?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type MutationSyncRealmArgs = {
+  realmId?: Maybe<Scalars['String']>;
 };
 
 export type Course = {
   __typename?: 'Course';
   courseId: Scalars['ID'];
-  slide: SlideConfig;
+};
+
+export type Group = {
+  __typename?: 'Group';
+  groupId: Scalars['ID'];
+  groupOriginId: Scalars['ID'];
+  groupGenerationId: Scalars['ID'];
+  groupName: Scalars['String'];
+  parentGroupTransitionId?: Maybe<Scalars['ID']>;
+  memberIds?: Maybe<Array<Scalars['String']>>;
+  courses?: Maybe<Array<Scalars['ID']>>;
 };
 
 export type Chapter = {
@@ -60,24 +81,26 @@ export type User = {
   userId: Scalars['ID'];
   userName: Scalars['String'];
   realmId?: Maybe<Scalars['String']>;
-  enabled?: Maybe<Scalars['Boolean']>;
+  enabled: Scalars['Boolean'];
   authorities: Array<Scalars['String']>;
 };
 
 export type Realm = {
   __typename?: 'Realm';
   realmId: Scalars['String'];
-  realmName?: Maybe<Scalars['String']>;
-  syncAt?: Maybe<Scalars['LocalDateTime']>;
+  realmName: Scalars['String'];
+  enabled: Scalars['Boolean'];
+  syncAt?: Maybe<Scalars['DateTime']>;
 };
 
 export type CourseFragment = (
   { __typename?: 'Course' }
   & Pick<Course, 'courseId'>
-  & { slide: (
-    { __typename?: 'SlideConfig' }
-    & SlideConfigFragment
-  ) }
+);
+
+export type GroupFragment = (
+  { __typename?: 'Group' }
+  & Pick<Group, 'groupId' | 'groupOriginId' | 'groupGenerationId' | 'groupName' | 'parentGroupTransitionId' | 'memberIds' | 'courses'>
 );
 
 export type CoursesQueryVariables = Exact<{ [key: string]: never; }>;
@@ -85,10 +108,21 @@ export type CoursesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type CoursesQuery = (
   { __typename?: 'Query' }
-  & { courses?: Maybe<Array<(
+  & { courses: Array<(
     { __typename?: 'Course' }
     & CourseFragment
-  )>> }
+  )> }
+);
+
+export type GroupsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GroupsQuery = (
+  { __typename?: 'Query' }
+  & { groups: Array<(
+    { __typename?: 'Group' }
+    & GroupFragment
+  )> }
 );
 
 export type SlideConfigFragment = (
@@ -105,10 +139,10 @@ export type SlidesQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type SlidesQuery = (
   { __typename?: 'Query' }
-  & { slides?: Maybe<Array<(
+  & { slides: Array<(
     { __typename?: 'SlideConfig' }
     & SlideConfigFragment
-  )>> }
+  )> }
 );
 
 export type UserFragment = (
@@ -118,7 +152,7 @@ export type UserFragment = (
 
 export type RealmFragment = (
   { __typename?: 'Realm' }
-  & Pick<Realm, 'realmId' | 'realmName' | 'syncAt'>
+  & Pick<Realm, 'realmId' | 'realmName' | 'enabled' | 'syncAt'>
 );
 
 export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
@@ -126,10 +160,10 @@ export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type CurrentUserQuery = (
   { __typename?: 'Query' }
-  & { currentUser?: Maybe<(
+  & { currentUser: (
     { __typename?: 'User' }
     & UserFragment
-  )> }
+  ) }
 );
 
 export type UsersQueryVariables = Exact<{ [key: string]: never; }>;
@@ -138,13 +172,13 @@ export type UsersQueryVariables = Exact<{ [key: string]: never; }>;
 export type UsersQuery = (
   { __typename?: 'Query' }
   & Pick<Query, 'userCount'>
-  & { users?: Maybe<Array<(
+  & { users: Array<(
     { __typename?: 'User' }
     & UserFragment
-  )>>, realms?: Maybe<Array<(
+  )>, realms: Array<(
     { __typename?: 'Realm' }
     & RealmFragment
-  )>> }
+  )> }
 );
 
 export type RealmsQueryVariables = Exact<{ [key: string]: never; }>;
@@ -152,12 +186,38 @@ export type RealmsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type RealmsQuery = (
   { __typename?: 'Query' }
-  & { realms?: Maybe<Array<(
+  & { realms: Array<(
     { __typename?: 'Realm' }
     & RealmFragment
-  )>> }
+  )> }
 );
 
+export type SyncRealmMutationVariables = Exact<{
+  realmId?: Maybe<Scalars['String']>;
+}>;
+
+
+export type SyncRealmMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'syncRealm'>
+);
+
+export const CourseFragmentDoc = gql`
+    fragment course on Course {
+  courseId
+}
+    `;
+export const GroupFragmentDoc = gql`
+    fragment group on Group {
+  groupId
+  groupOriginId
+  groupGenerationId
+  groupName
+  parentGroupTransitionId
+  memberIds
+  courses
+}
+    `;
 export const SlideConfigFragmentDoc = gql`
     fragment slideConfig on SlideConfig {
   title
@@ -166,14 +226,6 @@ export const SlideConfigFragmentDoc = gql`
   }
 }
     `;
-export const CourseFragmentDoc = gql`
-    fragment course on Course {
-  courseId
-  slide {
-    ...slideConfig
-  }
-}
-    ${SlideConfigFragmentDoc}`;
 export const UserFragmentDoc = gql`
     fragment user on User {
   userId
@@ -187,6 +239,7 @@ export const RealmFragmentDoc = gql`
     fragment realm on Realm {
   realmId
   realmName
+  enabled
   syncAt
 }
     `;
@@ -203,6 +256,24 @@ export const CoursesDocument = gql`
   })
   export class CoursesGQL extends Apollo.Query<CoursesQuery, CoursesQueryVariables> {
     document = CoursesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GroupsDocument = gql`
+    query groups {
+  groups {
+    ...group
+  }
+}
+    ${GroupFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GroupsGQL extends Apollo.Query<GroupsQuery, GroupsQueryVariables> {
+    document = GroupsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
@@ -280,6 +351,22 @@ export const RealmsDocument = gql`
   })
   export class RealmsGQL extends Apollo.Query<RealmsQuery, RealmsQueryVariables> {
     document = RealmsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const SyncRealmDocument = gql`
+    mutation syncRealm($realmId: String) {
+  syncRealm(realmId: $realmId)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class SyncRealmGQL extends Apollo.Mutation<SyncRealmMutation, SyncRealmMutationVariables> {
+    document = SyncRealmDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

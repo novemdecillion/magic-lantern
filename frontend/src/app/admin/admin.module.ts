@@ -4,6 +4,7 @@ import { AdminRoutingModule } from './admin-routing.module';
 import { UserListComponent } from './user-list/user-list.component';
 import { MaterialModule } from '../material/material.module';
 import { RealmListComponent } from './realm-list/realm-list.component';
+import { ShareModule } from '../share/share.module';
 
 @NgModule({
   declarations: [
@@ -13,7 +14,8 @@ import { RealmListComponent } from './realm-list/realm-list.component';
   imports: [
     CommonModule,
     AdminRoutingModule,
-    MaterialModule
+    MaterialModule,
+    ShareModule
   ]
 })
 export class AdminModule { }

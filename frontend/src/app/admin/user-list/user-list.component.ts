@@ -1,7 +1,8 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { Maybe, UserFragment, UsersGQL } from 'src/generated/graphql';
-import { MatTableDataSource } from '@angular/material/table';
-import { MatPaginator } from '@angular/material/paginator';
+import { Component } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { ColumnDefinition } from 'src/app/share/list-page/list-page.component';
+import { UserFragment, UsersGQL } from 'src/generated/graphql';
 
 interface UserRecord extends UserFragment {
   realmName?: string
@@ -9,36 +10,30 @@ interface UserRecord extends UserFragment {
 
 @Component({
   selector: 'app-user-list',
-  templateUrl: './user-list.component.html',
-  styleUrls: ['./user-list.component.scss']
+  templateUrl: './user-list.component.html'
 })
-export class UserListComponent implements OnInit {
-  dataSource = new MatTableDataSource<UserRecord>();
-  isLoading = false;
+export class UserListComponent {
+  columns: ColumnDefinition<UserRecord>[] = [
+    {
+      name: 'userName',
+      displayName: '氏名'
+    },
+    {
+      name: 'realmName',
+      displayName: '認証サーバ'
+    },
+    {
+      name: 'enabled',
+      displayName: '有効'
+    }
+  ];
 
-  constructor(private usersGql: UsersGQL) { }
-
-  ngOnInit(): void {
-    this.onLoad()
+  constructor(private usersGql: UsersGQL) {
   }
 
-  @ViewChild(MatPaginator) paginator?: MatPaginator = undefined;
-
-  ngAfterViewInit() {
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-    }
-  }
-
-  onLoad() {
-    if (this.isLoading) {
-      return
-    }
-    this.isLoading = true
-    this.dataSource.data = []
-    this.usersGql.fetch()
-      .subscribe(
-        res => {
+  dataLoader = (): Observable<UserRecord[]> => {
+    return this.usersGql.fetch()
+      .pipe(map(res => {
           let realmToName: { [key: string]: string } = {};
           (res.data.realms ?? [])
             .forEach(realm => {
@@ -47,7 +42,6 @@ export class UserListComponent implements OnInit {
               }
             });
 
-
           let records = (res.data.users ?? [])
             .map((user: UserRecord) => {
               user.realmName = 'システム'
@@ -55,11 +49,13 @@ export class UserListComponent implements OnInit {
                 user.realmName = realmToName[user.realmId]
               }
               return user
-            })
+            });
 
-          this.dataSource.data = records
-        },
-        () => this.isLoading = false,
-        () => this.isLoading = false);
+          return records;
+        }));
   }
+
+  // dataForFilter(data: UserRecord): string {
+  //   return `${data.userName} ${data.realmName} ${this.enableForDisplay(data.enabled)}`
+  // }
 }

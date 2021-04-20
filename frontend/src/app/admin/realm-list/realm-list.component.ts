@@ -1,43 +1,68 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatTableDataSource } from '@angular/material/table';
-import { RealmFragment, RealmsGQL } from 'src/generated/graphql';
+import { Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+// import { MatPaginator } from '@angular/material/paginator';
+// import { MatSort } from '@angular/material/sort';
+// import { MatTableDataSource } from '@angular/material/table';
+import { format, parseISO } from 'date-fns';
+import { Observable } from 'rxjs';
+import { finalize, map } from 'rxjs/operators';
+// import { AbstractListComponent } from 'src/app/abstract-list.component';
+import { ColumnDefinition, ListPageComponent } from 'src/app/share/list-page/list-page.component';
+import { RealmFragment, RealmsGQL, SyncRealmGQL } from 'src/generated/graphql';
 
 @Component({
   selector: 'app-realm-list',
   templateUrl: './realm-list.component.html',
-  styleUrls: ['./realm-list.component.scss']
+  styleUrls: ['./realm-list.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class RealmListComponent implements OnInit {
-  dataSource = new MatTableDataSource<RealmFragment>();
-  isLoading = false;
+  @ViewChild(ListPageComponent, { static: true }) private pageComponent!: ListPageComponent<RealmFragment>;
+  @ViewChild('operationTemplate', { static: true }) private operationTemplate!: TemplateRef<any>;
 
-  constructor(private realmsGQL: RealmsGQL) { }
+  columns: ColumnDefinition<RealmFragment>[] = [
+  ];
+
+  constructor(private realmsGql: RealmsGQL, private syncRealmGql: SyncRealmGQL) {
+  }
 
   ngOnInit(): void {
-    this.onLoad()
+    this.columns = [
+      {
+        name: 'realmName',
+        displayName: '認証サーバ'
+      },
+      {
+        name: 'enabled',
+        displayName: '有効'
+      },
+      {
+        name: 'syncAt',
+        displayName: '最終同期日時'
+      },
+      {
+        name: 'operation',
+        displayName: null,
+        sort: false,
+        cellTemplate: this.operationTemplate
+      }
+    ];
   }
 
-  @ViewChild(MatPaginator) paginator?: MatPaginator = undefined;
-
-  ngAfterViewInit() {
-    if (this.paginator) {
-      this.dataSource.paginator = this.paginator;
-    }
+  dataLoader = (): Observable<RealmFragment[]> => {
+    return this.realmsGql.fetch()
+      .pipe(map(res => {
+          res.data.realms?.map(realm => {
+            if (realm.syncAt) {
+              realm.syncAt = format(parseISO(realm.syncAt), 'yyyy/MM/dd HH:mm:ss')
+            }
+          })
+          return res.data.realms ?? []
+        }));
   }
 
-  onLoad() {
-    if (this.isLoading) {
-      return
-    }
-    this.isLoading = true
-    this.dataSource.data = []
-    this.realmsGQL.fetch()
-      .subscribe(
-        res => {
-          this.dataSource.data = res.data.realms ?? []
-        },
-        () => this.isLoading = false,
-        () => this.isLoading = false);
+  onSync(realmId?: string) {
+    this.syncRealmGql.mutate({realmId})
+    .pipe(finalize(() => this.pageComponent.onLoadData()))
+    .subscribe();
   }
 }

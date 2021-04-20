@@ -1,0 +1,14 @@
+type Course {
+  courseId: ID!,
+#  slide: SlideConfig!
+}
+
+type Group {
+  groupId: ID!
+  groupOriginId: ID!
+  groupGenerationId: ID!
+  groupName: String!
+  parentGroupTransitionId: ID
+  memberIds: [String!]
+  courses: [ID!]
+}

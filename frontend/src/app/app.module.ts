@@ -16,6 +16,8 @@ import { reducers, metaReducers } from './root/store';
 import { AppEffects } from './root/store/effects/app.effect';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { environment } from '../environments/environment';
+import { FormsModule } from '@angular/forms';
+import { ShareModule } from './share/share.module';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -56,11 +58,12 @@ export class AuthInterceptor implements HttpInterceptor {
     GraphQLModule,
     HttpClientModule,
     MaterialModule,
+    ShareModule,
     StoreModule.forRoot(reducers, {
       metaReducers
     }),
     EffectsModule.forRoot([AppEffects]),
-    StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: environment.production })
+    StoreDevtoolsModule.instrument({ maxAge: 25, logOnly: environment.production }),
   ],
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true }

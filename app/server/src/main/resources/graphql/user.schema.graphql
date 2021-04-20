@@ -7,12 +7,13 @@ type User {
   userId: ID!
   userName: String!
   realmId: String
-  enabled: Boolean
+  enabled: Boolean!
   authorities: [String!]!
 }
 
 type Realm {
   realmId: String!
-  realmName: String
-  syncAt: LocalDateTime
+  realmName: String!
+  enabled: Boolean!
+  syncAt: DateTime
 }

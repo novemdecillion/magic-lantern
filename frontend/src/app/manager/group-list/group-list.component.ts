@@ -1,54 +1,110 @@
-import { NestedTreeControl } from '@angular/cdk/tree';
-import { Component, OnInit } from '@angular/core';
-import { MatTreeNestedDataSource } from '@angular/material/tree';
-import { finalize } from 'rxjs/operators';
-import { DEFAULT_GROUP_ID } from 'src/app/constants';
+import { Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation, OnDestroy } from '@angular/core';
+import { ColumnDefinition } from 'src/app/share/list-page/list-page.component';
 import { GroupFragment, GroupsGQL } from 'src/generated/graphql';
+import { Observable, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { MatDialog } from '@angular/material/dialog';
+import { EditGroupComponent } from '../edit-group/edit-group.component';
+import { DEFAULT_GROUP_ID } from 'src/app/constants'
+import { PageService } from 'src/app/share/page/page.service';
 
-interface GroupNode {
-  group: GroupFragment
-  children?: GroupNode[];
+export interface GroupRecord extends GroupFragment {
+  parentGroupName?: string
 }
 
 @Component({
   selector: 'app-group-list',
-  templateUrl: './group-list.component.html'
+  templateUrl: './group-list.component.html',
+  styleUrls: ['./group-list.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
-export class GroupListComponent implements OnInit {
-  treeControl = new NestedTreeControl<GroupNode>(node => node.children);;
-  dataSource = new MatTreeNestedDataSource<GroupNode>();
-  isLoading = false;
+export class GroupListComponent implements OnInit, OnDestroy {
+  @ViewChild('operationTemplate', { static: true }) private operationTemplate!: TemplateRef<any>;
 
-  constructor(private groupsGql: GroupsGQL) {
+  columns: ColumnDefinition<GroupRecord>[] = [];
+
+  dataLoad: Observable<GroupRecord[]> | null = null;
+
+  loadDataSubscription: Subscription;
+
+  constructor(private groupsGql: GroupsGQL, public dialog: MatDialog, pageService: PageService) {
+    this.loadDataSubscription = pageService.onLoadData$.subscribe(() => this.onLoadData());
   }
 
   ngOnInit(): void {
-    this.onLoadData()
+    this.columns = [
+      {
+        name: 'groupName',
+        displayName: 'グループ名'
+      },
+      {
+        name: 'parentGroupName',
+        displayName: '親グループ名'
+      },
+      {
+        name: 'operation',
+        displayName: null,
+        sort: false,
+        cellTemplate: this.operationTemplate
+      }
+    ];
+    this.onLoadData();
+  }
+
+  ngOnDestroy(): void {
+    this.loadDataSubscription.unsubscribe();
   }
 
   onLoadData() {
-    this.dataSource.data = [];
-    this.isLoading = true;
-    this.groupsGql.fetch()
-      .pipe(finalize(() => this.isLoading = false))
-      .subscribe(res => {
-        let map: {[key: string]: GroupNode} = {}
-        res.data.groups.forEach(group => {
-          map[group.groupId] = { group }
-        });
+    this.dataLoad = this.groupsGql.fetch()
+      .pipe(map(res => {
+        let groupToName: { [key: string]: string } = {};
+        res.data.groups
+          .forEach(group => {
+            groupToName[group.groupId] = group.groupName;
+          });
 
-        Object.values(map).forEach(node => {
-          if(!!node.group.parentGroupTransitionId) {
-            let parentNode = map[node.group.parentGroupTransitionId];
-            let children = parentNode.children || []
-            parentNode.children = children.concat(node);
-          }
-        })
-        let rootNode = map[DEFAULT_GROUP_ID];
-        this.dataSource.data = [rootNode];
-      });
-
+        let records = res.data.groups
+          .map((group: GroupRecord) => {
+            if (!!group.parentGroupId) {
+              group.parentGroupName = groupToName[group.parentGroupId];
+            }
+            return group
+          });
+        return records;
+      }));
   }
 
-  hasChild = (_: number, node: GroupNode) => !!node.children && 0 < node.children.length
+  onNewChildGroup(group: GroupRecord) {
+    this.dialog.open(EditGroupComponent, { data: { group, type: 'new' } })
+      .afterClosed().subscribe(res => {
+        if (res) {
+          this.onLoadData();
+        }
+      });
+  }
+
+  onEditGroup(group: GroupRecord) {
+    this.dialog.open(EditGroupComponent, { data: { group, type: 'edit' } })
+      .afterClosed().subscribe(res => {
+        if (res) {
+          this.onLoadData();
+        }
+      });
+  }
+
+  canDeleteGroup(group: GroupRecord): boolean {
+    return group.groupId !== DEFAULT_GROUP_ID
+  }
+
+  onDeleteGroup(group: GroupRecord) {
+    this.dialog.open(EditGroupComponent, { data: { group, type: 'delete' } })
+      .afterClosed().subscribe(res => {
+        if (res) {
+          this.onLoadData();
+        }
+      });
+  }
+
+
 }

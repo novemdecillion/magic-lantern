@@ -1,9 +1,16 @@
+fragment authority on Authority {
+  groupId
+  roles
+}
+
 fragment user on User {
   userId
   userName
   realmId
   enabled
-  authorities
+  authorities {
+    ...authority
+  }
 }
 
 fragment realm on Realm {

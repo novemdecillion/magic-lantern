@@ -4,7 +4,14 @@ import org.jmolecules.architecture.onion.classical.DomainModelRing
 import java.time.LocalDate
 import java.util.*
 
-val ENTIRE_GROUP_ID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+val ENTIRE_GROUP_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+val ENTIRE_GROUP_GENERATION_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+
+data class Member (
+  val userId: UUID,
+  val roles: Collection<Role>
+)
+
 
 /**
  * 講習
@@ -31,8 +38,8 @@ data class Group(
   val groupOriginId: UUID,
   val groupGenerationId: UUID,
   val groupName: String,
-  val parentGroupTransitionId: UUID?,
-  val memberIds: Set<String> = setOf(),
+  val parentGroupId: UUID?,
+  val members: Set<Member> = setOf(),
   val courses: Set<Course> = setOf()
 )
 

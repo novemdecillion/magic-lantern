@@ -8,7 +8,7 @@ import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationTable
 import io.github.novemdecillion.adapter.jooq.tables.pojos.GroupGenerationEntity
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupGenerationRecord
 
-import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 import kotlin.collections.List
@@ -48,10 +48,10 @@ open class GroupGenerationDao(configuration: Configuration?) : DAOImpl<GroupGene
     /**
      * Fetch records that have <code>start_date BETWEEN lowerInclusive AND upperInclusive</code>
      */
-    fun fetchRangeOfStartDateTable(lowerInclusive: LocalDate?, upperInclusive: LocalDate?): List<GroupGenerationEntity> = fetchRange(GroupGenerationTable.GROUP_GENERATION.START_DATE, lowerInclusive, upperInclusive)
+    fun fetchRangeOfStartDateTable(lowerInclusive: OffsetDateTime?, upperInclusive: OffsetDateTime?): List<GroupGenerationEntity> = fetchRange(GroupGenerationTable.GROUP_GENERATION.START_DATE, lowerInclusive, upperInclusive)
 
     /**
      * Fetch records that have <code>start_date IN (values)</code>
      */
-    fun fetchByStartDateTable(vararg values: LocalDate): List<GroupGenerationEntity> = fetch(GroupGenerationTable.GROUP_GENERATION.START_DATE, *values)
+    fun fetchByStartDateTable(vararg values: OffsetDateTime): List<GroupGenerationEntity> = fetch(GroupGenerationTable.GROUP_GENERATION.START_DATE, *values)
 }

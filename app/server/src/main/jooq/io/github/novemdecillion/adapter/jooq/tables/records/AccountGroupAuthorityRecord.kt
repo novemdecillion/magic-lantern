@@ -11,7 +11,6 @@ import io.github.novemdecillion.domain.Role
 import java.util.UUID
 
 import org.jooq.Field
-import org.jooq.Record2
 import org.jooq.Record3
 import org.jooq.Row3
 import org.jooq.impl.UpdatableRecordImpl
@@ -39,7 +38,7 @@ open class AccountGroupAuthorityRecord() : UpdatableRecordImpl<AccountGroupAutho
     // Primary key information
     // -------------------------------------------------------------------------
 
-    override fun key(): Record2<UUID?, UUID?> = super.key() as Record2<UUID?, UUID?>
+    override fun key(): Record3<UUID?, UUID?, Role?> = super.key() as Record3<UUID?, UUID?, Role?>
 
     // -------------------------------------------------------------------------
     // Record3 type implementation

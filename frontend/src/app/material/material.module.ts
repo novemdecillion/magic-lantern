@@ -1,6 +1,8 @@
 import { NgModule } from "@angular/core";
 import { MatButtonModule } from '@angular/material/button';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialogModule, MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 // import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -23,7 +25,9 @@ const DECLARATIONS = [
 
 const MODULES = [
   MatButtonModule,
+  MatButtonToggleModule,
   MatCardModule,
+  MatDialogModule,
   MatExpansionModule,
   // MatIconModule,
   MatInputModule,
@@ -49,6 +53,9 @@ const MODULES = [
   exports: [
     ...DECLARATIONS,
     ...MODULES
-  ]
+  ],
+  // providers: [
+  //   {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {hasBackdrop: false}}
+  // ]
 })
 export class MaterialModule { }

@@ -10,9 +10,7 @@ fragment group on Group {
   groupOriginId
   groupGenerationId
   groupName
-  parentGroupTransitionId
-  memberIds
-  courses
+  parentGroupId
 }
 
 query courses {
@@ -27,4 +25,26 @@ query groups {
   }
 }
 
+mutation addGroup($command: AddGroupCommand) {
+  addGroup(command: $command)
+}
 
+mutation editGroup($command: EditGroupCommand) {
+  editGroup(command: $command)
+}
+
+mutation deleteGroup($groupId: ID) {
+  deleteGroup(groupId: $groupId)
+}
+
+mutation addGroupMember($command: GroupMemberCommand) {
+  addGroupMember(command: $command)
+}
+
+mutation editGroupMember($command: GroupMemberCommand) {
+  editGroupMember(command: $command)
+}
+
+mutation deleteGroupMember($groupId: ID, $userId: ID) {
+  deleteGroupMember(groupId: $groupId, userId: $userId)
+}

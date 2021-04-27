@@ -17,12 +17,12 @@
         <a mat-menu-item href="/logout">ログアウト</a>
       </mat-menu>
     </mat-toolbar>
-    <mat-sidenav-container class="app-sidenav-container" [style.marginTop.px]="mobileQuery.matches ? 56 : 0">
+    <mat-sidenav-container class="app-sidenav-container" [style.marginTop.px]="mobileQuery.matches ? 56 : 0" [autosize]="true">
       <mat-sidenav #snav [mode]="mobileQuery.matches ? 'over' : 'side'" [fixedInViewport]="mobileQuery.matches"
         fixedTopGap="56" opened="true">
 
         <mat-accordion multi>
-          <mat-expansion-panel>
+          <mat-expansion-panel *ngIf="hasAdminRole$ | async" [expanded]="true">
             <mat-expansion-panel-header>
               <mat-panel-title>システム管理</mat-panel-title>
             </mat-expansion-panel-header>
@@ -38,7 +38,7 @@
             </mat-nav-list>
           </mat-expansion-panel>
 
-          <mat-expansion-panel>
+          <mat-expansion-panel *ngIf="hasManagerRole$ | async" [expanded]="true">
             <mat-expansion-panel-header>
               <mat-panel-title>グループ管理</mat-panel-title>
             </mat-expansion-panel-header>
@@ -48,10 +48,9 @@
                 グループ
               </a>
             </mat-nav-list>
-
           </mat-expansion-panel>
 
-          <mat-expansion-panel>
+          <mat-expansion-panel *ngIf="hasStudentRole$ | async" [expanded]="true">
             <mat-expansion-panel-header>
               <mat-panel-title>受講</mat-panel-title>
             </mat-expansion-panel-header>

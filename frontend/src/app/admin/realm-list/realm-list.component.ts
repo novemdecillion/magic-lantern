@@ -1,28 +1,26 @@
-import { Component, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
-// import { MatPaginator } from '@angular/material/paginator';
-// import { MatSort } from '@angular/material/sort';
-// import { MatTableDataSource } from '@angular/material/table';
+import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { format, parseISO } from 'date-fns';
-import { Observable } from 'rxjs';
-import { finalize, map } from 'rxjs/operators';
-// import { AbstractListComponent } from 'src/app/abstract-list.component';
+import { from, Observable, Subscription } from 'rxjs';
+import { concatMap, finalize, map, publish, share } from 'rxjs/operators';
 import { ColumnDefinition, ListPageComponent } from 'src/app/share/list-page/list-page.component';
+import { PageService } from 'src/app/share/page/page.service';
 import { RealmFragment, RealmsGQL, SyncRealmGQL } from 'src/generated/graphql';
 
 @Component({
   selector: 'app-realm-list',
-  templateUrl: './realm-list.component.html',
-  styleUrls: ['./realm-list.component.scss'],
-  encapsulation: ViewEncapsulation.None
+  templateUrl: './realm-list.component.html'
 })
-export class RealmListComponent implements OnInit {
-  @ViewChild(ListPageComponent, { static: true }) private pageComponent!: ListPageComponent<RealmFragment>;
+export class RealmListComponent implements OnInit/*, OnDestroy*/ {
   @ViewChild('operationTemplate', { static: true }) private operationTemplate!: TemplateRef<any>;
+
+  // loadDataSubscription: Subscription;
+  dataLoad: Observable<RealmFragment[]> | null = null;
 
   columns: ColumnDefinition<RealmFragment>[] = [
   ];
 
-  constructor(private realmsGql: RealmsGQL, private syncRealmGql: SyncRealmGQL) {
+  constructor(private realmsGql: RealmsGQL, private syncRealmGql: SyncRealmGQL/*, pageService: PageService*/) {
+    // this.loadDataSubscription = pageService.onLoadData$.subscribe(() => this.onLoadData());
   }
 
   ngOnInit(): void {
@@ -46,23 +44,33 @@ export class RealmListComponent implements OnInit {
         cellTemplate: this.operationTemplate
       }
     ];
+    this.onLoadData();
   }
 
-  dataLoader = (): Observable<RealmFragment[]> => {
+  // ngOnDestroy(): void {
+  //   this.loadDataSubscription.unsubscribe();
+  // }
+
+  onLoadData() {
+    this.dataLoad = this.fetch();
+  }
+
+  fetch() {
     return this.realmsGql.fetch()
-      .pipe(map(res => {
-          res.data.realms?.map(realm => {
+      .pipe(
+        map(res => {
+          res.data.realms?.forEach(realm => {
             if (realm.syncAt) {
               realm.syncAt = format(parseISO(realm.syncAt), 'yyyy/MM/dd HH:mm:ss')
             }
           })
-          return res.data.realms ?? []
-        }));
+          return res.data.realms
+        }),
+        share());
   }
 
   onSync(realmId?: string) {
-    this.syncRealmGql.mutate({realmId})
-    .pipe(finalize(() => this.pageComponent.onLoadData()))
-    .subscribe();
+    this.dataLoad = this.syncRealmGql.mutate({realmId})
+      .pipe(concatMap(_ => this.fetch()))
   }
 }

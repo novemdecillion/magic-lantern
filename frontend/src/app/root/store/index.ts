@@ -8,6 +8,7 @@ import {
 import { environment } from '../../../environments/environment';
 import { AppState } from './state/app.state';
 import { appReducer } from './reducers/app.reducer';
+import { Role } from 'src/generated/graphql';
 
 export interface State {
   app: AppState;

@@ -5,7 +5,7 @@ package io.github.novemdecillion.adapter.jooq.tables.interfaces
 
 
 import java.io.Serializable
-import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 
@@ -15,7 +15,7 @@ import java.util.UUID
 @Suppress("UNCHECKED_CAST")
 interface IGroupGeneration : Serializable {
     var groupGenerationId: UUID?
-    var startDate: LocalDate?
+    var startDate: OffsetDateTime?
 
     // -------------------------------------------------------------------------
     // FROM and INTO

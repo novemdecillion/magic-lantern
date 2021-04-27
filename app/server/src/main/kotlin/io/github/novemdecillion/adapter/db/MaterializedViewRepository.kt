@@ -20,7 +20,7 @@ import org.springframework.transaction.support.TransactionTemplate
 
 
 @Repository
-class Repository(private val dslContext: DSLContext) {
+class MaterializedViewRepository(private val dslContext: DSLContext) {
   fun refreshCurrentAccountGroupAuthorityTable() {
     dslContext.execute("refresh materialized view ${CURRENT_ACCOUNT_GROUP_AUTHORITY.name}")
   }

@@ -25,13 +25,4 @@ export class AppEffects {
       )
     )
   );
-
-  // readonly currentUserFail$ = createEffect(
-  //   () => this.actions$.pipe(
-  //     ofType(AppActions.serviceUnavailableError),
-  //     tap(() => this.router.navigateByUrl('/service-unavailable'))
-  //   ),
-  //   { dispatch: false }
-  // )
-
 }

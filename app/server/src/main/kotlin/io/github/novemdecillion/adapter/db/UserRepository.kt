@@ -18,20 +18,16 @@ class UserRepository(private val dslContext: DSLContext) {
 
   fun insert(user: User) {
     val record = recordMapper(user)
-    dslContext.insertQuery(ACCOUNT)
-      .also {
-        it.setRecord(record)
-        it.execute()
-      }
+    dslContext.insertInto(ACCOUNT)
+        .set(record)
+        .execute()
   }
 
   fun update(user: User) {
     val record = recordMapper(user)
-    dslContext.updateQuery(ACCOUNT)
-      .also {
-        it.setRecord(record)
-        it.execute()
-      }
+    dslContext.update(ACCOUNT)
+        .set(record)
+        .execute()
   }
 
   private fun selectWithAuthority(statementModifier: (SelectWhereStep<Record>) -> ResultQuery<Record> = { it }): List<User> {
@@ -48,15 +44,29 @@ class UserRepository(private val dslContext: DSLContext) {
       .map { (account, result) ->
 
         val authorities =
-          result.into(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_ORIGIN_ID, CURRENT_ACCOUNT_GROUP_AUTHORITY.ROLE)
-            .map { record ->
-              record.value1()
-                ?.let {
-                  Authority(it, record.value2()!!)
-                }
-                ?: Authority(ENTIRE_GROUP_ID, Role.STUDENT)
+          result.intoGroups(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID, CURRENT_ACCOUNT_GROUP_AUTHORITY.ROLE)
+            .mapNotNull { (key, value) ->
+              if (null == key) {
+                return@mapNotNull null
+              }
+              val nonNullValues = value.filterNotNull()
+              if (nonNullValues.isEmpty()) {
+                return@mapNotNull null
+              }
+              return@mapNotNull key to nonNullValues
             }
-            .toSet()
+            .map { (groupTransitionId, roles) ->
+              Authority(groupTransitionId, roles)
+            }
+            .let { groupIdToRoles ->
+              return@let groupIdToRoles
+                .firstOrNull { it.groupId == ENTIRE_GROUP_ID }
+                ?.let { groupIdToRoles }
+                ?: run {
+                  // 全体グループのデフォルト権限を追加
+                  groupIdToRoles.plus(Authority(ENTIRE_GROUP_ID, listOf(Role.STUDENT)))
+                }
+            }
         recordMapper(account).copy(authorities = authorities)
       }
   }
@@ -71,8 +81,8 @@ class UserRepository(private val dslContext: DSLContext) {
   }
 
   fun findByAccountNameAndRealmWithAuthority(accountName: String, realm: String?): User? {
-    return selectWithAuthority {
-      it.where(ACCOUNT.ACCOUNT_NAME.equal(accountName))
+    return selectWithAuthority { statement ->
+      statement.where(ACCOUNT.ACCOUNT_NAME.equal(accountName))
         .and(realm
           ?.let { ACCOUNT.REALM_ID.equal(it) }
           ?: ACCOUNT.REALM_ID.isNull)

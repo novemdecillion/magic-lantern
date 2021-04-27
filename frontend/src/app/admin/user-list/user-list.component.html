@@ -1,5 +1,6 @@
-<app-list-page [titleTemplateRef]="titleTemplate" [dataLoader]="dataLoader" [columns]="columns">
-</app-list-page>
+<app-page [titleTemplateRef]="titleTemplate" [dataLoad]="dataLoad" (onLoadData)="onLoadData()">
+  <app-list [columns]="columns" [dataLoad]="dataLoad"></app-list>
+</app-page>
 
 <ng-template #titleTemplate>
   <span class="mdi account"></span>

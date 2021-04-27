@@ -2,6 +2,7 @@ package io.github.novemdecillion.adapter.api
 
 import graphql.kickstart.tools.GraphQLMutationResolver
 import graphql.kickstart.tools.GraphQLQueryResolver
+import graphql.schema.DataFetchingEnvironment
 import io.github.novemdecillion.adapter.db.AccountRepository
 import io.github.novemdecillion.adapter.db.UserRepository
 import io.github.novemdecillion.adapter.jooq.tables.pojos.RealmEntity
@@ -17,15 +18,8 @@ class UserApi(val userRepository: UserRepository,
               val syncUsersService: SyncKeycloakUsersService
 ): GraphQLQueryResolver, GraphQLMutationResolver {
 
-  fun currentUser(): User? {
-    val authentication = SecurityContextHolder.getContext().authentication
-
-    val realm = if (authentication is OAuth2AuthenticationToken) {
-      authentication.authorizedClientRegistrationId
-    }
-    else null
-
-    return userRepository.findByAccountNameAndRealmWithAuthority(authentication.name, realm)
+  fun currentUser(environment: DataFetchingEnvironment): User {
+    return environment.currentUser()
   }
 
   fun users(): List<User> {

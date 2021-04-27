@@ -1,3 +1,8 @@
+type Member {
+  userId: ID!
+  roles: [Role!]!
+}
+
 type Course {
   courseId: ID!,
 #  slide: SlideConfig!
@@ -8,7 +13,25 @@ type Group {
   groupOriginId: ID!
   groupGenerationId: ID!
   groupName: String!
-  parentGroupTransitionId: ID
-  memberIds: [String!]
+  parentGroupId: ID
+  members: [Member!]
   courses: [ID!]
+}
+
+input AddGroupCommand {
+  groupOriginId: ID
+  groupGenerationId: ID
+  groupName: String!
+  parentGroupId: ID!
+}
+
+input EditGroupCommand {
+  groupId: ID!
+  groupName: String!
+}
+
+input GroupMemberCommand {
+  groupId: ID!
+  userId: ID!
+  role: [Role!]!
 }

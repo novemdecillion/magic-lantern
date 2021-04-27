@@ -16,7 +16,7 @@ data class CourseHistory(
 
 data class Authority(
   val groupId: UUID,
-  val role: Role,
+  val roles: Collection<Role>,
 )
 
 @DomainModelRing
@@ -27,5 +27,5 @@ data class User(
   val email: String?,
   val realmId: String?,
   val enabled: Boolean,
-  val authorities: Set<Authority>? = null
+  val authorities: Collection<Authority>? = null
 )

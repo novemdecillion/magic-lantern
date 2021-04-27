@@ -22,3 +22,13 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 .mat-list-base .mat-list-item {
   font-size: initial
 }
+
+
+th.mat-column-operation {
+  width: 24px !important;
+  padding-right: 8px !important;
+}
+
+td.mat-column-operation {
+  padding-right: 8px !important;
+}

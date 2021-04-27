@@ -6,7 +6,7 @@ package io.github.novemdecillion.adapter.jooq.tables.pojos
 
 import io.github.novemdecillion.adapter.jooq.tables.interfaces.IGroupGeneration
 
-import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.UUID
 
 
@@ -16,7 +16,7 @@ import java.util.UUID
 @Suppress("UNCHECKED_CAST")
 data class GroupGenerationEntity(
     override var groupGenerationId: UUID? = null, 
-    override var startDate: LocalDate? = null
+    override var startDate: OffsetDateTime? = null
 ): IGroupGeneration {
 
 

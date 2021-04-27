@@ -1,32 +1,38 @@
-import { Component, Input, OnInit, TemplateRef } from '@angular/core';
-import { Observable, EMPTY } from 'rxjs';
+import { Component, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
+import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
+import { PageService } from './page.service';
 
 @Component({
   selector: 'app-page',
   templateUrl: './page.component.html'
 })
-export class PageComponent<Record extends {[key: string]: any}> implements OnInit {
-
+export class PageComponent {
   @Input() titleTemplateRef: TemplateRef<any> | null = null;
-  @Input() dataLoader: ()=>Observable<Record[]> = this.defaultDataLoader
-
-  isLoading = false;
-
-  constructor() {
+  @Input() toolbarTemplateRef: TemplateRef<any> | null = null;
+  @Input()
+  set dataLoad(observable: Observable<any> | null) {
+    if (observable) {
+      this.isLoading = true;
+      observable.pipe(finalize(()=>this.isLoading = false)).subscribe();
+    } else {
+      this.isLoading = false;
+    }
   }
 
-  ngOnInit(): void {
-    this.onLoadData();
+  constructor(public pageService: PageService) {}
+
+  @Output() onLoadData = new EventEmitter<void>();
+
+  isLoading: boolean = false;
+
+  onClickLoadData() {
+    this.onLoadData.emit();
+    this.pageService.onLoadData();
   }
 
-  onLoadData() {
-    this.isLoading = true
-    this.dataLoader()
-      .pipe(finalize(() => this.isLoading = false))
+  isExistLoadDataListener(): boolean {
+    return (0 < this.onLoadData.observers.length) || (0 < this.pageService.listenerCount())
   }
 
-  defaultDataLoader(): Observable<Record[]> {
-    return EMPTY;
-  }
 }

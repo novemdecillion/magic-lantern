@@ -15,4 +15,13 @@ type Query {
 
 type Mutation {
   syncRealm(realmId: String): Boolean
+
+  addGroup(command: AddGroupCommand): Boolean
+  editGroup(command: EditGroupCommand): Boolean
+  deleteGroup(groupId: ID): Boolean
+
+  addGroupMember(command: GroupMemberCommand): Boolean
+  editGroupMember(command: GroupMemberCommand): Boolean
+  deleteGroupMember(groupId: ID, userId: ID): Boolean
+
 }

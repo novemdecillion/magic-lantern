@@ -3,9 +3,9 @@
     <mat-card-title class="my-1" >
       <ng-container *ngTemplateOutlet="titleTemplateRef || defaultTitle"></ng-container>
     </mat-card-title>
-
-    <button mat-mini-fab matTooltip="再ロード" class="ms-auto" (click)="onLoadData()">
-      <span class="mdi mdi-sync mdi-spin" [class.mdi-spin]="isLoading"></span>
+    <ng-container *ngTemplateOutlet="toolbarTemplateRef || defaultToolbar"></ng-container>
+    <button *ngIf="isExistLoadDataListener()" mat-mini-fab matTooltip="再ロード" (click)="onClickLoadData()">
+      <span class="mdi mdi-sync" [class.mdi-spin]="isLoading"></span>
     </button>
   </mat-card-header>
 
@@ -15,4 +15,9 @@
 </mat-card>
 
 <ng-template #defaultTitle>
+
+</ng-template>
+
+<ng-template #defaultToolbar>
+  <span class="ms-auto"></span>
 </ng-template>

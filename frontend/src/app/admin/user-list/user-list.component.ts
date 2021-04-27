@@ -1,8 +1,11 @@
-import { Component } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { Observable, Subscription } from 'rxjs';
 import { ColumnDefinition } from 'src/app/share/list-page/list-page.component';
 import { UserFragment, UsersGQL } from 'src/generated/graphql';
+import { ComponentStore } from '@ngrx/component-store';
+import { map, share } from 'rxjs/operators';
+import { PageService } from 'src/app/share/page/page.service';
 
 interface UserRecord extends UserFragment {
   realmName?: string
@@ -10,9 +13,13 @@ interface UserRecord extends UserFragment {
 
 @Component({
   selector: 'app-user-list',
-  templateUrl: './user-list.component.html'
+  templateUrl: './user-list.component.html',
+  providers: [ComponentStore]
 })
-export class UserListComponent {
+export class UserListComponent implements OnInit/*, OnDestroy*/ {
+  // loadDataSubscription: Subscription;
+  dataLoad: Observable<UserRecord[]> | null = null;
+
   columns: ColumnDefinition<UserRecord>[] = [
     {
       name: 'userName',
@@ -28,12 +35,23 @@ export class UserListComponent {
     }
   ];
 
-  constructor(private usersGql: UsersGQL) {
+  constructor(private usersGql: UsersGQL/*, pageService: PageService*/) {
+    // this.loadDataSubscription = pageService.onLoadData$.subscribe(() => this.onLoadData());
   }
 
-  dataLoader = (): Observable<UserRecord[]> => {
-    return this.usersGql.fetch()
-      .pipe(map(res => {
+  ngOnInit(): void {
+    this.onLoadData();
+  }
+
+  // ngOnDestroy(): void {
+  //   this.loadDataSubscription.unsubscribe();
+  // }
+
+  onLoadData() {
+    // this.isLoading = true;
+    this.dataLoad = this.usersGql.fetch()
+      .pipe(
+        map(res => {
           let realmToName: { [key: string]: string } = {};
           (res.data.realms ?? [])
             .forEach(realm => {
@@ -42,7 +60,7 @@ export class UserListComponent {
               }
             });
 
-          let records = (res.data.users ?? [])
+          return (res.data.users ?? [])
             .map((user: UserRecord) => {
               user.realmName = 'システム'
               if (user.realmId) {
@@ -50,9 +68,9 @@ export class UserListComponent {
               }
               return user
             });
-
-          return records;
-        }));
+        }),
+        share()
+      );
   }
 
   // dataForFilter(data: UserRecord): string {

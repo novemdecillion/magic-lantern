@@ -1,6 +1,12 @@
+enum Role {
+  ADMIN
+  MANAGER
+  STUDENT
+}
+
 type Authority {
   groupId: ID!
-  role: String!
+  roles: [Role!]!
 }
 
 type User {
@@ -8,7 +14,7 @@ type User {
   userName: String!
   realmId: String
   enabled: Boolean!
-  authorities: [String!]!
+  authorities: [Authority!]!
 }
 
 type Realm {

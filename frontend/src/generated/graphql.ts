@@ -36,11 +36,54 @@ export type Query = {
 export type Mutation = {
   __typename?: 'Mutation';
   syncRealm?: Maybe<Scalars['Boolean']>;
+  addGroup?: Maybe<Scalars['Boolean']>;
+  editGroup?: Maybe<Scalars['Boolean']>;
+  deleteGroup?: Maybe<Scalars['Boolean']>;
+  addGroupMember?: Maybe<Scalars['Boolean']>;
+  editGroupMember?: Maybe<Scalars['Boolean']>;
+  deleteGroupMember?: Maybe<Scalars['Boolean']>;
 };
 
 
 export type MutationSyncRealmArgs = {
   realmId?: Maybe<Scalars['String']>;
+};
+
+
+export type MutationAddGroupArgs = {
+  command?: Maybe<AddGroupCommand>;
+};
+
+
+export type MutationEditGroupArgs = {
+  command?: Maybe<EditGroupCommand>;
+};
+
+
+export type MutationDeleteGroupArgs = {
+  groupId?: Maybe<Scalars['ID']>;
+};
+
+
+export type MutationAddGroupMemberArgs = {
+  command?: Maybe<GroupMemberCommand>;
+};
+
+
+export type MutationEditGroupMemberArgs = {
+  command?: Maybe<GroupMemberCommand>;
+};
+
+
+export type MutationDeleteGroupMemberArgs = {
+  groupId?: Maybe<Scalars['ID']>;
+  userId?: Maybe<Scalars['ID']>;
+};
+
+export type Member = {
+  __typename?: 'Member';
+  userId: Scalars['ID'];
+  roles: Array<Role>;
 };
 
 export type Course = {
@@ -54,9 +97,27 @@ export type Group = {
   groupOriginId: Scalars['ID'];
   groupGenerationId: Scalars['ID'];
   groupName: Scalars['String'];
-  parentGroupTransitionId?: Maybe<Scalars['ID']>;
-  memberIds?: Maybe<Array<Scalars['String']>>;
+  parentGroupId?: Maybe<Scalars['ID']>;
+  members?: Maybe<Array<Member>>;
   courses?: Maybe<Array<Scalars['ID']>>;
+};
+
+export type AddGroupCommand = {
+  groupOriginId?: Maybe<Scalars['ID']>;
+  groupGenerationId?: Maybe<Scalars['ID']>;
+  groupName: Scalars['String'];
+  parentGroupId: Scalars['ID'];
+};
+
+export type EditGroupCommand = {
+  groupId: Scalars['ID'];
+  groupName: Scalars['String'];
+};
+
+export type GroupMemberCommand = {
+  groupId: Scalars['ID'];
+  userId: Scalars['ID'];
+  role: Array<Role>;
 };
 
 export type Chapter = {
@@ -70,10 +131,16 @@ export type SlideConfig = {
   chapters?: Maybe<Array<Chapter>>;
 };
 
+export enum Role {
+  Admin = 'ADMIN',
+  Manager = 'MANAGER',
+  Student = 'STUDENT'
+}
+
 export type Authority = {
   __typename?: 'Authority';
   groupId: Scalars['ID'];
-  role: Scalars['String'];
+  roles: Array<Role>;
 };
 
 export type User = {
@@ -82,7 +149,7 @@ export type User = {
   userName: Scalars['String'];
   realmId?: Maybe<Scalars['String']>;
   enabled: Scalars['Boolean'];
-  authorities: Array<Scalars['String']>;
+  authorities: Array<Authority>;
 };
 
 export type Realm = {
@@ -100,7 +167,7 @@ export type CourseFragment = (
 
 export type GroupFragment = (
   { __typename?: 'Group' }
-  & Pick<Group, 'groupId' | 'groupOriginId' | 'groupGenerationId' | 'groupName' | 'parentGroupTransitionId' | 'memberIds' | 'courses'>
+  & Pick<Group, 'groupId' | 'groupOriginId' | 'groupGenerationId' | 'groupName' | 'parentGroupId'>
 );
 
 export type CoursesQueryVariables = Exact<{ [key: string]: never; }>;
@@ -125,6 +192,67 @@ export type GroupsQuery = (
   )> }
 );
 
+export type AddGroupMutationVariables = Exact<{
+  command?: Maybe<AddGroupCommand>;
+}>;
+
+
+export type AddGroupMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'addGroup'>
+);
+
+export type EditGroupMutationVariables = Exact<{
+  command?: Maybe<EditGroupCommand>;
+}>;
+
+
+export type EditGroupMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'editGroup'>
+);
+
+export type DeleteGroupMutationVariables = Exact<{
+  groupId?: Maybe<Scalars['ID']>;
+}>;
+
+
+export type DeleteGroupMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'deleteGroup'>
+);
+
+export type AddGroupMemberMutationVariables = Exact<{
+  command?: Maybe<GroupMemberCommand>;
+}>;
+
+
+export type AddGroupMemberMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'addGroupMember'>
+);
+
+export type EditGroupMemberMutationVariables = Exact<{
+  command?: Maybe<GroupMemberCommand>;
+}>;
+
+
+export type EditGroupMemberMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'editGroupMember'>
+);
+
+export type DeleteGroupMemberMutationVariables = Exact<{
+  groupId?: Maybe<Scalars['ID']>;
+  userId?: Maybe<Scalars['ID']>;
+}>;
+
+
+export type DeleteGroupMemberMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'deleteGroupMember'>
+);
+
 export type SlideConfigFragment = (
   { __typename?: 'SlideConfig' }
   & Pick<SlideConfig, 'title'>
@@ -145,9 +273,18 @@ export type SlidesQuery = (
   )> }
 );
 
+export type AuthorityFragment = (
+  { __typename?: 'Authority' }
+  & Pick<Authority, 'groupId' | 'roles'>
+);
+
 export type UserFragment = (
   { __typename?: 'User' }
-  & Pick<User, 'userId' | 'userName' | 'realmId' | 'enabled' | 'authorities'>
+  & Pick<User, 'userId' | 'userName' | 'realmId' | 'enabled'>
+  & { authorities: Array<(
+    { __typename?: 'Authority' }
+    & AuthorityFragment
+  )> }
 );
 
 export type RealmFragment = (
@@ -213,9 +350,7 @@ export const GroupFragmentDoc = gql`
   groupOriginId
   groupGenerationId
   groupName
-  parentGroupTransitionId
-  memberIds
-  courses
+  parentGroupId
 }
     `;
 export const SlideConfigFragmentDoc = gql`
@@ -226,15 +361,23 @@ export const SlideConfigFragmentDoc = gql`
   }
 }
     `;
+export const AuthorityFragmentDoc = gql`
+    fragment authority on Authority {
+  groupId
+  roles
+}
+    `;
 export const UserFragmentDoc = gql`
     fragment user on User {
   userId
   userName
   realmId
   enabled
-  authorities
+  authorities {
+    ...authority
+  }
 }
-    `;
+    ${AuthorityFragmentDoc}`;
 export const RealmFragmentDoc = gql`
     fragment realm on Realm {
   realmId
@@ -274,6 +417,102 @@ export const GroupsDocument = gql`
   })
   export class GroupsGQL extends Apollo.Query<GroupsQuery, GroupsQueryVariables> {
     document = GroupsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const AddGroupDocument = gql`
+    mutation addGroup($command: AddGroupCommand) {
+  addGroup(command: $command)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class AddGroupGQL extends Apollo.Mutation<AddGroupMutation, AddGroupMutationVariables> {
+    document = AddGroupDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const EditGroupDocument = gql`
+    mutation editGroup($command: EditGroupCommand) {
+  editGroup(command: $command)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class EditGroupGQL extends Apollo.Mutation<EditGroupMutation, EditGroupMutationVariables> {
+    document = EditGroupDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const DeleteGroupDocument = gql`
+    mutation deleteGroup($groupId: ID) {
+  deleteGroup(groupId: $groupId)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class DeleteGroupGQL extends Apollo.Mutation<DeleteGroupMutation, DeleteGroupMutationVariables> {
+    document = DeleteGroupDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const AddGroupMemberDocument = gql`
+    mutation addGroupMember($command: GroupMemberCommand) {
+  addGroupMember(command: $command)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class AddGroupMemberGQL extends Apollo.Mutation<AddGroupMemberMutation, AddGroupMemberMutationVariables> {
+    document = AddGroupMemberDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const EditGroupMemberDocument = gql`
+    mutation editGroupMember($command: GroupMemberCommand) {
+  editGroupMember(command: $command)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class EditGroupMemberGQL extends Apollo.Mutation<EditGroupMemberMutation, EditGroupMemberMutationVariables> {
+    document = EditGroupMemberDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const DeleteGroupMemberDocument = gql`
+    mutation deleteGroupMember($groupId: ID, $userId: ID) {
+  deleteGroupMember(groupId: $groupId, userId: $userId)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class DeleteGroupMemberGQL extends Apollo.Mutation<DeleteGroupMemberMutation, DeleteGroupMemberMutationVariables> {
+    document = DeleteGroupMemberDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

@@ -25,7 +25,7 @@ create table realm (
 
 create table group_generation (
   group_generation_id uuid,
-  start_date date,
+  start_date timestamp with time zone,
 
   primary key (group_generation_id)
 );
@@ -55,7 +55,7 @@ create table account_group_authority (
   group_transition_id uuid,
   role character varying(255) not null,
 
-  primary key (account_id, group_transition_id),
+  primary key (account_id, group_transition_id, role),
   foreign key (account_id)
     references account (account_id) on delete cascade,
   foreign key (group_transition_id)
@@ -63,14 +63,14 @@ create table account_group_authority (
 );
 
 create view group_generation_period as
-  select group_generation_id, start_date, lead( start_date ) OVER( ORDER BY start_date ) - 1 as end_date
+  select group_generation_id, start_date, lead( start_date ) OVER( ORDER BY start_date ) as end_date
   from group_generation;
 
 create materialized view current_group_transition as
   select group_transition.*
   from group_transition
     left join group_generation_period on group_transition.group_generation_id = group_generation_period.group_generation_id
-      and ((start_date < now() and (end_date is null or now() < end_date)) or start_date is null);
+      and ((start_date is null or start_date < now()) and (end_date is null or now() < end_date));
 
 create materialized view current_account_group_authority as
   select account_group_authority.*, current_group_transition.group_origin_id
@@ -82,9 +82,32 @@ create view user_aggregate as
   from account
     left join current_account_group_authority on current_account_group_authority.account_id = account.account_id;
 
-insert into group_generation (group_generation_id) values ('00000000-0000-0000-0000-000000000000');
-insert into group_origin (group_origin_id) values ('00000000-0000-0000-0000-000000000000');
-insert into group_transition (group_transition_id, group_generation_id, group_origin_id, group_name) values ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', '全体');
+insert into group_generation (group_generation_id)
+ values ('00000000-0000-0000-0000-000000000000'),
+        ('00000000-0000-0000-0000-000000000001');
+insert into group_origin (group_origin_id)
+ values ('00000000-0000-0000-0000-000000000000');
+insert into group_transition (group_transition_id, group_generation_id, group_origin_id, group_name)
+ values ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', '全体');
 
-insert into account (account_id, account_name, user_name, password) values ('00000000-0000-0000-0000-000000000000', 'admin', 'システム管理者', '{noop}password123');
-insert into account_group_authority (account_id, group_transition_id, role) values ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'ADMIN');
+insert into account (account_id, account_name, user_name, password)
+ values ('00000000-0000-0000-0000-000000000000', 'admin', 'システム管理者', '{noop}password123');
+insert into account_group_authority (account_id, group_transition_id, role)
+ values ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'ADMIN'),
+        ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'MANAGER'),
+        ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'STUDENT');
+
+-- テスト用
+insert into group_origin (group_origin_id)
+ values ('00000000-0000-0000-0000-000000000001'),
+        ('00000000-0000-0000-0000-000000000002'),
+        ('00000000-0000-0000-0000-000000000003'),
+        ('00000000-0000-0000-0000-000000000004'),
+        ('00000000-0000-0000-0000-000000000005');
+
+insert into group_transition (group_transition_id, group_generation_id, group_origin_id, group_name, parent_group_transition_id)
+ values ('00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000001', 'A部', '00000000-0000-0000-0000-000000000000'),
+        ('00000000-0000-0000-0000-000000000002', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000002', 'B部', '00000000-0000-0000-0000-000000000000'),
+        ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', 'A1課', '00000000-0000-0000-0000-000000000001'),
+        ('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000004', 'A2課', '00000000-0000-0000-0000-000000000001'),
+        ('00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000005', 'B1課', '00000000-0000-0000-0000-000000000002');

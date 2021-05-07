@@ -1,7 +1,10 @@
 enum Role {
-  ADMIN
-  MANAGER
-  STUDENT
+  ADMIN,
+  GROUP,
+  SLIDE,
+  LESSON,
+  STUDY,
+  NONE
 }
 
 type Authority {

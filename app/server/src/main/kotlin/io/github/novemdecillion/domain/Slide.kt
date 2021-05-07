@@ -6,6 +6,8 @@ import org.apache.commons.math3.fraction.Fraction
 import org.jmolecules.architecture.onion.classical.DomainModelRing
 import java.lang.IllegalArgumentException
 
+const val SLIDE_CONFIG_FILE_NAME = "config.yml"
+
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(
   JsonSubTypes.Type(name = "Explain", value = ExplainChapter::class),
@@ -22,7 +24,8 @@ interface IChapter {
  */
 data class ExplainPage(
   val path: String,
-  val title: String
+  val title: String,
+  val content: String?
 )
 
 data class ExplainChapter(

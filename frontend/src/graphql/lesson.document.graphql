@@ -1,0 +1,47 @@
+fragment lesson on Lesson {
+  lessonId
+  groupId
+  slideId
+}
+
+fragment lessonWithRelation on LessonWithRelation {
+  lesson {
+    ...lesson
+  }
+  group {
+    ...groupWithPath
+  }
+  slide {
+    ...slide
+  }
+}
+
+query manageableLessons {
+  manageableLessons {
+    ...lessonWithRelation
+  }
+}
+
+query studiableLessons {
+  studiableLessons {
+    ...lessonWithRelation
+  }
+}
+
+query prepareAddLesson {
+  manageableLessons {
+    lesson {
+      ...lesson
+    }
+  }
+  authoritativeGroups(role: LESSON) {
+    ...groupWithPath
+  }
+  slides {
+    ...slide
+  }
+}
+
+mutation addLesson($command: AddLessonCommand) {
+  addLesson(command: $command)
+}

@@ -15,7 +15,9 @@ export type Scalars = {
   DateTime: any;
   Date: any;
   Time: any;
+  Upload: any;
 };
+
 
 
 
@@ -28,9 +30,45 @@ export type Query = {
   users: Array<User>;
   userCount: Scalars['Int'];
   realms: Array<Realm>;
-  slides: Array<SlideConfig>;
-  courses: Array<Course>;
-  groups: Array<Group>;
+  slides: Array<Slide>;
+  manageableLessons: Array<LessonWithRelation>;
+  studiableLessons: Array<LessonWithRelation>;
+  authoritativeGroups: Array<GroupWithPath>;
+  effectiveGroups: Array<GroupWithPath>;
+  group?: Maybe<GroupWithPath>;
+  isTopManageableGroup: Scalars['Boolean'];
+  groupMembers: Array<User>;
+  groupAppendableMembers: Array<User>;
+};
+
+
+export type QueryAuthoritativeGroupsArgs = {
+  role?: Maybe<Role>;
+};
+
+
+export type QueryEffectiveGroupsArgs = {
+  role?: Maybe<Role>;
+};
+
+
+export type QueryGroupArgs = {
+  groupId: Scalars['ID'];
+};
+
+
+export type QueryIsTopManageableGroupArgs = {
+  groupId: Scalars['ID'];
+};
+
+
+export type QueryGroupMembersArgs = {
+  groupId: Scalars['ID'];
+};
+
+
+export type QueryGroupAppendableMembersArgs = {
+  groupId?: Maybe<Scalars['ID']>;
 };
 
 export type Mutation = {
@@ -42,6 +80,8 @@ export type Mutation = {
   addGroupMember?: Maybe<Scalars['Boolean']>;
   editGroupMember?: Maybe<Scalars['Boolean']>;
   deleteGroupMember?: Maybe<Scalars['Boolean']>;
+  addSlide?: Maybe<Scalars['Boolean']>;
+  addLesson?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -66,7 +106,7 @@ export type MutationDeleteGroupArgs = {
 
 
 export type MutationAddGroupMemberArgs = {
-  command?: Maybe<GroupMemberCommand>;
+  command?: Maybe<AddGroupMemberCommand>;
 };
 
 
@@ -80,26 +120,46 @@ export type MutationDeleteGroupMemberArgs = {
   userId?: Maybe<Scalars['ID']>;
 };
 
+
+export type MutationAddSlideArgs = {
+  command?: Maybe<AddSlideCommand>;
+};
+
+
+export type MutationAddLessonArgs = {
+  command?: Maybe<AddLessonCommand>;
+};
+
 export type Member = {
   __typename?: 'Member';
   userId: Scalars['ID'];
   roles: Array<Role>;
 };
 
-export type Course = {
-  __typename?: 'Course';
-  courseId: Scalars['ID'];
+export type IGroupCOre = {
+  groupId: Scalars['ID'];
+  groupName: Scalars['String'];
 };
 
-export type Group = {
+export type GroupCore = IGroupCOre & {
+  __typename?: 'GroupCore';
+  groupId: Scalars['ID'];
+  groupName: Scalars['String'];
+};
+
+export type Group = IGroupCOre & {
   __typename?: 'Group';
   groupId: Scalars['ID'];
   groupOriginId: Scalars['ID'];
   groupGenerationId: Scalars['ID'];
   groupName: Scalars['String'];
   parentGroupId?: Maybe<Scalars['ID']>;
-  members?: Maybe<Array<Member>>;
-  courses?: Maybe<Array<Scalars['ID']>>;
+};
+
+export type GroupWithPath = {
+  __typename?: 'GroupWithPath';
+  group: Group;
+  path: Array<GroupCore>;
 };
 
 export type AddGroupCommand = {
@@ -114,10 +174,35 @@ export type EditGroupCommand = {
   groupName: Scalars['String'];
 };
 
+export type AddGroupMemberCommand = {
+  groupId: Scalars['ID'];
+  userId: Array<Scalars['ID']>;
+  role: Array<Role>;
+};
+
 export type GroupMemberCommand = {
   groupId: Scalars['ID'];
   userId: Scalars['ID'];
   role: Array<Role>;
+};
+
+export type Lesson = {
+  __typename?: 'Lesson';
+  lessonId: Scalars['ID'];
+  groupId: Scalars['ID'];
+  slideId: Scalars['ID'];
+};
+
+export type LessonWithRelation = {
+  __typename?: 'LessonWithRelation';
+  lesson: Lesson;
+  group: GroupWithPath;
+  slide: Slide;
+};
+
+export type AddLessonCommand = {
+  slideId: Scalars['ID'];
+  groupIds: Array<Scalars['ID']>;
 };
 
 export type Chapter = {
@@ -131,10 +216,24 @@ export type SlideConfig = {
   chapters?: Maybe<Array<Chapter>>;
 };
 
+export type Slide = {
+  __typename?: 'Slide';
+  slideId: Scalars['ID'];
+  config: SlideConfig;
+};
+
+export type AddSlideCommand = {
+  slideId: Scalars['ID'];
+  slideFile: Scalars['Upload'];
+};
+
 export enum Role {
   Admin = 'ADMIN',
-  Manager = 'MANAGER',
-  Student = 'STUDENT'
+  Group = 'GROUP',
+  Slide = 'SLIDE',
+  Lesson = 'LESSON',
+  Study = 'STUDY',
+  None = 'NONE'
 }
 
 export type Authority = {
@@ -160,9 +259,37 @@ export type Realm = {
   syncAt?: Maybe<Scalars['DateTime']>;
 };
 
-export type CourseFragment = (
-  { __typename?: 'Course' }
-  & Pick<Course, 'courseId'>
+export type GroupMembersQueryVariables = Exact<{
+  groupId: Scalars['ID'];
+}>;
+
+
+export type GroupMembersQuery = (
+  { __typename?: 'Query' }
+  & Pick<Query, 'isTopManageableGroup'>
+  & { group?: Maybe<(
+    { __typename?: 'GroupWithPath' }
+    & GroupWithPathFragment
+  )>, groupMembers: Array<(
+    { __typename?: 'User' }
+    & UserFragment
+  )> }
+);
+
+export type GroupCoreFragment = (
+  { __typename?: 'GroupCore' }
+  & Pick<GroupCore, 'groupId' | 'groupName'>
+);
+
+export type GroupWithPathFragment = (
+  { __typename?: 'GroupWithPath' }
+  & { group: (
+    { __typename?: 'Group' }
+    & GroupFragment
+  ), path: Array<(
+    { __typename?: 'GroupCore' }
+    & GroupCoreFragment
+  )> }
 );
 
 export type GroupFragment = (
@@ -170,25 +297,42 @@ export type GroupFragment = (
   & Pick<Group, 'groupId' | 'groupOriginId' | 'groupGenerationId' | 'groupName' | 'parentGroupId'>
 );
 
-export type CoursesQueryVariables = Exact<{ [key: string]: never; }>;
+export type GroupQueryVariables = Exact<{
+  groupId: Scalars['ID'];
+}>;
 
 
-export type CoursesQuery = (
+export type GroupQuery = (
   { __typename?: 'Query' }
-  & { courses: Array<(
-    { __typename?: 'Course' }
-    & CourseFragment
+  & { group?: Maybe<(
+    { __typename?: 'GroupWithPath' }
+    & GroupWithPathFragment
   )> }
 );
 
-export type GroupsQueryVariables = Exact<{ [key: string]: never; }>;
+export type AuthoritativeGroupsQueryVariables = Exact<{
+  role?: Maybe<Role>;
+}>;
 
 
-export type GroupsQuery = (
+export type AuthoritativeGroupsQuery = (
   { __typename?: 'Query' }
-  & { groups: Array<(
-    { __typename?: 'Group' }
-    & GroupFragment
+  & { authoritativeGroups: Array<(
+    { __typename?: 'GroupWithPath' }
+    & GroupWithPathFragment
+  )> }
+);
+
+export type EffectiveGroupsQueryVariables = Exact<{
+  role?: Maybe<Role>;
+}>;
+
+
+export type EffectiveGroupsQuery = (
+  { __typename?: 'Query' }
+  & { effectiveGroups: Array<(
+    { __typename?: 'GroupWithPath' }
+    & GroupWithPathFragment
   )> }
 );
 
@@ -223,7 +367,7 @@ export type DeleteGroupMutation = (
 );
 
 export type AddGroupMemberMutationVariables = Exact<{
-  command?: Maybe<GroupMemberCommand>;
+  command?: Maybe<AddGroupMemberCommand>;
 }>;
 
 
@@ -253,6 +397,77 @@ export type DeleteGroupMemberMutation = (
   & Pick<Mutation, 'deleteGroupMember'>
 );
 
+export type LessonFragment = (
+  { __typename?: 'Lesson' }
+  & Pick<Lesson, 'lessonId' | 'groupId' | 'slideId'>
+);
+
+export type LessonWithRelationFragment = (
+  { __typename?: 'LessonWithRelation' }
+  & { lesson: (
+    { __typename?: 'Lesson' }
+    & LessonFragment
+  ), group: (
+    { __typename?: 'GroupWithPath' }
+    & GroupWithPathFragment
+  ), slide: (
+    { __typename?: 'Slide' }
+    & SlideFragment
+  ) }
+);
+
+export type ManageableLessonsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ManageableLessonsQuery = (
+  { __typename?: 'Query' }
+  & { manageableLessons: Array<(
+    { __typename?: 'LessonWithRelation' }
+    & LessonWithRelationFragment
+  )> }
+);
+
+export type StudiableLessonsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type StudiableLessonsQuery = (
+  { __typename?: 'Query' }
+  & { studiableLessons: Array<(
+    { __typename?: 'LessonWithRelation' }
+    & LessonWithRelationFragment
+  )> }
+);
+
+export type PrepareAddLessonQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type PrepareAddLessonQuery = (
+  { __typename?: 'Query' }
+  & { manageableLessons: Array<(
+    { __typename?: 'LessonWithRelation' }
+    & { lesson: (
+      { __typename?: 'Lesson' }
+      & LessonFragment
+    ) }
+  )>, authoritativeGroups: Array<(
+    { __typename?: 'GroupWithPath' }
+    & GroupWithPathFragment
+  )>, slides: Array<(
+    { __typename?: 'Slide' }
+    & SlideFragment
+  )> }
+);
+
+export type AddLessonMutationVariables = Exact<{
+  command?: Maybe<AddLessonCommand>;
+}>;
+
+
+export type AddLessonMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'addLesson'>
+);
+
 export type SlideConfigFragment = (
   { __typename?: 'SlideConfig' }
   & Pick<SlideConfig, 'title'>
@@ -262,15 +477,34 @@ export type SlideConfigFragment = (
   )>> }
 );
 
+export type SlideFragment = (
+  { __typename?: 'Slide' }
+  & Pick<Slide, 'slideId'>
+  & { config: (
+    { __typename?: 'SlideConfig' }
+    & SlideConfigFragment
+  ) }
+);
+
 export type SlidesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type SlidesQuery = (
   { __typename?: 'Query' }
   & { slides: Array<(
-    { __typename?: 'SlideConfig' }
-    & SlideConfigFragment
+    { __typename?: 'Slide' }
+    & SlideFragment
   )> }
+);
+
+export type AddSlideMutationVariables = Exact<{
+  command?: Maybe<AddSlideCommand>;
+}>;
+
+
+export type AddSlideMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'addSlide'>
 );
 
 export type AuthorityFragment = (
@@ -329,6 +563,19 @@ export type RealmsQuery = (
   )> }
 );
 
+export type GroupAppendableMembersQueryVariables = Exact<{
+  groupId: Scalars['ID'];
+}>;
+
+
+export type GroupAppendableMembersQuery = (
+  { __typename?: 'Query' }
+  & { groupAppendableMembers: Array<(
+    { __typename?: 'User' }
+    & UserFragment
+  )> }
+);
+
 export type SyncRealmMutationVariables = Exact<{
   realmId?: Maybe<Scalars['String']>;
 }>;
@@ -339,9 +586,11 @@ export type SyncRealmMutation = (
   & Pick<Mutation, 'syncRealm'>
 );
 
-export const CourseFragmentDoc = gql`
-    fragment course on Course {
-  courseId
+export const LessonFragmentDoc = gql`
+    fragment lesson on Lesson {
+  lessonId
+  groupId
+  slideId
 }
     `;
 export const GroupFragmentDoc = gql`
@@ -353,6 +602,23 @@ export const GroupFragmentDoc = gql`
   parentGroupId
 }
     `;
+export const GroupCoreFragmentDoc = gql`
+    fragment groupCore on GroupCore {
+  groupId
+  groupName
+}
+    `;
+export const GroupWithPathFragmentDoc = gql`
+    fragment groupWithPath on GroupWithPath {
+  group {
+    ...group
+  }
+  path {
+    ...groupCore
+  }
+}
+    ${GroupFragmentDoc}
+${GroupCoreFragmentDoc}`;
 export const SlideConfigFragmentDoc = gql`
     fragment slideConfig on SlideConfig {
   title
@@ -361,6 +627,29 @@ export const SlideConfigFragmentDoc = gql`
   }
 }
     `;
+export const SlideFragmentDoc = gql`
+    fragment slide on Slide {
+  slideId
+  config {
+    ...slideConfig
+  }
+}
+    ${SlideConfigFragmentDoc}`;
+export const LessonWithRelationFragmentDoc = gql`
+    fragment lessonWithRelation on LessonWithRelation {
+  lesson {
+    ...lesson
+  }
+  group {
+    ...groupWithPath
+  }
+  slide {
+    ...slide
+  }
+}
+    ${LessonFragmentDoc}
+${GroupWithPathFragmentDoc}
+${SlideFragmentDoc}`;
 export const AuthorityFragmentDoc = gql`
     fragment authority on Authority {
   groupId
@@ -386,37 +675,78 @@ export const RealmFragmentDoc = gql`
   syncAt
 }
     `;
-export const CoursesDocument = gql`
-    query courses {
-  courses {
-    ...course
+export const GroupMembersDocument = gql`
+    query groupMembers($groupId: ID!) {
+  group(groupId: $groupId) {
+    ...groupWithPath
+  }
+  isTopManageableGroup(groupId: $groupId)
+  groupMembers(groupId: $groupId) {
+    ...user
   }
 }
-    ${CourseFragmentDoc}`;
+    ${GroupWithPathFragmentDoc}
+${UserFragmentDoc}`;
 
   @Injectable({
     providedIn: 'root'
   })
-  export class CoursesGQL extends Apollo.Query<CoursesQuery, CoursesQueryVariables> {
-    document = CoursesDocument;
+  export class GroupMembersGQL extends Apollo.Query<GroupMembersQuery, GroupMembersQueryVariables> {
+    document = GroupMembersDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
     }
   }
-export const GroupsDocument = gql`
-    query groups {
-  groups {
-    ...group
+export const GroupDocument = gql`
+    query group($groupId: ID!) {
+  group(groupId: $groupId) {
+    ...groupWithPath
   }
 }
-    ${GroupFragmentDoc}`;
+    ${GroupWithPathFragmentDoc}`;
 
   @Injectable({
     providedIn: 'root'
   })
-  export class GroupsGQL extends Apollo.Query<GroupsQuery, GroupsQueryVariables> {
-    document = GroupsDocument;
+  export class GroupGQL extends Apollo.Query<GroupQuery, GroupQueryVariables> {
+    document = GroupDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const AuthoritativeGroupsDocument = gql`
+    query authoritativeGroups($role: Role) {
+  authoritativeGroups(role: $role) {
+    ...groupWithPath
+  }
+}
+    ${GroupWithPathFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class AuthoritativeGroupsGQL extends Apollo.Query<AuthoritativeGroupsQuery, AuthoritativeGroupsQueryVariables> {
+    document = AuthoritativeGroupsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const EffectiveGroupsDocument = gql`
+    query effectiveGroups($role: Role) {
+  effectiveGroups(role: $role) {
+    ...groupWithPath
+  }
+}
+    ${GroupWithPathFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class EffectiveGroupsGQL extends Apollo.Query<EffectiveGroupsQuery, EffectiveGroupsQueryVariables> {
+    document = EffectiveGroupsDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
@@ -471,7 +801,7 @@ export const DeleteGroupDocument = gql`
     }
   }
 export const AddGroupMemberDocument = gql`
-    mutation addGroupMember($command: GroupMemberCommand) {
+    mutation addGroupMember($command: AddGroupMemberCommand) {
   addGroupMember(command: $command)
 }
     `;
@@ -518,19 +848,115 @@ export const DeleteGroupMemberDocument = gql`
       super(apollo);
     }
   }
+export const ManageableLessonsDocument = gql`
+    query manageableLessons {
+  manageableLessons {
+    ...lessonWithRelation
+  }
+}
+    ${LessonWithRelationFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class ManageableLessonsGQL extends Apollo.Query<ManageableLessonsQuery, ManageableLessonsQueryVariables> {
+    document = ManageableLessonsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const StudiableLessonsDocument = gql`
+    query studiableLessons {
+  studiableLessons {
+    ...lessonWithRelation
+  }
+}
+    ${LessonWithRelationFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class StudiableLessonsGQL extends Apollo.Query<StudiableLessonsQuery, StudiableLessonsQueryVariables> {
+    document = StudiableLessonsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const PrepareAddLessonDocument = gql`
+    query prepareAddLesson {
+  manageableLessons {
+    lesson {
+      ...lesson
+    }
+  }
+  authoritativeGroups(role: LESSON) {
+    ...groupWithPath
+  }
+  slides {
+    ...slide
+  }
+}
+    ${LessonFragmentDoc}
+${GroupWithPathFragmentDoc}
+${SlideFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class PrepareAddLessonGQL extends Apollo.Query<PrepareAddLessonQuery, PrepareAddLessonQueryVariables> {
+    document = PrepareAddLessonDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const AddLessonDocument = gql`
+    mutation addLesson($command: AddLessonCommand) {
+  addLesson(command: $command)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class AddLessonGQL extends Apollo.Mutation<AddLessonMutation, AddLessonMutationVariables> {
+    document = AddLessonDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
 export const SlidesDocument = gql`
     query slides {
   slides {
-    ...slideConfig
+    ...slide
   }
 }
-    ${SlideConfigFragmentDoc}`;
+    ${SlideFragmentDoc}`;
 
   @Injectable({
     providedIn: 'root'
   })
   export class SlidesGQL extends Apollo.Query<SlidesQuery, SlidesQueryVariables> {
     document = SlidesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const AddSlideDocument = gql`
+    mutation addSlide($command: AddSlideCommand) {
+  addSlide(command: $command)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class AddSlideGQL extends Apollo.Mutation<AddSlideMutation, AddSlideMutationVariables> {
+    document = AddSlideDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
@@ -590,6 +1016,24 @@ export const RealmsDocument = gql`
   })
   export class RealmsGQL extends Apollo.Query<RealmsQuery, RealmsQueryVariables> {
     document = RealmsDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const GroupAppendableMembersDocument = gql`
+    query groupAppendableMembers($groupId: ID!) {
+  groupAppendableMembers(groupId: $groupId) {
+    ...user
+  }
+}
+    ${UserFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class GroupAppendableMembersGQL extends Apollo.Query<GroupAppendableMembersQuery, GroupAppendableMembersQueryVariables> {
+    document = GroupAppendableMembersDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

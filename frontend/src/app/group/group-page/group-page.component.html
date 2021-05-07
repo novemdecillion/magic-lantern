@@ -1,0 +1,20 @@
+<app-page [titleTemplateRef]="titleTemplate" [toolbarTemplateRef]="toolbarTemplate" [dataLoad]="dataLoad">
+  <ng-content></ng-content>
+</app-page>
+
+<ng-template #titleTemplate>
+  <span class="mdi mdi-file-tree-outline"></span>
+  グループ
+</ng-template>
+
+<ng-template #toolbarTemplate>
+  <span class="ms-auto"></span>
+  <mat-button-toggle-group class="mx-2" [value]="view" (change)="onChangeView($event)">
+    <mat-button-toggle value="list">
+      <span class="mdi mdi-view-headline"></span>
+    </mat-button-toggle>
+    <mat-button-toggle value="tree">
+      <span class="mdi mdi-file-tree"></span>
+    </mat-button-toggle>
+  </mat-button-toggle-group>
+</ng-template>

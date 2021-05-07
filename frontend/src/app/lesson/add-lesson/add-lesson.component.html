@@ -1,0 +1,51 @@
+<h1 mat-dialog-title>講座追加</h1>
+<form>
+  <div mat-dialog-content>
+
+
+    <!-- <div class="d-flex flex-column">
+    </div> -->
+
+    <mat-horizontal-stepper [linear]="true" #stepper>
+      <mat-step [completed]="selectedSlide != null">
+        <form>
+          <ng-template matStepLabel>教材</ng-template>
+
+          <app-list [columns]="slideColumns" [dataLoad]="slideDataLoad" [pageSize]="10" [hidePageSize]="true">
+          </app-list>
+
+          <div>
+            <button mat-raised-button color="primary" cdkFocusInitial matStepperNext>次へ</button>
+            <button mat-stroked-button mat-dialog-close>キャンセル</button>
+          </div>
+        </form>
+      </mat-step>
+      <mat-step [completed]="selectedGroups != null">
+        <form>
+          <ng-template matStepLabel>グループ</ng-template>
+
+          <div>
+            <button mat-button matStepperPrevious>前へ</button>
+            <button mat-raised-button color="primary" cdkFocusInitial matStepperNext>次へ</button>
+            <button mat-stroked-button mat-dialog-close>キャンセル</button>
+          </div>
+        </form>
+      </mat-step>
+      <mat-step>
+        <ng-template matStepLabel>Done</ng-template>
+        <p>You are now done.</p>
+        <div>
+          <button mat-button matStepperPrevious>前へ</button>
+          <button type="submit" mat-raised-button color="primary" (click)="onOK()" cdkFocusInitial>OK</button>
+          <!-- <button mat-button (click)="stepper.reset()">Reset</button> -->
+        </div>
+      </mat-step>
+    </mat-horizontal-stepper>
+
+  </div>
+  <!-- <div mat-dialog-actions>
+    <button type="submit" mat-raised-button color="primary" (click)="onOK()" cdkFocusInitial>OK</button>
+    <button mat-stroked-button mat-dialog-close>キャンセル</button>
+  </div> -->
+</form>
+

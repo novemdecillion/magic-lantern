@@ -1,17 +1,10 @@
 package io.github.novemdecillion.adapter.api
 
-import graphql.kickstart.execution.context.DefaultGraphQLContext
-import graphql.kickstart.servlet.context.DefaultGraphQLServletContext
 import graphql.kickstart.tools.GraphQLMutationResolver
 import graphql.kickstart.tools.GraphQLQueryResolver
 import graphql.schema.DataFetchingEnvironment
 import io.github.novemdecillion.adapter.db.GroupRepository
-import io.github.novemdecillion.domain.Course
-import io.github.novemdecillion.domain.Group
-import io.github.novemdecillion.domain.Role
-import io.github.novemdecillion.domain.User
-import io.github.novemdecillion.slide.SlideConfig
-import org.springframework.security.core.context.SecurityContextHolder
+import io.github.novemdecillion.domain.*
 import org.springframework.stereotype.Component
 import java.util.*
 
@@ -29,16 +22,64 @@ class GroupApi(private val groupRepository: GroupRepository): GraphQLQueryResolv
     val groupName: String
   )
 
-  data class GroupMemberCommand(
-    val groupId: UUID,
-    val userId: UUID,
-    val role: List<Role>
-  )
+  fun authoritativeGroups(role: Role, environment: DataFetchingEnvironment): List<GroupWithPath> {
+    val groupIds = environment.currentUser().authorities
+      ?.filter { it.roles.contains(role) }
+      ?.map { it.groupId }
+      ?: return listOf()
+    return groupRepository.selectByIds(groupIds)
+  }
 
-  fun groups(environment: DataFetchingEnvironment): List<Group> {
-    // TODO 権限に応じて変える
-    val user = environment.currentUser()
-    return groupRepository.selectAll()
+  fun effectiveGroups(role: Role, environment: DataFetchingEnvironment): List<GroupWithPath> {
+    val manageableGroupIds = environment.currentUser().authorities
+      ?.filter { it.roles.contains(role) }
+      ?.map { it.groupId }
+      ?: return listOf()
+    return groupRepository.selectChildrenByIds(manageableGroupIds)
+  }
+
+//  fun topManageableGroups(environment: DataFetchingEnvironment): List<GroupWithPath> {
+//    val manageableGroupIds = environment.currentUser().authorities
+//      ?.filter { it.roles.contains(Role.MANAGER) }
+//      ?.map { it.groupId }
+//      ?: return listOf()
+//    val groups = groupRepository.selectByIds(manageableGroupIds).map { group -> group.groupIdPath() to group }
+//
+//    return groups
+//      .filter { group ->
+//        groups.firstOrNull { path -> path.first.contains(group.first) }?.let { false } ?: true
+//      }
+//      .map { it.second }
+//  }
+
+  fun isTopManageableGroup(groupId: UUID, environment: DataFetchingEnvironment): Boolean {
+    val manageableGroupIds = environment.currentUser().authorities
+      ?.filter { it.roles.contains(Role.GROUP) }
+      ?.map { it.groupId }
+    if (manageableGroupIds.isNullOrEmpty()
+      || !manageableGroupIds.contains(groupId)) {
+      return false
+    }
+
+    val groups = groupRepository.selectByIds(manageableGroupIds).map { group -> group.groupIdPath() to group.group.groupId }
+    return groups
+      .filter { group ->
+        groups
+          .firstOrNull { path ->
+            return@firstOrNull (path.second != group.second)
+              && path.first.contains(group.first)
+          }
+          ?.let { false }
+          ?: true
+      }
+      .map { it.second }
+      .contains(groupId)
+  }
+
+
+
+  fun group(groupId: UUID, environment: DataFetchingEnvironment): GroupWithPath? {
+    return groupRepository.selectById(groupId)
   }
 
   fun addGroup(command: AddGroupCommand, environment: DataFetchingEnvironment): Boolean {
@@ -57,20 +98,5 @@ class GroupApi(private val groupRepository: GroupRepository): GraphQLQueryResolv
     // TODO
     groupRepository.deleteGroup(groupTransitionId)
     return true
-  }
-
-  fun addGroupMember(command: GroupMemberCommand): Boolean {
-    TODO()
-  }
-  fun editGroupMember(command: GroupMemberCommand): Boolean {
-    TODO()
-  }
-  fun deleteGroupMember(groupId: UUID, userId: UUID): Boolean {
-    TODO()
-  }
-
-  fun courses(): List<Course> {
-    // TODO 疑似コード
-    return listOf(Course(UUID(0, 0), "test", null, null))
   }
 }

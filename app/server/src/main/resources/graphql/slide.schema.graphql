@@ -6,3 +6,13 @@ type SlideConfig {
   title: String!
   chapters: [Chapter!]
 }
+
+type Slide {
+  slideId: ID!
+  config: SlideConfig!
+}
+
+input AddSlideCommand {
+  slideId: ID!
+  slideFile: Upload!
+}

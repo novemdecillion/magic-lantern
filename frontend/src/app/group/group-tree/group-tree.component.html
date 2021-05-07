@@ -1,0 +1,19 @@
+<app-group-page [view]="'tree'" [dataLoad]="dataLoad">
+  <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+
+    <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
+      <span class="mdi mdi-minus"></span>
+      {{node.name}}
+    </mat-tree-node>
+
+    <mat-tree-node *matTreeNodeDef="let node; when: hasChild" matTreeNodePadding>
+      <button mat-icon-button matTreeNodeToggle>
+        <span class="mdi" [class.mdi-chevron-down]="treeControl.isExpanded(node)"
+          [class.mdi-chevron-right]="!treeControl.isExpanded(node)">
+        </span>
+      </button>
+      {{node.name}}
+    </mat-tree-node>
+
+  </mat-tree>
+</app-group-page>

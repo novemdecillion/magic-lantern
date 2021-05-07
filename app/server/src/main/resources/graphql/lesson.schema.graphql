@@ -1,0 +1,16 @@
+type Lesson {
+  lessonId: ID!
+  groupId: ID!
+  slideId: ID!
+}
+
+type LessonWithRelation {
+  lesson: Lesson!
+  group: GroupWithPath!
+  slide: Slide!
+}
+
+input AddLessonCommand {
+  slideId: ID!
+  groupIds: [ID!]!
+}

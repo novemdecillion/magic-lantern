@@ -10,14 +10,18 @@ import io.github.novemdecillion.adapter.jooq.tables.FlywaySchemaHistoryTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupOriginTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionTable
+import io.github.novemdecillion.adapter.jooq.tables.LessonTable
 import io.github.novemdecillion.adapter.jooq.tables.RealmTable
+import io.github.novemdecillion.adapter.jooq.tables.SlideTable
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountGroupAuthorityRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.FlywaySchemaHistoryRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupGenerationRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupOriginRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupTransitionRecord
+import io.github.novemdecillion.adapter.jooq.tables.records.LessonRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.RealmRecord
+import io.github.novemdecillion.adapter.jooq.tables.records.SlideRecord
 
 import org.jooq.ForeignKey
 import org.jooq.UniqueKey
@@ -37,7 +41,10 @@ val FLYWAY_SCHEMA_HISTORY_PK: UniqueKey<FlywaySchemaHistoryRecord> = Internal.cr
 val GROUP_GENERATION_PKEY: UniqueKey<GroupGenerationRecord> = Internal.createUniqueKey(GroupGenerationTable.GROUP_GENERATION, DSL.name("group_generation_pkey"), arrayOf(GroupGenerationTable.GROUP_GENERATION.GROUP_GENERATION_ID), true)
 val GROUP_ORIGIN_PKEY: UniqueKey<GroupOriginRecord> = Internal.createUniqueKey(GroupOriginTable.GROUP_ORIGIN, DSL.name("group_origin_pkey"), arrayOf(GroupOriginTable.GROUP_ORIGIN.GROUP_ORIGIN_ID), true)
 val GROUP_TRANSITION_PKEY: UniqueKey<GroupTransitionRecord> = Internal.createUniqueKey(GroupTransitionTable.GROUP_TRANSITION, DSL.name("group_transition_pkey"), arrayOf(GroupTransitionTable.GROUP_TRANSITION.GROUP_TRANSITION_ID), true)
+val LESSON_GROUP_ORIGIN_ID_SLIDE_ID_KEY: UniqueKey<LessonRecord> = Internal.createUniqueKey(LessonTable.LESSON, DSL.name("lesson_group_origin_id_slide_id_key"), arrayOf(LessonTable.LESSON.GROUP_ORIGIN_ID, LessonTable.LESSON.SLIDE_ID), true)
+val LESSON_PKEY: UniqueKey<LessonRecord> = Internal.createUniqueKey(LessonTable.LESSON, DSL.name("lesson_pkey"), arrayOf(LessonTable.LESSON.LESSON_ID), true)
 val REALM_PKEY: UniqueKey<RealmRecord> = Internal.createUniqueKey(RealmTable.REALM, DSL.name("realm_pkey"), arrayOf(RealmTable.REALM.REALM_ID), true)
+val SLIDE_PKEY: UniqueKey<SlideRecord> = Internal.createUniqueKey(SlideTable.SLIDE, DSL.name("slide_pkey"), arrayOf(SlideTable.SLIDE.SLIDE_ID), true)
 
 // -------------------------------------------------------------------------
 // FOREIGN KEY definitions

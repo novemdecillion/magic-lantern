@@ -1,0 +1,14 @@
+<app-list-page [titleTemplateRef]="titleTemplate" [toolbarTemplateRef]="toolbarTemplate" [columns]="columns" [dataLoad]="dataLoad">
+</app-list-page>
+
+<ng-template #titleTemplate>
+  <span class="mdi mdi-book-open"></span>
+  教材
+</ng-template>
+
+<ng-template #toolbarTemplate>
+  <span class="ms-auto"></span>
+  <button class="mx-2" (click)="onAddSlide()">
+    <span class="mdi mdi-book-plus"></span>
+  </button>
+</ng-template>

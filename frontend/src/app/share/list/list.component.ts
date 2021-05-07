@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -6,20 +6,27 @@ import { Observable } from 'rxjs';
 
 export interface ColumnDefinition<Record> {
   name: string;
-  displayName?: string | null;
+  valueFrom?: (column: ColumnDefinition<Record>, row: Record)=>string;
+  headerName: string | null;
   sticky?: 'start' | 'end';
   sort?: boolean;
-  displayValue?: (column: ColumnDefinition<Record>, row: Record)=>string;
   cellTemplate?: TemplateRef<any>;
+  headerCellTemplate?: TemplateRef<any>;
 }
 
 @Component({
   selector: 'app-list',
-  templateUrl: './list.component.html'
+  templateUrl: './list.component.html',
+  styleUrls: ['./list.component.scss'],
+  encapsulation: ViewEncapsulation.None
 })
 export class ListComponent<Record extends {[key: string]: any}> implements OnInit {
   @Input() enableFilter: boolean = true;
   @Input() columns: ColumnDefinition<Record>[] = [];
+
+  @Input() pageSize=20;
+  @Input() pageSizeOptions=[20, 50, 100];
+  @Input() hidePageSize=false;
 
   @Input()
   set dataLoad(observable: Observable<Record[]> | null) {
@@ -54,8 +61,8 @@ export class ListComponent<Record extends {[key: string]: any}> implements OnIni
   }
 
   defaultDisplayValue(column: ColumnDefinition<Record>, row: Record): string {
-    if (column.displayValue) {
-      return column.displayValue(column, row);
+    if (column.valueFrom) {
+      return column.valueFrom(column, row);
     }
 
     let val = row[column.name]

@@ -18,7 +18,10 @@ data class CurrentGroupTransitionEntity(
     override var groupGenerationId: UUID? = null, 
     override var groupOriginId: UUID? = null, 
     override var groupName: String? = null, 
-    override var parentGroupTransitionId: UUID? = null
+    override var parentGroupTransitionId: UUID? = null, 
+    override var layer: Int? = null, 
+    override var path: String? = null, 
+    override var pathName: String? = null
 ): ICurrentGroupTransition {
 
 
@@ -30,6 +33,9 @@ data class CurrentGroupTransitionEntity(
         sb.append(", ").append(groupOriginId)
         sb.append(", ").append(groupName)
         sb.append(", ").append(parentGroupTransitionId)
+        sb.append(", ").append(layer)
+        sb.append(", ").append(path)
+        sb.append(", ").append(pathName)
 
         sb.append(")")
         return sb.toString()
@@ -45,6 +51,9 @@ data class CurrentGroupTransitionEntity(
         groupOriginId = from.groupOriginId
         groupName = from.groupName
         parentGroupTransitionId = from.parentGroupTransitionId
+        layer = from.layer
+        path = from.path
+        pathName = from.pathName
     }
 
     override fun <E : ICurrentGroupTransition> into(into: E): E {

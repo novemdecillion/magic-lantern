@@ -5,7 +5,7 @@
     </mat-card-title>
     <ng-container *ngTemplateOutlet="toolbarTemplateRef || defaultToolbar"></ng-container>
     <button *ngIf="isExistLoadDataListener()" mat-mini-fab matTooltip="再ロード" (click)="onClickLoadData()">
-      <span class="mdi mdi-sync" [class.mdi-spin]="isLoading"></span>
+      <span class="mdi mdi-autorenew" [class.mdi-spin]="isLoading"></span>
     </button>
   </mat-card-header>
 

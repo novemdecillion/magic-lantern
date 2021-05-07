@@ -42,6 +42,13 @@ query realms {
   }
 }
 
+query groupAppendableMembers($groupId: ID!) {
+  groupAppendableMembers(groupId: $groupId) {
+    ...user
+  }
+}
+
+
 mutation syncRealm($realmId: String) {
   syncRealm(realmId: $realmId)
 }

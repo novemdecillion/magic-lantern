@@ -11,6 +11,7 @@
 // Bootstrap
 @import '../node_modules/bootstrap/scss/bootstrap-utilities.scss';
 @import '../node_modules/bootstrap/scss/alert';
+@import '../node_modules/bootstrap/scss/forms/form-control';
 
 // angular-material
 @import '../node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css';
@@ -32,3 +33,11 @@ th.mat-column-operation {
 td.mat-column-operation {
   padding-right: 8px !important;
 }
+
+// .mat-dialog-title {
+//   margin-bottom: 0px !important;
+// }
+
+// .mat-dialog-container {
+//   padding: 12px !important;
+// }

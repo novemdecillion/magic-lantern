@@ -5,8 +5,21 @@ fragment slideConfig on SlideConfig {
   }
 }
 
-query slides {
-  slides {
+fragment slide on Slide {
+  slideId
+  config {
     ...slideConfig
   }
 }
+
+
+query slides {
+  slides {
+    ...slide
+  }
+}
+
+mutation addSlide($command: AddSlideCommand) {
+  addSlide(command: $command)
+}
+

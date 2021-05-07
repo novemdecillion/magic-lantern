@@ -22,8 +22,8 @@ package "Magic Lantern" {
 
     (グループを管理する) as manageGroup
 
-    (講習を管理する) as manageCourse
-    (受講する) as takeCourse
+    (講習を管理する) as manageLesson
+    (受講する) as manageStudy
 }
 
 manageUser -d- keycloak 
@@ -32,14 +32,14 @@ admin -r-|> manager
 manager -r-|> student
 admin -- manageGroup
 admin -- manageSlide
-manager -- manageCourse
+manager -- manageLesson
 manager -- manageNotice
-student -- takeCourse
+student -- manageStudy
 
 'manageUser ..> manageGroup: <<precedes>>
-'manageGroup ..> manageCourse: <<precedes>>
-'manageSlide ..> manageCourse: <<precedes>>
-'manageCourse .r.> takeCourse: <<precedes>>
+'manageGroup ..> manageLesson: <<precedes>>
+'manageSlide ..> manageLesson: <<precedes>>
+'manageLesson .r.> manageStudy: <<precedes>>
 ----
 
 
@@ -280,7 +280,7 @@ package ユーザ  <<Cloud>> {
         名
     }
 
-    entity "受講履歴" as CourseHistory {
+    entity "受講履歴" as StudyHistory {
 
     }
 }
@@ -289,7 +289,7 @@ DayOfEnforcement *-r- Group
 Group o- Slide: "講習"
 Group o-- User: "役割"
 
-User o- CourseHistory
+User o- StudyHistory
 
 
 

@@ -5,8 +5,11 @@ import java.util.*
 
 enum class Role {
   ADMIN,
-  MANAGER,
-  STUDENT
+  GROUP,
+  SLIDE,
+  LESSON,
+  STUDY,
+  NONE
 }
 
 data class CourseHistory(

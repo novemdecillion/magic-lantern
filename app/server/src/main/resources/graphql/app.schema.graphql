@@ -1,6 +1,7 @@
 scalar DateTime
 scalar Date
 scalar Time
+scalar Upload
 
 type Query {
   currentUser: User!
@@ -8,9 +9,18 @@ type Query {
   userCount: Int!
   realms: [Realm!]!
 
-  slides: [SlideConfig!]!
-  courses: [Course!]!
-  groups: [Group!]!
+  slides: [Slide!]!
+  manageableLessons: [LessonWithRelation!]!
+  studiableLessons: [LessonWithRelation!]!
+
+  authoritativeGroups(role: Role): [GroupWithPath!]!
+  effectiveGroups(role: Role): [GroupWithPath!]!
+
+
+  group(groupId: ID!): GroupWithPath
+  isTopManageableGroup(groupId: ID!): Boolean!
+  groupMembers(groupId: ID!): [User!]!
+  groupAppendableMembers(groupId: ID): [User!]!
 }
 
 type Mutation {
@@ -20,8 +30,11 @@ type Mutation {
   editGroup(command: EditGroupCommand): Boolean
   deleteGroup(groupId: ID): Boolean
 
-  addGroupMember(command: GroupMemberCommand): Boolean
+  addGroupMember(command: AddGroupMemberCommand): Boolean
   editGroupMember(command: GroupMemberCommand): Boolean
   deleteGroupMember(groupId: ID, userId: ID): Boolean
 
+  addSlide(command: AddSlideCommand): Boolean
+
+  addLesson(command: AddLessonCommand): Boolean
 }

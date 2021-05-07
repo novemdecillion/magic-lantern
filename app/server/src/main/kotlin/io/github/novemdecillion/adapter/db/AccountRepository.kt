@@ -6,7 +6,6 @@ import io.github.novemdecillion.adapter.jooq.tables.records.AccountRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.RealmRecord
 import io.github.novemdecillion.adapter.jooq.tables.references.ACCOUNT
 import io.github.novemdecillion.adapter.jooq.tables.references.REALM
-import io.github.novemdecillion.domain.User
 import org.jooq.DSLContext
 import org.springframework.stereotype.Repository
 

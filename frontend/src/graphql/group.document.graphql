@@ -1,8 +1,15 @@
-fragment course on Course {
-  courseId
-#  slide {
-#    ...slideConfig
-#  }
+fragment groupCore on GroupCore {
+  groupId
+  groupName
+}
+
+fragment groupWithPath on GroupWithPath {
+  group {
+    ...group
+  }
+  path {
+    ...groupCore
+  }
 }
 
 fragment group on Group {
@@ -13,15 +20,27 @@ fragment group on Group {
   parentGroupId
 }
 
-query courses {
-  courses {
-    ...course
+query group($groupId: ID!) {
+  group(groupId: $groupId) {
+    ...groupWithPath
   }
 }
 
-query groups {
-  groups {
-    ...group
+#query topManageableGroups {
+#  topManageableGroups {
+#    ...groupWithPath
+#  }
+#}
+
+query authoritativeGroups($role: Role) {
+  authoritativeGroups(role: $role) {
+    ...groupWithPath
+  }
+}
+
+query effectiveGroups($role: Role) {
+  effectiveGroups(role: $role) {
+    ...groupWithPath
   }
 }
 
@@ -37,7 +56,7 @@ mutation deleteGroup($groupId: ID) {
   deleteGroup(groupId: $groupId)
 }
 
-mutation addGroupMember($command: GroupMemberCommand) {
+mutation addGroupMember($command: AddGroupMemberCommand) {
   addGroupMember(command: $command)
 }
 

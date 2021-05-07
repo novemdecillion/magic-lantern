@@ -62,15 +62,58 @@ create table account_group_authority (
     references group_transition (group_transition_id) on delete cascade
 );
 
+create table slide (
+  slide_id character varying(255),
+  primary key (slide_id)
+);
+
+create table lesson (
+  lesson_id uuid,
+  group_origin_id uuid not null,
+  slide_id character varying(255),
+  primary key (lesson_id),
+  unique (group_origin_id, slide_id)
+);
+
 create view group_generation_period as
   select group_generation_id, start_date, lead( start_date ) OVER( ORDER BY start_date ) as end_date
   from group_generation;
 
 create materialized view current_group_transition as
-  select group_transition.*
-  from group_transition
-    left join group_generation_period on group_transition.group_generation_id = group_generation_period.group_generation_id
-      and ((start_date is null or start_date < now()) and (end_date is null or now() < end_date));
+  with recursive
+  current_group as (
+    select group_transition.group_transition_id,
+        group_transition.group_generation_id,
+        group_transition.group_origin_id,
+        group_transition.group_name,
+        group_transition.parent_group_transition_id
+      from group_transition
+        inner join group_generation_period on group_transition.group_generation_id = group_generation_period.group_generation_id and (group_generation_period.start_date is null or group_generation_period.start_date < now()) and (group_generation_period.end_date is null or now() < group_generation_period.end_date)
+  ),
+  group_tree as (
+    select current_group.group_transition_id,
+        current_group.group_generation_id,
+        current_group.group_origin_id,
+        current_group.group_name,
+        current_group.parent_group_transition_id,
+        1 as layer,
+        '/' || current_group.group_transition_id as path,
+        '/' || current_group.group_name as path_name
+      from current_group
+      where current_group.parent_group_transition_id is null
+    union all
+    select current_group.group_transition_id,
+        current_group.group_generation_id,
+        current_group.group_origin_id,
+        current_group.group_name,
+        current_group.parent_group_transition_id,
+        group_tree.layer + 1 as layer,
+        group_tree.path || '/' || current_group.group_transition_id as path,
+        group_tree.path_name || '/' || current_group.group_name as path_name
+      from group_tree
+        inner join current_group on current_group.parent_group_transition_id = group_tree.group_transition_id
+  )
+  select * from group_tree;
 
 create materialized view current_account_group_authority as
   select account_group_authority.*, current_group_transition.group_origin_id
@@ -94,8 +137,10 @@ insert into account (account_id, account_name, user_name, password)
  values ('00000000-0000-0000-0000-000000000000', 'admin', 'システム管理者', '{noop}password123');
 insert into account_group_authority (account_id, group_transition_id, role)
  values ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'ADMIN'),
-        ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'MANAGER'),
-        ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'STUDENT');
+        ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'GROUP'),
+        ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'SLIDE'),
+        ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'LESSON'),
+        ('00000000-0000-0000-0000-000000000000', '00000000-0000-0000-0000-000000000000', 'STUDY');
 
 -- テスト用
 insert into group_origin (group_origin_id)
@@ -111,3 +156,11 @@ insert into group_transition (group_transition_id, group_generation_id, group_or
         ('00000000-0000-0000-0000-000000000003', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', 'A1課', '00000000-0000-0000-0000-000000000001'),
         ('00000000-0000-0000-0000-000000000004', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000004', 'A2課', '00000000-0000-0000-0000-000000000001'),
         ('00000000-0000-0000-0000-000000000005', '00000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000005', 'B1課', '00000000-0000-0000-0000-000000000002');
+
+insert into account (account_id, account_name, user_name, password)
+ values ('00000000-0000-0000-0000-000000000010', 'user0001', '事業部長', '{noop}password123');
+insert into account_group_authority (account_id, group_transition_id, role)
+ values ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000000', 'NONE'),
+        ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000001', 'GROUP'),
+        ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000002', 'GROUP'),
+        ('00000000-0000-0000-0000-000000000010', '00000000-0000-0000-0000-000000000004', 'GROUP');

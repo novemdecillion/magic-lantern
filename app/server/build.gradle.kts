@@ -44,6 +44,7 @@ dependencies {
   implementation("org.asciidoctor:asciidoctorj:2.4.3")
   implementation("org.apache.commons:commons-math3:3.6.1")
   implementation("com.fasterxml.uuid:java-uuid-generator:4.0.1")
+  implementation("net.lingala.zip4j:zip4j:2.7.0")
 
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")

@@ -18,6 +18,9 @@ interface ICurrentGroupTransition : Serializable {
     var groupOriginId: UUID?
     var groupName: String?
     var parentGroupTransitionId: UUID?
+    var layer: Int?
+    var path: String?
+    var pathName: String?
 
     // -------------------------------------------------------------------------
     // FROM and INTO

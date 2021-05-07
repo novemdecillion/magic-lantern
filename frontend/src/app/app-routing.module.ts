@@ -8,12 +8,20 @@ const routes: Routes = [
     loadChildren: () => import('./admin/admin.module').then(m => m.AdminModule)
   },
   {
-    path: 'manager',
-    loadChildren: () => import('./manager/manager.module').then(m => m.ManagerModule)
+    path: 'group',
+    loadChildren: () => import('./group/group.module').then(m => m.GroupModule)
   },
   {
-    path: 'student',
-    loadChildren: () => import('./student/student.module').then(m => m.StudentModule)
+    path: 'slide',
+    loadChildren: () => import('./slide/slide.module').then(m => m.SlideModule)
+  },
+  {
+    path: 'lesson',
+    loadChildren: () => import('./lesson/lesson.module').then(m => m.LessonModule)
+  },
+  {
+    path: 'study',
+    loadChildren: () => import('./study/study.module').then(m => m.StudentModule)
   },
   {
     path: 'home',

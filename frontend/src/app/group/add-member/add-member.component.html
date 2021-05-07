@@ -1,0 +1,28 @@
+<h1 mat-dialog-title>メンバー追加</h1>
+<div mat-dialog-content>
+  <div class="d-flex flex-row">
+    <app-list [columns]="columns" [dataLoad]="dataLoad" [pageSize]="10" [hidePageSize]="true">
+    </app-list>
+
+    <div class="d-flex flex-column ms-5">
+      <label>権限:</label>
+      <mat-checkbox class="mb-2" color="warn" [(ngModel)]="roles['GROUP']">グループ管理者</mat-checkbox>
+      <mat-checkbox class="mb-2" color="warn" [(ngModel)]="roles['SLIDE']">教材管理者</mat-checkbox>
+      <mat-checkbox class="mb-2" color="warn" [(ngModel)]="roles['LESSON']">講座管理者</mat-checkbox>
+      <mat-checkbox class="mb-2" color="warn" [(ngModel)]="roles['STUDY']">受講者</mat-checkbox>
+
+      <div class="d-flex flex-row mt-auto">
+        <button mat-raised-button color="primary" (click)="onOK()" cdkFocusInitial>OK</button>
+        <button mat-stroked-button mat-dialog-close>キャンセル</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<ng-template #selectedHeaderTemplate>
+  <mat-checkbox color="warn" [(ngModel)]="selectAll" (click)="$event.stopPropagation()" >選択</mat-checkbox>
+</ng-template>
+
+<ng-template #selectedTemplate let-row="row">
+  <mat-checkbox  color="warn" [(ngModel)]="row.selected"></mat-checkbox>
+</ng-template>

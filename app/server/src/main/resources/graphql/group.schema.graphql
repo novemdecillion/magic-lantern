@@ -3,19 +3,29 @@ type Member {
   roles: [Role!]!
 }
 
-type Course {
-  courseId: ID!,
-#  slide: SlideConfig!
+interface IGroupCOre {
+  groupId: ID!
+  groupName: String!
 }
 
-type Group {
+type GroupCore implements IGroupCOre {
+  groupId: ID!
+  groupName: String!
+}
+
+type Group implements IGroupCOre {
   groupId: ID!
   groupOriginId: ID!
   groupGenerationId: ID!
   groupName: String!
   parentGroupId: ID
-  members: [Member!]
-  courses: [ID!]
+#  members: [Member!]
+#  courses: [ID!]
+}
+
+type GroupWithPath {
+  group: Group!
+  path: [GroupCore!]!
 }
 
 input AddGroupCommand {
@@ -28,6 +38,12 @@ input AddGroupCommand {
 input EditGroupCommand {
   groupId: ID!
   groupName: String!
+}
+
+input AddGroupMemberCommand {
+  groupId: ID!
+  userId: [ID!]!
+  role: [Role!]!
 }
 
 input GroupMemberCommand {

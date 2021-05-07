@@ -1,8 +1,7 @@
-<app-page [titleTemplateRef]="titleTemplate" [dataLoad]="dataLoad" (onLoadData)="onLoadData()">
-  <app-list [columns]="columns" [dataLoad]="dataLoad"></app-list>
-</app-page>
+<app-list-page [titleTemplateRef]="titleTemplate" [columns]="columns" [dataLoad]="dataLoad">
+</app-list-page>
 
 <ng-template #titleTemplate>
-  <span class="mdi account"></span>
+  <span class="mdi mdi-account"></span>
   ユーザ
 </ng-template>

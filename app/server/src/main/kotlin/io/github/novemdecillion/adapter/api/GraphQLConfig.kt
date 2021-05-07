@@ -1,6 +1,8 @@
 package io.github.novemdecillion.adapter.api
 
+import graphql.kickstart.servlet.apollo.ApolloScalars
 import graphql.scalars.ExtendedScalars
+import org.dataloader.DataLoaderRegistry
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -14,4 +16,7 @@ class GraphQLConfig {
   fun timeScaler() = ExtendedScalars.Time
   @Bean
   fun longScaler() = ExtendedScalars.GraphQLLong
+  @Bean
+  fun uploadScaler() = ApolloScalars.Upload
+
 }

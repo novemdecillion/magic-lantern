@@ -1,0 +1,17 @@
+<app-group-page [view]="'list'" [dataLoad]="dataLoad">
+  <app-list [columns]="columns" [dataLoad]="dataLoad"></app-list>
+</app-group-page>
+
+<ng-template #operationTemplate let-row="row">
+  <button mat-icon-button [matMenuTriggerFor]="menu">
+    <span class="mdi mdi-dots-vertical"></span>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="onEditGroup(row)">グループ編集</button>
+    <a mat-menu-item routerLink="/group/{{row.groupId}}/members">メンバー編集</a>
+    <button *ngIf="canDeleteGroup(row)" mat-menu-item (click)="onDeleteGroup(row)">グループ削除</button>
+    <mat-divider></mat-divider>
+    <button mat-menu-item (click)="onNewChildGroup(row)">子グループ作成</button>
+  </mat-menu>
+</ng-template>
+

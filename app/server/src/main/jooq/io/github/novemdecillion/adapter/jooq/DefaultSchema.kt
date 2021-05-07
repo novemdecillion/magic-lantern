@@ -13,7 +13,9 @@ import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationPeriodTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupOriginTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionTable
+import io.github.novemdecillion.adapter.jooq.tables.LessonTable
 import io.github.novemdecillion.adapter.jooq.tables.RealmTable
+import io.github.novemdecillion.adapter.jooq.tables.SlideTable
 import io.github.novemdecillion.adapter.jooq.tables.UserAggregateTable
 
 import kotlin.collections.List
@@ -82,9 +84,19 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
     val GROUP_TRANSITION get() = GroupTransitionTable.GROUP_TRANSITION
 
     /**
+     * The table <code>lesson</code>.
+     */
+    val LESSON get() = LessonTable.LESSON
+
+    /**
      * The table <code>realm</code>.
      */
     val REALM get() = RealmTable.REALM
+
+    /**
+     * The table <code>slide</code>.
+     */
+    val SLIDE get() = SlideTable.SLIDE
 
     /**
      * The table <code>user_aggregate</code>.
@@ -103,7 +115,9 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
         GroupGenerationPeriodTable.GROUP_GENERATION_PERIOD,
         GroupOriginTable.GROUP_ORIGIN,
         GroupTransitionTable.GROUP_TRANSITION,
+        LessonTable.LESSON,
         RealmTable.REALM,
+        SlideTable.SLIDE,
         UserAggregateTable.USER_AGGREGATE
     )
 }

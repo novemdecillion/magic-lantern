@@ -1,10 +1,14 @@
 package io.github.novemdecillion.adapter.oauth2
 
 import io.github.novemdecillion.adapter.db.AccountRepository
+import io.github.novemdecillion.adapter.db.UserRepository
 import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.adapter.jooq.tables.pojos.AccountEntity
 import io.github.novemdecillion.adapter.jooq.tables.pojos.RealmEntity
 import io.github.novemdecillion.adapter.scheduling.SPRING_SCHEDULING_ENABLED_KEY
+import io.github.novemdecillion.domain.Authority
+import io.github.novemdecillion.domain.ENTIRE_GROUP_ID
+import io.github.novemdecillion.domain.Role
 import io.github.novemdecillion.util.OAuth2Utils
 import io.github.novemdecillion.utils.keycloak.client.KeycloakAdminCliClient
 import io.github.novemdecillion.utils.lang.logger
@@ -40,7 +44,8 @@ class SyncKeycloakUsersService(
   val clientRegistrationRepository: InMemoryClientRegistrationRepository,
   val syncUsersProperties: SyncUsersProperties,
   val idGeneratorService: IdGeneratorService,
-  val accountRepository: AccountRepository
+  val accountRepository: AccountRepository,
+  val userRepository: UserRepository
 ) {
   companion object {
     val log = logger()
@@ -152,12 +157,12 @@ class SyncKeycloakUsersService(
 
   fun syncNewComer(realm: String, userRepresentation: UserRepresentation) {
     val userName = userName(userRepresentation, null)
-    accountRepository.insert(
-      AccountEntity(
-        idGeneratorService.generate(), userRepresentation.username, null,
-        userName, userRepresentation.email, null, realm, true
-      )
+    val account = AccountEntity(
+      idGeneratorService.generate(), userRepresentation.username, null,
+      userName, userRepresentation.email, null, realm, true
     )
+    accountRepository.insert(account)
+    userRepository.insertAuthority(account.accountId!!, Authority(ENTIRE_GROUP_ID, listOf(Role.NONE)))
   }
 
   fun userName(userRepresentation: UserRepresentation, locale: String?): String = when {

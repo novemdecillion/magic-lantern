@@ -2,46 +2,66 @@ fragment lesson on Lesson {
   lessonId
   groupId
   slideId
-}
-
-fragment lessonWithRelation on LessonWithRelation {
-  lesson {
-    ...lesson
-  }
   group {
-    ...groupWithPath
+    ...group
   }
   slide {
     ...slide
   }
 }
 
-query manageableLessons {
-  manageableLessons {
-    ...lessonWithRelation
+fragment study on Study {
+  studyId
+  userId
+
+  progressRate
+  score
+
+  startAt
+  endAt
+
+  slide {
+    ...slide
+  }
+  lessons {
+    lessonId
+    group {
+      ...group
+    }
   }
 }
 
-query studiableLessons {
-  studiableLessons {
-    ...lessonWithRelation
+
+query manageableLessons {
+  manageableLessons {
+    ...lesson
+  }
+}
+
+query myStudies {
+  myStudies {
+    ...study
   }
 }
 
 query prepareAddLesson {
   manageableLessons {
-    lesson {
-      ...lesson
-    }
+    lessonId
+    groupId
+    slideId
   }
   authoritativeGroups(role: LESSON) {
-    ...groupWithPath
+    ...group
   }
   slides {
     ...slide
   }
 }
 
-mutation addLesson($command: AddLessonCommand) {
+mutation addLesson($command: AddLessonCommand!) {
   addLesson(command: $command)
+}
+
+mutation deleteLesson($lessonId: ID!) {
+  deleteLesson(lessonId: $lessonId)
 }

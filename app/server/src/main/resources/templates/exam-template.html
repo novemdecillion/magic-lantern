@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{ layout/slide :: layout ( ~{::body/content()} ) }">
+<head>
+  <meta charset="utf-8">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+</head>
+<body>
+
+<form method="post" action=".?action=NEXT">
+<div class="container">
+  <div class="row mb-2">
+    <div class="col">
+      <span class="fs-2" th:text="${page.title}" ></span>
+      <th:block th:if="${confirm == true}"
+      th:with="pass=${page.passScore <= totalScore}">
+        <span th:if="${pass == true}" class="ms-3 fs-2 text-success">合格</span>
+        <span th:if="${pass == false}" class="ms-3 fs-2 text-danger">不合格</span>
+        <span class="ms-auto fs-5" th:text="|(採点合計:${totalScore}点, 合格ライン:${page.passScore}点)|"></span>
+      </th:block>
+    </div>
+  </div>
+  <div class="row mb-2 fs-5" th:each="question : ${page.questions}">
+    <div class="col">
+      <!--/* 問題文 */-->
+      <div>
+        <span th:utext="${question.text}"></span>
+        <span th:if="${confirm != true}" th:text="|(配点:${question.score}点)|"></span>
+        <span th:if="${confirm == true}" th:text="|(配点:${question.score}点, 採点:${scores[questionStat.index]}点)|"></span>
+      </div>
+
+      <!--/* 解説 */-->
+      <div th:if="${(confirm == true) && !#strings.isEmpty(question.comment)}" th:utext="${question.comment}"
+           class="alert alert-info"></div>
+
+      <ul class="list-group list-group-flush">
+        <!--/* 選択肢 */-->
+        <li class="list-group-item d-flex" th:each="choice : ${question.choices}"
+            th:with="choiceId=|${questionStat.index}-${choiceStat.index}|">
+
+          <i th:if="${(confirm == true) && (choice.correct == true)}"
+             class="bi bi-check text-success fs-2"
+             style="margin-left: calc(-1.325rem - .9vw);"></i>
+
+          <div class="form-check">
+            <input th:if="${question.type.name == 'Radio'}" th:id="${choiceId}"
+                   th:name="${questionStat.index}" th:value="${choiceStat.index}"
+                   type="radio" class="form-check-input"
+                   th:onclick="|return ${confirm != true};|"
+                   th:checked="${answer[questionStat.index]?.contains(choiceStat.index)}">
+
+            <input th:if="${question.type.name == 'Checkbox'}" th:id="${choiceId}"
+                   th:name="${questionStat.index}" th:value="${choiceStat.index}"
+                   type="checkbox" class="form-check-input"
+                   th:onclick="|return ${confirm != true};|"
+                   th:checked="${answer[questionStat.index]?.contains(choiceStat.index)}">
+
+            <label class="form-check-label" th:for="${choiceId}" th:utext="${choice.text}"></label>
+
+          </div>
+
+        </li>
+      </ul>
+
+    </div>
+  </div>
+</div>
+</form>
+
+<!--/*-->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-gtEjrD/SeCtmISkJkNUaaKMoLD0//ElJ19smozuHV6z3Iehds+3Ulb9Bn9Plx0x4" crossorigin="anonymous"></script>
+<!--*/-->
+</body>
+</html>

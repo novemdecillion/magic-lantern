@@ -1,14 +1,37 @@
-<app-list-page [titleTemplateRef]="titleTemplate" [toolbarTemplateRef]="toolbarTemplate" [columns]="columns" [dataLoad]="dataLoad">
-</app-list-page>
+<app-page [dataLoad]="dataLoad" (onLoadData)="onLoadData()">
 
-<ng-template #titleTemplate>
-  <span class="mdi mdi-book-open"></span>
-  教材
-</ng-template>
+  <ng-template pageTitle>
+    <span class="mdi mdi-book-open"></span>
+    教材
+  </ng-template>
 
-<ng-template #toolbarTemplate>
-  <span class="ms-auto"></span>
-  <button class="mx-2" (click)="onAddSlide()">
-    <span class="mdi mdi-book-plus"></span>
-  </button>
-</ng-template>
+  <ng-template pageToolbar>
+    <span class="ms-auto"></span>
+    <button class="mx-2" (click)="onAddSlide()">
+      <span class="mdi mdi-book-plus"></span>
+    </button>
+  </ng-template>
+
+
+  <app-list [dataLoad]="dataLoad">
+    <app-list-column name="slideId" headerName="教材ID">
+    </app-list-column>
+    <app-list-column name="title" headerName="教材タイトル">
+      <ng-template listCell let-row="row">
+        {{row.config.title}}
+      </ng-template>
+    </app-list-column>
+    <app-list-column name="operation" [sort]="false">
+      <ng-template listCell let-row="row">
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+          <span class="mdi mdi-dots-vertical"></span>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="onDeleteSlide(row)">教材削除</button>
+        </mat-menu>
+            </ng-template>
+    </app-list-column>
+
+  </app-list>
+
+</app-page>

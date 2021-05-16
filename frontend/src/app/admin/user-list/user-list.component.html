@@ -1,7 +1,14 @@
-<app-list-page [titleTemplateRef]="titleTemplate" [columns]="columns" [dataLoad]="dataLoad">
-</app-list-page>
+<app-page [dataLoad]="dataLoad" (onLoadData)="onLoadData()">
+  <ng-template pageTitle>
+    <span class="mdi mdi-account"></span>
+    ユーザ
+  </ng-template>
 
-<ng-template #titleTemplate>
-  <span class="mdi mdi-account"></span>
-  ユーザ
-</ng-template>
+  <app-list [dataLoad]="dataLoad">
+
+    <app-list-column name="userName" headerName="氏名"></app-list-column>
+    <app-list-column name="realmName" headerName="認証サーバ"></app-list-column>
+    <app-list-column name="enabled" headerName="有効"></app-list-column>
+
+  </app-list>
+</app-page>

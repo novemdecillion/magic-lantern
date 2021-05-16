@@ -31,7 +31,8 @@ export class EditGroupComponent implements OnInit {
           groupName: '',
           groupGenerationId: command.groupGenerationId,
           parentGroupId: command.groupId,
-          parentGroupName: command.groupName
+          parentGroupName: command.groupName,
+          path: []
         }
         break;
       case 'edit':

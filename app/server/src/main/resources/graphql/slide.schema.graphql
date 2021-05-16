@@ -9,6 +9,7 @@ type SlideConfig {
 
 type Slide {
   slideId: ID!
+  enable: Boolean!
   config: SlideConfig!
 }
 

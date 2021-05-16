@@ -2,6 +2,18 @@
 <div mat-dialog-content>
   <div class="d-flex flex-row">
     <app-list [columns]="columns" [dataLoad]="dataLoad" [pageSize]="10" [hidePageSize]="true">
+
+      <app-list-column name="operation" [sort]="false">
+        <ng-template listCell let-row="row">
+          <mat-checkbox  color="warn" [(ngModel)]="row.selected"></mat-checkbox>
+        </ng-template>
+        <ng-template listHeaderCell>
+          <mat-checkbox color="warn" [(ngModel)]="selectAll" (click)="$event.stopPropagation()" >選択</mat-checkbox>
+        </ng-template>
+      </app-list-column>
+
+      <app-list-column name="userName" headerName="氏名"></app-list-column>
+
     </app-list>
 
     <div class="d-flex flex-column ms-5">
@@ -18,11 +30,3 @@
     </div>
   </div>
 </div>
-
-<ng-template #selectedHeaderTemplate>
-  <mat-checkbox color="warn" [(ngModel)]="selectAll" (click)="$event.stopPropagation()" >選択</mat-checkbox>
-</ng-template>
-
-<ng-template #selectedTemplate let-row="row">
-  <mat-checkbox  color="warn" [(ngModel)]="row.selected"></mat-checkbox>
-</ng-template>

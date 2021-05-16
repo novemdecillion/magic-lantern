@@ -21,10 +21,6 @@ type Group implements IGroupCOre {
   parentGroupId: ID
 #  members: [Member!]
 #  courses: [ID!]
-}
-
-type GroupWithPath {
-  group: Group!
   path: [GroupCore!]!
 }
 

@@ -1,6 +1,6 @@
 query groupMembers($groupId: ID!) {
   group(groupId: $groupId) {
-    ...groupWithPath
+    ...group
   }
   isTopManageableGroup(groupId: $groupId)
   groupMembers(groupId: $groupId) {

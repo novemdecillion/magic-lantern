@@ -1,9 +1,10 @@
 <mat-card>
   <mat-card-header class="bg-primary bg-gradient text-light">
     <mat-card-title class="my-1" >
-      <ng-container *ngTemplateOutlet="titleTemplateRef || defaultTitle"></ng-container>
+
+      <ng-container *ngTemplateOutlet="title?.template || defaultTitle"></ng-container>
     </mat-card-title>
-    <ng-container *ngTemplateOutlet="toolbarTemplateRef || defaultToolbar"></ng-container>
+    <ng-container *ngTemplateOutlet="toolbar?.template || defaultToolbar"></ng-container>
     <button *ngIf="isExistLoadDataListener()" mat-mini-fab matTooltip="再ロード" (click)="onClickLoadData()">
       <span class="mdi mdi-autorenew" [class.mdi-spin]="isLoading"></span>
     </button>

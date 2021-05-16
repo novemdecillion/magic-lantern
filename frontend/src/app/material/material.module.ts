@@ -12,7 +12,9 @@ import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatPaginatorModule } from '@angular/material/paginator';
 // import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatRadioModule } from '@angular/material/radio';
 import { MatSidenavModule } from '@angular/material/sidenav';
+import { MatSnackBarModule, MAT_SNACK_BAR_DEFAULT_OPTIONS } from '@angular/material/snack-bar';
 import { MatSortModule } from "@angular/material/sort";
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatTableModule } from '@angular/material/table';
@@ -40,7 +42,9 @@ const MODULES = [
   MatMenuModule,
   MatPaginatorModule,
   // MatProgressSpinnerModule,
+  MatRadioModule,
   MatSidenavModule,
+  MatSnackBarModule,
   MatSortModule,
   MatStepperModule,
   MatTableModule,
@@ -60,8 +64,9 @@ const MODULES = [
     ...DECLARATIONS,
     ...MODULES
   ],
-  // providers: [
-  //   {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {hasBackdrop: false}}
-  // ]
+  providers: [
+    // {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {hasBackdrop: false}}
+    {provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 5000}}
+  ]
 })
 export class MaterialModule { }

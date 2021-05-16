@@ -62,17 +62,40 @@ create table account_group_authority (
     references group_transition (group_transition_id) on delete cascade
 );
 
-create table slide (
-  slide_id character varying(255),
-  primary key (slide_id)
-);
+-- create table slide (
+--   slide_id character varying(255),
+--   primary key (slide_id)
+-- );
 
 create table lesson (
   lesson_id uuid,
   group_origin_id uuid not null,
   slide_id character varying(255),
   primary key (lesson_id),
-  unique (group_origin_id, slide_id)
+  unique (group_origin_id, slide_id),
+  foreign key (group_origin_id)
+    references group_origin (group_origin_id) on delete cascade
+--  foreign key (slide_id)
+--    references slide (slide_id) on delete cascade
+);
+
+create table study (
+  study_id uuid,
+  account_id uuid not null,
+  slide_id character varying(255) not null,
+  progress text,
+  progress_rate integer,
+  answer text,
+  score integer,
+  start_at timestamp with time zone,
+  end_at timestamp with time zone,
+
+  primary key (study_id),
+  unique (account_id, slide_id),
+  foreign key (account_id)
+    references account (account_id) on delete cascade
+--  foreign key (slide_id)
+--    references slide (slide_id) on delete cascade
 );
 
 create view group_generation_period as

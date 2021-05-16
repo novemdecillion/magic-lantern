@@ -7,6 +7,7 @@ package io.github.novemdecillion.adapter.jooq.tables
 import io.github.novemdecillion.adapter.jooq.DefaultSchema
 import io.github.novemdecillion.adapter.jooq.keys.LESSON_GROUP_ORIGIN_ID_SLIDE_ID_KEY
 import io.github.novemdecillion.adapter.jooq.keys.LESSON_PKEY
+import io.github.novemdecillion.adapter.jooq.keys.LESSON__LESSON_GROUP_ORIGIN_ID_FKEY
 import io.github.novemdecillion.adapter.jooq.tables.records.LessonRecord
 
 import java.util.UUID
@@ -99,6 +100,15 @@ open class LessonTable(
     override fun getSchema(): Schema = DefaultSchema.DEFAULT_SCHEMA
     override fun getPrimaryKey(): UniqueKey<LessonRecord> = LESSON_PKEY
     override fun getKeys(): List<UniqueKey<LessonRecord>> = listOf(LESSON_PKEY, LESSON_GROUP_ORIGIN_ID_SLIDE_ID_KEY)
+    override fun getReferences(): List<ForeignKey<LessonRecord, *>> = listOf(LESSON__LESSON_GROUP_ORIGIN_ID_FKEY)
+
+    private lateinit var _groupOrigin: GroupOriginTable
+    fun groupOrigin(): GroupOriginTable {
+        if (!this::_groupOrigin.isInitialized)
+            _groupOrigin = GroupOriginTable(this, LESSON__LESSON_GROUP_ORIGIN_ID_FKEY)
+
+        return _groupOrigin;
+    }
     override fun `as`(alias: String): LessonTable = LessonTable(DSL.name(alias), this)
     override fun `as`(alias: Name): LessonTable = LessonTable(alias, this)
 

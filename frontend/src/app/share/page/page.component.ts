@@ -1,13 +1,30 @@
-import { Component, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
+import { Component, ContentChild, Directive, EventEmitter, Input, Output, TemplateRef } from '@angular/core';
 import { Observable } from 'rxjs';
 import { finalize } from 'rxjs/operators';
-import { PageService } from './page.service';
+
+
+@Directive({
+  selector: '[pageTitle]',
+})
+export class PageTitleDirective {
+  constructor(public template: TemplateRef<any>) { }
+}
+
+@Directive({
+  selector: '[pageToolbar]',
+})
+export class PageToolbarDirective {
+  constructor(public template: TemplateRef<any>) { }
+}
 
 @Component({
   selector: 'app-page',
   templateUrl: './page.component.html'
 })
 export class PageComponent {
+  @ContentChild(PageTitleDirective) title: PageTitleDirective | null = null;
+  @ContentChild(PageToolbarDirective) toolbar: PageToolbarDirective | null = null;
+
   @Input() titleTemplateRef: TemplateRef<any> | null = null;
   @Input() toolbarTemplateRef: TemplateRef<any> | null = null;
   @Input()
@@ -20,7 +37,7 @@ export class PageComponent {
     }
   }
 
-  constructor(public pageService: PageService) {}
+  constructor() {}
 
   @Output() onLoadData = new EventEmitter<void>();
 
@@ -28,11 +45,10 @@ export class PageComponent {
 
   onClickLoadData() {
     this.onLoadData.emit();
-    this.pageService.onLoadData();
   }
 
   isExistLoadDataListener(): boolean {
-    return (0 < this.onLoadData.observers.length) || (0 < this.pageService.listenerCount())
+    return 0 < this.onLoadData.observers.length
   }
 
 }

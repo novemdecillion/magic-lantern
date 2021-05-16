@@ -67,7 +67,7 @@ const SIDE_MENUS: RoleMap<SideMenu[]> = {
     {
       name: '受講',
       icon: 'mdi mdi-notebook-edit',
-      link: '/study/courses'
+      link: '/study/list'
     }
   ],
   NONE: []

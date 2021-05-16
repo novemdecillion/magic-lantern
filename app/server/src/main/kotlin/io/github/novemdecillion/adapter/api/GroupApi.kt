@@ -1,12 +1,15 @@
 package io.github.novemdecillion.adapter.api
 
+import graphql.execution.DataFetcherResult
 import graphql.kickstart.tools.GraphQLMutationResolver
 import graphql.kickstart.tools.GraphQLQueryResolver
+import graphql.kickstart.tools.GraphQLResolver
 import graphql.schema.DataFetchingEnvironment
 import io.github.novemdecillion.adapter.db.GroupRepository
 import io.github.novemdecillion.domain.*
 import org.springframework.stereotype.Component
 import java.util.*
+import java.util.concurrent.CompletableFuture
 
 @Component
 class GroupApi(private val groupRepository: GroupRepository): GraphQLQueryResolver, GraphQLMutationResolver {
@@ -23,19 +26,23 @@ class GroupApi(private val groupRepository: GroupRepository): GraphQLQueryResolv
   )
 
   fun authoritativeGroups(role: Role, environment: DataFetchingEnvironment): List<GroupWithPath> {
-    val groupIds = environment.currentUser().authorities
+    return environment.currentUser().authorities
       ?.filter { it.roles.contains(role) }
       ?.map { it.groupId }
-      ?: return listOf()
-    return groupRepository.selectByIds(groupIds)
+      ?.let {
+        groupRepository.selectByIds(it)
+      }
+      ?: listOf()
   }
 
   fun effectiveGroups(role: Role, environment: DataFetchingEnvironment): List<GroupWithPath> {
-    val manageableGroupIds = environment.currentUser().authorities
+    return environment.currentUser().authorities
       ?.filter { it.roles.contains(role) }
       ?.map { it.groupId }
-      ?: return listOf()
-    return groupRepository.selectChildrenByIds(manageableGroupIds)
+      ?.let {
+        groupRepository.selectChildrenByIds(it)
+      }
+      ?: listOf()
   }
 
 //  fun topManageableGroups(environment: DataFetchingEnvironment): List<GroupWithPath> {
@@ -61,7 +68,7 @@ class GroupApi(private val groupRepository: GroupRepository): GraphQLQueryResolv
       return false
     }
 
-    val groups = groupRepository.selectByIds(manageableGroupIds).map { group -> group.groupIdPath() to group.group.groupId }
+    val groups = groupRepository.selectByIds(manageableGroupIds).map { group -> group.groupIdPath() to group.groupId }
     return groups
       .filter { group ->
         groups
@@ -75,8 +82,6 @@ class GroupApi(private val groupRepository: GroupRepository): GraphQLQueryResolv
       .map { it.second }
       .contains(groupId)
   }
-
-
 
   fun group(groupId: UUID, environment: DataFetchingEnvironment): GroupWithPath? {
     return groupRepository.selectById(groupId)

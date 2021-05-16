@@ -10,14 +10,14 @@ type Query {
   realms: [Realm!]!
 
   slides: [Slide!]!
-  manageableLessons: [LessonWithRelation!]!
-  studiableLessons: [LessonWithRelation!]!
+  manageableLessons: [Lesson!]!
+  myStudies: [Study!]!
 
-  authoritativeGroups(role: Role): [GroupWithPath!]!
-  effectiveGroups(role: Role): [GroupWithPath!]!
+  authoritativeGroups(role: Role!): [Group!]!
+  effectiveGroups(role: Role!): [Group!]!
 
 
-  group(groupId: ID!): GroupWithPath
+  group(groupId: ID!): Group
   isTopManageableGroup(groupId: ID!): Boolean!
   groupMembers(groupId: ID!): [User!]!
   groupAppendableMembers(groupId: ID): [User!]!
@@ -26,15 +26,18 @@ type Query {
 type Mutation {
   syncRealm(realmId: String): Boolean
 
-  addGroup(command: AddGroupCommand): Boolean
-  editGroup(command: EditGroupCommand): Boolean
-  deleteGroup(groupId: ID): Boolean
+  addGroup(command: AddGroupCommand!): Boolean
+  editGroup(command: EditGroupCommand!): Boolean
+  deleteGroup(groupId: ID!): Boolean
 
-  addGroupMember(command: AddGroupMemberCommand): Boolean
-  editGroupMember(command: GroupMemberCommand): Boolean
-  deleteGroupMember(groupId: ID, userId: ID): Boolean
+  addGroupMember(command: AddGroupMemberCommand!): Boolean
+  editGroupMember(command: GroupMemberCommand!): Boolean
+  deleteGroupMember(groupId: ID!, userId: ID!): Boolean
 
-  addSlide(command: AddSlideCommand): Boolean
+  addSlide(command: AddSlideCommand!): Boolean
+  deleteSlide(slideId: ID!): Boolean
+  enableSlide(slideId: ID!, enable: Boolean!): Boolean
 
-  addLesson(command: AddLessonCommand): Boolean
+  addLesson(command: AddLessonCommand!): Boolean
+  deleteLesson(lessonId: ID!): Boolean
 }

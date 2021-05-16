@@ -16,7 +16,6 @@ import { reducers, metaReducers } from './root/store';
 import { AppEffects } from './root/store/effects/app.effect';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { environment } from '../environments/environment';
-import { FormsModule } from '@angular/forms';
 import { ShareModule } from './share/share.module';
 
 @Injectable()

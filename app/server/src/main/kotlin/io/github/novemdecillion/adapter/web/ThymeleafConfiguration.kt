@@ -12,14 +12,14 @@ import java.nio.charset.StandardCharsets
 @Configuration
 class ThymeleafConfiguration {
   @Bean
-  fun systemTemplateResolver(applicationContext: ApplicationContext): SpringResourceTemplateResolver {
+  fun systemTemplateResolver(applicationContext: ApplicationContext, thymeleafProperties: ThymeleafProperties): SpringResourceTemplateResolver {
     val resolver = SpringResourceTemplateResolver()
     resolver.setApplicationContext(applicationContext)
     resolver.prefix = ThymeleafProperties.DEFAULT_PREFIX
     resolver.suffix = ThymeleafProperties.DEFAULT_SUFFIX
     resolver.templateMode = TemplateMode.HTML
     resolver.characterEncoding = StandardCharsets.UTF_8.displayName()
-    resolver.isCacheable = true
+    resolver.isCacheable = thymeleafProperties.isCache
     resolver.order = Ordered.LOWEST_PRECEDENCE
     resolver.checkExistence = true
     return resolver

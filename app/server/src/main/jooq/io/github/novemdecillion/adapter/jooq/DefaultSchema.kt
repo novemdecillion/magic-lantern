@@ -15,7 +15,7 @@ import io.github.novemdecillion.adapter.jooq.tables.GroupOriginTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionTable
 import io.github.novemdecillion.adapter.jooq.tables.LessonTable
 import io.github.novemdecillion.adapter.jooq.tables.RealmTable
-import io.github.novemdecillion.adapter.jooq.tables.SlideTable
+import io.github.novemdecillion.adapter.jooq.tables.StudyTable
 import io.github.novemdecillion.adapter.jooq.tables.UserAggregateTable
 
 import kotlin.collections.List
@@ -94,9 +94,9 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
     val REALM get() = RealmTable.REALM
 
     /**
-     * The table <code>slide</code>.
+     * The table <code>study</code>.
      */
-    val SLIDE get() = SlideTable.SLIDE
+    val STUDY get() = StudyTable.STUDY
 
     /**
      * The table <code>user_aggregate</code>.
@@ -117,7 +117,7 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
         GroupTransitionTable.GROUP_TRANSITION,
         LessonTable.LESSON,
         RealmTable.REALM,
-        SlideTable.SLIDE,
+        StudyTable.STUDY,
         UserAggregateTable.USER_AGGREGATE
     )
 }

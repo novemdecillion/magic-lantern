@@ -19,12 +19,12 @@ export class EditMemberComponent implements OnInit {
   title: string;
   dataLoad: Observable<MemberRecord[]> | null = null;
 
-  columns: ColumnDefinition<MemberRecord>[] = [
-    {
-      name: 'userName',
-      headerName: '氏名'
-    }
-  ];
+  // columns: ColumnDefinition<MemberRecord>[] = [
+  //   {
+  //     name: 'userName',
+  //     headerName: '氏名'
+  //   }
+  // ];
 
   constructor(@Inject(MAT_DIALOG_DATA) public command: EditMemberCommand) {
     this.dataLoad = of(command.members);

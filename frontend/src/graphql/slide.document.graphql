@@ -7,6 +7,7 @@ fragment slideConfig on SlideConfig {
 
 fragment slide on Slide {
   slideId
+  enable
   config {
     ...slideConfig
   }
@@ -19,7 +20,10 @@ query slides {
   }
 }
 
-mutation addSlide($command: AddSlideCommand) {
+mutation addSlide($command: AddSlideCommand!) {
   addSlide(command: $command)
 }
 
+mutation deleteSlide($slideId: ID!) {
+  deleteSlide(slideId: $slideId)
+}

@@ -1,13 +1,13 @@
-<iframe [src]="slideUrl">
+<iframe #viewer name="slide-viewer" (load)="onLoaded()">
 
 </iframe>
 
-<div class="panel d-flex w-75">
-  <button mat-fab>
-    <span class="mdi mdi-navigate-before"></span>
+<div class="panel d-flex w-75" *ngIf="!isLoading">
+  <button mat-fab (click)="onPrev()">
+    <span class="mdi mdi-chevron-left"></span>
   </button>
   <span class="flex-fill"></span>
-  <button mat-fab>
-    <span class="mdi mdi-navigate-next"></span>
+  <button mat-fab (click)="onNext()">
+    <span class="mdi mdi-chevron-right"></span>
   </button>
 </div>

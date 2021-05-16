@@ -3,6 +3,7 @@ package io.github.novemdecillion.slide
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import com.fasterxml.jackson.module.kotlin.registerKotlinModule
+import io.github.novemdecillion.domain.SlideConfig
 import org.assertj.core.api.Assertions
 //import org.junit.jupiter.api.Test
 import java.net.URL

@@ -19,8 +19,8 @@ export interface MemberRecord extends UserFragment {
   ]
 })
 export class AddMemberComponent implements OnInit {
-  @ViewChild('selectedTemplate', { static: true }) private selectedTemplate!: TemplateRef<any>;
-  @ViewChild('selectedHeaderTemplate', { static: true }) private selectedHeaderTemplate!: TemplateRef<any>;
+  // @ViewChild('selectedTemplate', { static: true }) private selectedTemplate!: TemplateRef<any>;
+  // @ViewChild('selectedHeaderTemplate', { static: true }) private selectedHeaderTemplate!: TemplateRef<any>;
   @ViewChild(ListComponent, { static: true }) private list!: ListComponent<MemberRecord>;
 
   dataLoad: Observable<MemberRecord[]> | null = null;
@@ -44,18 +44,18 @@ export class AddMemberComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.columns = [
-      {
-        name: 'selected',
-        headerName: '選択',
-        cellTemplate: this.selectedTemplate,
-        headerCellTemplate: this.selectedHeaderTemplate
-      },
-      {
-        name: 'userName',
-        headerName: '氏名'
-      }
-    ];
+    // this.columns = [
+    //   {
+    //     name: 'selected',
+    //     headerName: '選択',
+    //     cellTemplate: this.selectedTemplate,
+    //     headerCellTemplate: this.selectedHeaderTemplate
+    //   },
+    //   {
+    //     name: 'userName',
+    //     headerName: '氏名'
+    //   }
+    // ];
 
 
     this.dataLoad = this.groupAppendableMembersGql

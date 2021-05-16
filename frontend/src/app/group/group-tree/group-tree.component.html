@@ -1,4 +1,4 @@
-<app-group-page [view]="'tree'" [dataLoad]="dataLoad">
+<app-group-page [view]="'tree'" [dataLoad]="dataLoad" [onLoadData]="onLoadData">
   <mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
 
     <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>

@@ -1,54 +1,21 @@
-import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { format, parseISO } from 'date-fns';
-import { Observable, Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
 import { concatMap, map, share } from 'rxjs/operators';
-import { ColumnDefinition } from 'src/app/share/list-page/list-page.component';
-import { PageService } from 'src/app/share/page/page.service';
 import { RealmFragment, RealmsGQL, SyncRealmGQL } from 'src/generated/graphql';
 
 @Component({
   selector: 'app-realm-list',
   templateUrl: './realm-list.component.html'
 })
-export class RealmListComponent implements OnInit, OnDestroy {
-  @ViewChild('operationTemplate', { static: true }) private operationTemplate!: TemplateRef<any>;
-
-  loadDataSubscription: Subscription;
+export class RealmListComponent implements OnInit {
   dataLoad: Observable<RealmFragment[]> | null = null;
 
-  columns: ColumnDefinition<RealmFragment>[] = [
-  ];
-
-  constructor(private realmsGql: RealmsGQL, private syncRealmGql: SyncRealmGQL, pageService: PageService) {
-    this.loadDataSubscription = pageService.onLoadData$.subscribe(() => this.onLoadData());
+  constructor(private realmsGql: RealmsGQL, private syncRealmGql: SyncRealmGQL) {
   }
 
   ngOnInit(): void {
-    this.columns = [
-      {
-        name: 'realmName',
-        headerName: '認証サーバ'
-      },
-      {
-        name: 'enabled',
-        headerName: '有効'
-      },
-      {
-        name: 'syncAt',
-        headerName: '最終同期日時'
-      },
-      {
-        name: 'operation',
-        headerName: null,
-        sort: false,
-        cellTemplate: this.operationTemplate
-      }
-    ];
     this.onLoadData();
-  }
-
-  ngOnDestroy(): void {
-    this.loadDataSubscription.unsubscribe();
   }
 
   onLoadData() {

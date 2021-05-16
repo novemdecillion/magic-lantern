@@ -26,23 +26,31 @@ data class GroupCore(
   override val groupName: String
 ): IGroupCore
 
+interface IGroup : IGroupCore {
+  val groupOriginId: UUID
+  val groupGenerationId: UUID
+  val parentGroupId: UUID?
+}
+
 @DomainModelRing
 data class Group(
   override val groupId: UUID,
-  val groupOriginId: UUID,
-  val groupGenerationId: UUID,
+  override val groupOriginId: UUID,
+  override val groupGenerationId: UUID,
   override val groupName: String,
-  val parentGroupId: UUID?
+  override val parentGroupId: UUID?
 //  val members: Set<Member> = setOf(),
 //  val courses: Set<Course> = setOf()
-): IGroupCore
+): IGroup
 
-data class GroupWithPath(
-  val group: Group,
-  val path: List<GroupCore>
-) {
-  fun groupIdPath() = path.map { it.groupId.toString() }.plus(group.groupId.toString()).joinToString(GROUP_PATH_SEPARATOR)
-  fun groupNamePath() = path.map { it.groupName }.plus(group.groupName).joinToString(GROUP_PATH_SEPARATOR)
+typealias GroupPath = List<GroupCore>
+
+class GroupWithPath(
+  group: Group,
+  val path: GroupPath
+): IGroup by group {
+  fun groupIdPath() = path.map { it.groupId.toString() }.plus(groupId.toString()).joinToString(GROUP_PATH_SEPARATOR)
+  fun groupNamePath() = path.map { it.groupName }.plus(groupName).joinToString(GROUP_PATH_SEPARATOR)
 }
 
 /**

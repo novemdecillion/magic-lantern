@@ -36,8 +36,8 @@ dependencies {
 
   // JavaScript
   runtimeOnly("org.webjars:webjars-locator:0.40")
-  runtimeOnly("org.webjars:bootstrap:5.0.0-beta2")
-  runtimeOnly("org.webjars.npm:bootstrap-icons:1.3.0")
+  runtimeOnly("org.webjars:bootstrap:5.0.1")
+  runtimeOnly("org.webjars.npm:bootstrap-icons:1.5.0")
 
   implementation("org.jmolecules:jmolecules-onion-architecture:1.0.0")
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")

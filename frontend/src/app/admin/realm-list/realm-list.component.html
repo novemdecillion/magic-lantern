@@ -1,16 +1,24 @@
-<app-list-page [titleTemplateRef]="titleTemplate" [columns]="columns" [dataLoad]="dataLoad">
-</app-list-page>
+<app-page [dataLoad]="dataLoad" (onLoadData)="onLoadData()">
+  <ng-template pageTitle>
+    <span class="mdi mdi-certificate"></span>
+    認証サーバ
+  </ng-template>
 
-<ng-template #titleTemplate>
-  <span class="mdi mdi-certificate"></span>
-  認証サーバ
-</ng-template>
+  <app-list [dataLoad]="dataLoad">
 
-<ng-template #operationTemplate let-row="row">
-  <button mat-icon-button [matMenuTriggerFor]="menu">
-    <span class="mdi mdi-dots-vertical"></span>
-  </button>
-  <mat-menu #menu="matMenu">
-    <button mat-menu-item (click)="onSync(row.realmId)">手動同期</button>
-  </mat-menu>
-</ng-template>
+    <app-list-column name="realmName" headerName="認証サーバ"></app-list-column>
+    <app-list-column name="enabled" headerName="有効"></app-list-column>
+    <app-list-column name="syncAt" headerName="最終同期日時"></app-list-column>
+    <app-list-column name="operation" [sort]="false">
+      <ng-template listCell let-row="row">
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+          <span class="mdi mdi-dots-vertical"></span>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="onSync(row.realmId)">手動同期</button>
+        </mat-menu>
+      </ng-template>
+    </app-list-column>
+
+  </app-list>
+</app-page>

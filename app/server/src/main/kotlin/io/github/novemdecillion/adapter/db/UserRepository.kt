@@ -87,15 +87,6 @@ class UserRepository(private val dslContext: DSLContext,
             .map { (groupTransitionId, roles) ->
               Authority(groupTransitionId, roles)
             }
-//            .let { groupIdToRoles ->
-//              return@let groupIdToRoles
-//                .firstOrNull { it.groupId == ENTIRE_GROUP_ID }
-//                ?.let { groupIdToRoles }
-//                ?: run {
-//                  // 全体グループのデフォルト権限を追加
-//                  groupIdToRoles.plus(Authority(ENTIRE_GROUP_ID, listOf(Role.STUDENT)))
-//                }
-//            }
         recordMapper(account).copy(authorities = authorities)
       }
   }

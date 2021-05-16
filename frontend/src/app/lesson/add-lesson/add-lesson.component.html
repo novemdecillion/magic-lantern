@@ -2,16 +2,25 @@
 <form>
   <div mat-dialog-content>
 
-
-    <!-- <div class="d-flex flex-column">
-    </div> -->
-
     <mat-horizontal-stepper [linear]="true" #stepper>
       <mat-step [completed]="selectedSlide != null">
         <form>
           <ng-template matStepLabel>教材</ng-template>
 
-          <app-list [columns]="slideColumns" [dataLoad]="slideDataLoad" [pageSize]="10" [hidePageSize]="true">
+          <app-list #slideList [dataLoad]="slideDataLoad" [pageSize]="10" [hidePageSize]="true">
+            <app-list-column name="selected" headerName="選択" [sort]="false">
+              <ng-template listCell let-row="row">
+                <mat-radio-button color="warn" [value]="true" (change)="slideSelected($event, row)"></mat-radio-button>
+              </ng-template>
+            </app-list-column>
+            <app-list-column name="slideId" headerName="教材ID">
+            </app-list-column>
+            <app-list-column name="title" headerName="教材タイトル">
+              <ng-template listCell let-row="row">
+                {{row.config.title}}
+              </ng-template>
+            </app-list-column>
+
           </app-list>
 
           <div>
@@ -24,22 +33,43 @@
         <form>
           <ng-template matStepLabel>グループ</ng-template>
 
+          <app-list #groupList [dataLoad]="groupDataLoad" [pageSize]="10" [hidePageSize]="true">
+            <app-list-column name="selected" headerName="選択" [sort]="false">
+              <ng-template listCell let-row="row">
+                <mat-checkbox color="warn" [ngModel]="row.selected" name="selected" (change)="onChangeGroup($event, row)"></mat-checkbox>
+              </ng-template>
+              <ng-template listHeaderCell>
+                <mat-checkbox color="warn" [(ngModel)]="selectAllGroup" (click)="$event.stopPropagation()" [ngModelOptions]="{standalone: true}">選択</mat-checkbox>
+              </ng-template>
+            </app-list-column>
+            <app-list-column name="groupName" headerName="グループ名">
+            </app-list-column>
+            <app-list-column name="parentGroupName" headerName="所属グループ名">
+            </app-list-column>
+          </app-list>
+
           <div>
             <button mat-button matStepperPrevious>前へ</button>
-            <button mat-raised-button color="primary" cdkFocusInitial matStepperNext>次へ</button>
+            <button type="submit" mat-raised-button color="primary" (click)="onOK()" cdkFocusInitial>OK</button>
+            <!-- <button mat-raised-button color="primary" cdkFocusInitial matStepperNext>次へ</button> -->
             <button mat-stroked-button mat-dialog-close>キャンセル</button>
           </div>
         </form>
       </mat-step>
-      <mat-step>
+      <!-- <mat-step>
         <ng-template matStepLabel>Done</ng-template>
         <p>You are now done.</p>
         <div>
           <button mat-button matStepperPrevious>前へ</button>
           <button type="submit" mat-raised-button color="primary" (click)="onOK()" cdkFocusInitial>OK</button>
-          <!-- <button mat-button (click)="stepper.reset()">Reset</button> -->
+          <button mat-button (click)="stepper.reset()">Reset</button>
         </div>
-      </mat-step>
+      </mat-step> -->
+
+      <ng-template matStepperIcon="edit">
+        <span class="mdi mdi-pencil-outline"></span>
+      </ng-template>
+
     </mat-horizontal-stepper>
 
   </div>
@@ -49,3 +79,17 @@
   </div> -->
 </form>
 
+<!-- <ng-template #selectSlideTemplate let-row="row">
+  <mat-radio-button color="warn" [value]="true" (change)="slideSelected($event, row)"></mat-radio-button>
+</ng-template> -->
+
+<!-- <ng-template #selectGroupHeaderTemplate>
+  <mat-checkbox color="warn" [(ngModel)]="selectAllGroup" (click)="$event.stopPropagation()" >選択</mat-checkbox>
+</ng-template>
+
+<ng-template #selectGroupTemplate let-row="row">
+  <mat-checkbox color="warn" [ngModel]="row.selected" (change)="onChangeGroup($event, row)"></mat-checkbox>
+</ng-template> -->
+<!--
+<ng-template #editStepState>
+</ng-template> -->

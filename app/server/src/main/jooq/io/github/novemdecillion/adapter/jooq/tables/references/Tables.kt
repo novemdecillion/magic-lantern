@@ -15,7 +15,7 @@ import io.github.novemdecillion.adapter.jooq.tables.GroupOriginTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionTable
 import io.github.novemdecillion.adapter.jooq.tables.LessonTable
 import io.github.novemdecillion.adapter.jooq.tables.RealmTable
-import io.github.novemdecillion.adapter.jooq.tables.SlideTable
+import io.github.novemdecillion.adapter.jooq.tables.StudyTable
 import io.github.novemdecillion.adapter.jooq.tables.UserAggregateTable
 
 
@@ -76,9 +76,9 @@ val LESSON = LessonTable.LESSON
 val REALM = RealmTable.REALM
 
 /**
- * The table <code>slide</code>.
+ * The table <code>study</code>.
  */
-val SLIDE = SlideTable.SLIDE
+val STUDY = StudyTable.STUDY
 
 /**
  * The table <code>user_aggregate</code>.

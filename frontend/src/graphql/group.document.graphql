@@ -3,26 +3,20 @@ fragment groupCore on GroupCore {
   groupName
 }
 
-fragment groupWithPath on GroupWithPath {
-  group {
-    ...group
-  }
-  path {
-    ...groupCore
-  }
-}
-
 fragment group on Group {
   groupId
   groupOriginId
   groupGenerationId
   groupName
   parentGroupId
+  path {
+    ...groupCore
+  }
 }
 
 query group($groupId: ID!) {
   group(groupId: $groupId) {
-    ...groupWithPath
+    ...group
   }
 }
 
@@ -32,38 +26,38 @@ query group($groupId: ID!) {
 #  }
 #}
 
-query authoritativeGroups($role: Role) {
+query authoritativeGroups($role: Role!) {
   authoritativeGroups(role: $role) {
-    ...groupWithPath
+    ...group
   }
 }
 
-query effectiveGroups($role: Role) {
+query effectiveGroups($role: Role!) {
   effectiveGroups(role: $role) {
-    ...groupWithPath
+    ...group
   }
 }
 
-mutation addGroup($command: AddGroupCommand) {
+mutation addGroup($command: AddGroupCommand!) {
   addGroup(command: $command)
 }
 
-mutation editGroup($command: EditGroupCommand) {
+mutation editGroup($command: EditGroupCommand!) {
   editGroup(command: $command)
 }
 
-mutation deleteGroup($groupId: ID) {
+mutation deleteGroup($groupId: ID!) {
   deleteGroup(groupId: $groupId)
 }
 
-mutation addGroupMember($command: AddGroupMemberCommand) {
+mutation addGroupMember($command: AddGroupMemberCommand!) {
   addGroupMember(command: $command)
 }
 
-mutation editGroupMember($command: GroupMemberCommand) {
+mutation editGroupMember($command: GroupMemberCommand!) {
   editGroupMember(command: $command)
 }
 
-mutation deleteGroupMember($groupId: ID, $userId: ID) {
+mutation deleteGroupMember($groupId: ID!, $userId: ID!) {
   deleteGroupMember(groupId: $groupId, userId: $userId)
 }

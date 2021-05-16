@@ -1,57 +1,56 @@
 import { Component, OnInit, TemplateRef, ViewChild, OnDestroy } from '@angular/core';
-import { ColumnDefinition } from 'src/app/share/list-page/list-page.component';
-import { EffectiveGroupsGQL } from 'src/generated/graphql';
+import { ColumnDefinition } from 'src/app/share/list/list.component';
+import { EffectiveGroupsGQL, Role } from 'src/generated/graphql';
 import { Observable, Subscription } from 'rxjs';
 import { map, share } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { EditGroupComponent } from '../edit-group/edit-group.component';
 import { DEFAULT_GROUP_ID } from 'src/app/constants'
-import { PageService } from 'src/app/share/page/page.service';
 import { createGroupNodes, GroupNode } from '../../utilities';
 
 @Component({
   selector: 'app-group-list',
   templateUrl: './group-list.component.html'
 })
-export class GroupListComponent implements OnInit, OnDestroy {
-  @ViewChild('operationTemplate', { static: true }) private operationTemplate!: TemplateRef<any>;
+export class GroupListComponent implements OnInit {
+  // @ViewChild('operationTemplate', { static: true }) private operationTemplate!: TemplateRef<any>;
 
-  columns: ColumnDefinition<GroupNode>[] = [];
+  // columns: ColumnDefinition<GroupNode>[] = [];
 
   dataLoad: Observable<GroupNode[]> | null = null;
 
-  loadDataSubscription: Subscription;
+  // loadDataSubscription: Subscription;
 
-  constructor(private groupsGql: EffectiveGroupsGQL, public dialog: MatDialog, pageService: PageService) {
-    this.loadDataSubscription = pageService.onLoadData$.subscribe(() => this.onLoadData());
+  constructor(private groupsGql: EffectiveGroupsGQL, public dialog: MatDialog) {
+    // this.loadDataSubscription = pageService.onLoadData$.subscribe(() => this.onLoadData());
   }
 
   ngOnInit(): void {
-    this.columns = [
-      {
-        name: 'groupName',
-        headerName: 'グループ名'
-      },
-      {
-        name: 'parentGroupName',
-        headerName: '所属グループ名'
-      },
-      {
-        name: 'operation',
-        headerName: null,
-        sort: false,
-        cellTemplate: this.operationTemplate
-      }
-    ];
+    // this.columns = [
+    //   {
+    //     name: 'groupName',
+    //     headerName: 'グループ名'
+    //   },
+    //   {
+    //     name: 'parentGroupName',
+    //     headerName: '所属グループ名'
+    //   },
+    //   {
+    //     name: 'operation',
+    //     headerName: null,
+    //     sort: false,
+    //     cellTemplate: this.operationTemplate
+    //   }
+    // ];
     this.onLoadData();
   }
 
-  ngOnDestroy(): void {
-    this.loadDataSubscription.unsubscribe();
-  }
+  // ngOnDestroy(): void {
+  //   this.loadDataSubscription.unsubscribe();
+  // }
 
-  onLoadData(): void {
-    this.dataLoad = this.groupsGql.fetch()
+  onLoadData = (): void => {
+    this.dataLoad = this.groupsGql.fetch({role: Role.Group})
       .pipe(
         map(res => {
           let [nodes, _] = createGroupNodes(res.data.effectiveGroups)

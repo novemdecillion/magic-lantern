@@ -3,9 +3,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
 import { Observable, Subscription } from 'rxjs';
 import { map, share } from 'rxjs/operators';
-import { EffectiveGroupsGQL } from 'src/generated/graphql';
+import { EffectiveGroupsGQL, Role } from 'src/generated/graphql';
 import { createGroupNodes, GroupNode } from '../../utilities';
-import { PageService } from 'src/app/share/page/page.service';
 
 interface FlatNode {
   expandable: boolean;
@@ -17,7 +16,7 @@ interface FlatNode {
   selector: 'app-group-tree',
   templateUrl: './group-tree.component.html'
 })
-export class GroupTreeComponent implements OnInit, OnDestroy {
+export class GroupTreeComponent implements OnInit {
 
   transformer = (node: GroupNode, level: number) => {
     let groupName: string = node.groupName
@@ -40,23 +39,23 @@ export class GroupTreeComponent implements OnInit, OnDestroy {
 
   dataLoad: Observable<GroupNode[]> | null = null;
 
-  loadDataSubscription: Subscription;
+  // loadDataSubscription: Subscription;
 
-  constructor(private groupsGql: EffectiveGroupsGQL, pageService: PageService) {
-    this.loadDataSubscription = pageService.onLoadData$.subscribe(() => this.onLoadData());
+  constructor(private groupsGql: EffectiveGroupsGQL) {
+    // this.loadDataSubscription = pageService.onLoadData$.subscribe(() => this.onLoadData());
   }
 
   ngOnInit(): void {
     this.onLoadData()
   }
 
-  ngOnDestroy(): void {
-    this.loadDataSubscription.unsubscribe();
-  }
+  // ngOnDestroy(): void {
+  //   this.loadDataSubscription.unsubscribe();
+  // }
 
-  onLoadData() {
+  onLoadData = (): void => {
     this.dataSource.data = [];
-    this.dataLoad = this.groupsGql.fetch()
+    this.dataLoad = this.groupsGql.fetch({role: Role.Group})
       .pipe(
         map(res => {
           let [_, rootNodes] = createGroupNodes(res.data.effectiveGroups)

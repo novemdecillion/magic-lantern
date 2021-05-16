@@ -1,20 +1,26 @@
-<app-list-page [titleTemplateRef]="titleTemplate" [toolbarTemplateRef]="toolbarTemplate" [columns]="columns" [dataLoad]="dataLoad">
-</app-list-page>
+<app-page [dataLoad]="dataLoad" (onLoadData)="onLoadData()">
+  <ng-template pageTitle>
+    <span class="mdi mdi-account-supervisor"></span>
+    {{groupName}} メンバー
+  </ng-template>
 
-<ng-template #titleTemplate>
-  <span class="mdi mdi-account-supervisor"></span>
-  {{groupName}} メンバー
-</ng-template>
+  <ng-template pageToolbar>
+    <span class="ms-auto"></span>
+    <button *ngIf="canAddDeleteMember()" (click)="onAddMember()">
+      <span class="mdi mdi-account-multiple-plus"></span>
+    </button>
+    <button *ngIf="canAddDeleteMember()" (click)="onDeleteMember()">
+      <span class="mdi mdi-account-multiple-minus"></span>
+    </button>
+    <button class="mx-2" (click)="onEditMember()">
+      <span class="mdi mdi-account-settings "></span>
+    </button>
+  </ng-template>
 
-<ng-template #toolbarTemplate>
-  <span class="ms-auto"></span>
-  <button *ngIf="canAddDeleteMember()" (click)="onAddMember()">
-    <span class="mdi mdi-account-multiple-plus"></span>
-  </button>
-  <button *ngIf="canAddDeleteMember()" (click)="onDeleteMember()">
-    <span class="mdi mdi-account-multiple-minus"></span>
-  </button>
-  <button class="mx-2" (click)="onEditMember()">
-    <span class="mdi mdi-account-settings "></span>
-  </button>
-</ng-template>
+
+  <app-list [dataLoad]="dataLoad">
+    <app-list-column name="userName" headerName="氏名"></app-list-column>
+    <app-list-column name="roleName" headerName="権限"></app-list-column>
+  </app-list>
+
+</app-page>

@@ -1,4 +1,4 @@
-package io.github.novemdecillion.slide
+package io.github.novemdecillion.domain
 
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
@@ -19,14 +19,25 @@ interface IChapter {
   fun numberOfPages(): Int
 }
 
+interface IPage {
+  val path: String?
+  val textType: TextType?
+}
+
+enum class TextType {
+  HTML,
+  AsciiDoc
+}
+
 /**
  * 説明
  */
 data class ExplainPage(
-  val path: String,
+  override val path: String?,
   val title: String,
-  val content: String?
-)
+  val text: String?,
+  override val textType: TextType?
+): IPage
 
 data class ExplainChapter(
   override val title: String,
@@ -50,8 +61,8 @@ data class ExamQuestionOption(
 data class ExamQuestion(
   val type: ExamQuestionType,
   val score: Int,
-  val passScore: Int?,
   val text: String,
+  val comment: String?,
   val choices: List<ExamQuestionOption>
 ) {
   fun score(answer: List<Int>, scoringMethod: ScoringMethod): Int = when (scoringMethod) {
@@ -117,15 +128,20 @@ data class ExamQuestion(
 
 data class ExamChapter(
   override val title: String,
+  override val path: String?,
+  val passScore: Int?,
+  override val textType: TextType?,
   val questions: List<ExamQuestion>
-) : IChapter {
+) : IChapter, IPage {
   override fun numberOfPages(): Int = 2
 
   /**
    * 得点
    */
-  fun score(answer: Map<Int, List<Int>>, scoringMethod: ScoringMethod): Int = answer
+  fun scores(answer: Map<Int, List<Int>>, scoringMethod: ScoringMethod): List<Int> = answer
     .map { questions[it.key].score(it.value, scoringMethod) }
+
+  fun score(answer: Map<Int, List<Int>>, scoringMethod: ScoringMethod): Int = scores(answer, scoringMethod)
     .sum()
 }
 
@@ -134,8 +150,8 @@ data class ExamChapter(
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes(
-  JsonSubTypes.Type(name = "Radio", value = RadioSurveyQuestion::class),
-  JsonSubTypes.Type(name = "Checkbox", value = CheckboxSurveyQuestion::class),
+  JsonSubTypes.Type(name = "Radio", value = SurveyQuestion::class),
+  JsonSubTypes.Type(name = "Checkbox", value = SurveyQuestion::class),
   JsonSubTypes.Type(name = "Textarea", value = TextareaSurveyQuestion::class)
 )
 interface ISurveyQuestion {
@@ -147,13 +163,7 @@ interface ISelectSurveyQuestion : ISurveyQuestion {
   val choices: List<String>
 }
 
-data class RadioSurveyQuestion(
-  override val text: String,
-  override val required: Boolean = false,
-  override val choices: List<String>
-) : ISelectSurveyQuestion
-
-data class CheckboxSurveyQuestion(
+data class SurveyQuestion(
   override val text: String,
   override val required: Boolean = false,
   override val choices: List<String>
@@ -166,8 +176,10 @@ data class TextareaSurveyQuestion(
 
 data class SurveyChapter(
   override val title: String,
+  override val path: String?,
+  override val textType: TextType?,
   val questions: List<ISurveyQuestion>
-) : IChapter {
+) : IChapter, IPage {
   override fun numberOfPages(): Int = 2
 }
 
@@ -181,15 +193,33 @@ data class SlideConfigOption(
 
 data class SlideConfig(
   val title: String,
+  val textType: TextType?,
   val chapters: List<IChapter>,
   val option: SlideConfigOption = SlideConfigOption()
 ) {
+  
+  private val chapterPageRange = chapters
+    .fold(mutableListOf<Pair<IntRange, IChapter>>()){ acc, chapter ->
+      val prevLast: Int = acc.lastOrNull()?.first?.last ?: -1
+      acc.add(IntRange(prevLast + 1, prevLast + chapter.numberOfPages()) to chapter)
+      acc
+    }
+  
   /**
    * 総ページ数
    */
   fun numberOfPages(): Int {
     return chapters
       .sumBy { it.numberOfPages() }
+  }
+
+  fun chapterAndPageIndex(pageIndex: Int): Pair<IndexedValue<IChapter>, Int>? {
+    return chapterPageRange.withIndex()
+      .firstOrNull { it.value.first.contains(pageIndex) }
+      ?.let {
+        val pageIndexInChapter = pageIndex - it.value.first.first
+        IndexedValue(it.index, it.value.second) to pageIndexInChapter
+      }
   }
 
   /**
@@ -220,7 +250,6 @@ data class SlideConfig(
 @DomainModelRing
 class Slide(
   val slideId: String,
+  val enable: Boolean,
   val config: SlideConfig,
-) {
-
-}
+)

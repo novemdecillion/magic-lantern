@@ -65,7 +65,7 @@ class SyncKeycloakUsersService(
   }
 
   @Scheduled(cron = "\${app.sync-users.cron}")
-  @Transactional(rollbackFor = [Exception::class])
+  @Transactional(rollbackFor = [Throwable::class])
   fun sync() {
     // TODO 認証サーバの設定が削除されたユーザを無効化する
     clientRegistrationRepository

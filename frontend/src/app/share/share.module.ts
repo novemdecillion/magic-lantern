@@ -1,13 +1,16 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ListPageComponent } from './list-page/list-page.component';
-import { ListComponent } from './list/list.component';
+import { ColumnDefinitionDirective, ListCellDirective, ListComponent, ListHeaderCellDirective } from './list/list.component';
 import { MaterialModule } from '../material/material.module';
-import { PageComponent } from './page/page.component';
+import { PageComponent, PageTitleDirective, PageToolbarDirective } from './page/page.component';
 import { FormsModule } from '@angular/forms';
+import { ConfirmDialogComponent } from './confirm-dialog/confirm-dialog.component';
 
 const DECLARATIONS = [
-  ListPageComponent, PageComponent, ListComponent
+  PageComponent,
+  ListComponent, ColumnDefinitionDirective, ListCellDirective, ListHeaderCellDirective,
+  ConfirmDialogComponent,
+  PageTitleDirective, PageToolbarDirective
 ];
 
 @NgModule({

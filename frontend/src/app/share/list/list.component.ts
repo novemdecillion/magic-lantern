@@ -1,8 +1,23 @@
-import { Component, Input, OnInit, TemplateRef, ViewChild, ViewEncapsulation } from '@angular/core';
+import { Component, ContentChildren, Directive, Input, OnInit, TemplateRef, ViewChild, AfterContentInit, ViewEncapsulation, ContentChild } from '@angular/core';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Observable } from 'rxjs';
+
+
+@Directive({
+  selector: '[listCell]',
+})
+export class ListCellDirective {
+  constructor(public template: TemplateRef<any>) { }
+}
+
+@Directive({
+  selector: '[listHeaderCell]',
+})
+export class ListHeaderCellDirective {
+  constructor(public template: TemplateRef<any>) { }
+}
 
 export interface ColumnDefinition<Record> {
   name: string;
@@ -14,13 +29,50 @@ export interface ColumnDefinition<Record> {
   headerCellTemplate?: TemplateRef<any>;
 }
 
+@Directive({
+  selector: 'app-list-column',
+})
+export class ColumnDefinitionDirective<Record> implements ColumnDefinition<Record> {
+  @Input()
+  name!: string;
+  @Input()
+  valueFrom?: (column: ColumnDefinition<Record>, row: Record)=>string;
+  @Input()
+  headerName: string | null = null;
+  @Input()
+  sticky?: 'start' | 'end';
+  @Input()
+  sort?: boolean;
+
+  @ContentChild(ListCellDirective)
+  cell: ListCellDirective | null = null;
+
+  @ContentChild(ListHeaderCellDirective)
+  headerCell: ListCellDirective | null = null;
+
+  // headerCellTemplate?: TemplateRef<any>;
+  // cellTemplate?: TemplateRef<any>;
+
+  constructor() { }
+
+  // ngAfterContentInit(): void {
+  //   if (this.cell) {
+  //     this.cellTemplate = this.cell.template;
+  //   }
+  //   if (this.headerCell) {
+  //     this.headerCellTemplate = this.headerCell.template;
+  //   }
+  // }
+
+}
+
 @Component({
   selector: 'app-list',
   templateUrl: './list.component.html',
   styleUrls: ['./list.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class ListComponent<Record extends {[key: string]: any}> implements OnInit {
+export class ListComponent<Record extends {[key: string]: any}> implements OnInit, AfterContentInit {
   @Input() enableFilter: boolean = true;
   @Input() columns: ColumnDefinition<Record>[] = [];
 
@@ -41,6 +93,7 @@ export class ListComponent<Record extends {[key: string]: any}> implements OnIni
 
   @ViewChild(MatPaginator, { static: true }) paginator!: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort!: MatSort;
+  @ContentChildren(ColumnDefinitionDirective) columnDefs: ColumnDefinitionDirective<Record>[] | null = null
 
   displayedColumns: string[] = [];
 
@@ -55,10 +108,17 @@ export class ListComponent<Record extends {[key: string]: any}> implements OnIni
   }
 
   ngOnInit(): void {
+  }
+
+  ngAfterContentInit(): void {
+    if (this.columnDefs) {
+      this.columns = this.columnDefs
+    }
     this.displayedColumns = this.columns.map(column => column.name)
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
   }
+
 
   defaultDisplayValue(column: ColumnDefinition<Record>, row: Record): string {
     if (column.valueFrom) {

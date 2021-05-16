@@ -1,0 +1,28 @@
+<app-page [dataLoad]="dataLoad" (onLoadData)="onLoadData()">
+  <ng-template pageTitle>
+    <span class="mdi mdi-notebook-edit"></span>
+    受講
+  </ng-template>
+
+  <app-list [dataLoad]="dataLoad">
+    <app-list-column name="title" headerName="教材タイトル">
+      <ng-template listCell let-row="row">
+        <a [routerLink]="studyPath(row)">{{ row.slide.config.title }}</a>
+      </ng-template>
+    </app-list-column>
+    <app-list-column name="status" headerName="状況">
+      <ng-template listCell let-row="row">
+        {{ studyStatus(row) }}
+      </ng-template>
+    </app-list-column>
+  </app-list>
+</app-page>
+
+<!-- <ng-template #operationTemplate let-row="row">
+  <button mat-icon-button [matMenuTriggerFor]="menu">
+    <span class="mdi mdi-dots-vertical"></span>
+  </button>
+  <mat-menu #menu="matMenu">
+    <button mat-menu-item (click)="onDeleteSlide(row)"></button>
+  </mat-menu>
+</ng-template> -->

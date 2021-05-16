@@ -2,29 +2,10 @@
 <div mat-dialog-content>
   <div class="d-flex flex-column">
 
-    <!-- <mat-form-field *ngIf="command.type != 'delete'; else readOnlyGroupName">
-      <mat-label>グループ名</mat-label>
-      <input matInput [(ngModel)]="groupNode.groupName">
-    </mat-form-field>
-
-    <ng-template #readOnlyGroupName>
-      <div>
-        <label>グループ名:</label>
-        {{groupNode.groupName}}
-      </div>
-    </ng-template>
-
-    <div *ngIf="groupNode.parentGroupName">
-      <label>親グループ名:</label>
-      {{groupNode.parentGroupName}}
-    </div> -->
-
-    <app-list [columns]="columns" [dataLoad]="dataLoad">
+    <app-list [dataLoad]="dataLoad">
+      <app-list-column name="userName" headerName="氏名"></app-list-column>
 
     </app-list>
-
-
-
 
   </div>
 </div>

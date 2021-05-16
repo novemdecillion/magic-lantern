@@ -2,11 +2,7 @@ type Lesson {
   lessonId: ID!
   groupId: ID!
   slideId: ID!
-}
-
-type LessonWithRelation {
-  lesson: Lesson!
-  group: GroupWithPath!
+  group: Group!
   slide: Slide!
 }
 

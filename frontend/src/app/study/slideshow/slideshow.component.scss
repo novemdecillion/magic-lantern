@@ -1,13 +1,16 @@
-@import '../../../../node_modules/bootstrap/scss/bootstrap-utilities.scss';
+// @import '../../../../node_modules/bootstrap/scss/bootstrap-utilities.scss';
 
 :host {
-  @extend .d-flex;
-  @extend .flex-column;
+  // @extend .d-flex;
+  display: flex;
+  // @extend .flex-column;
+  flex-direction: column;
   height: 100%;
 }
 
 iframe {
-  @extend .flex-grow-1;
+  // @extend .flex-grow-1;
+  flex-grow: 1;
 //  width: 100%;
 //  box-sizing: border-box;
   border: 0px;

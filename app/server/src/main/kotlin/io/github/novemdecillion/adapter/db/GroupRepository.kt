@@ -1,9 +1,6 @@
 package io.github.novemdecillion.adapter.db
 
-import io.github.novemdecillion.adapter.api.GroupApi
 import io.github.novemdecillion.adapter.id.IdGeneratorService
-import io.github.novemdecillion.adapter.jooq.tables.pojos.CurrentGroupTransitionEntity
-import io.github.novemdecillion.adapter.jooq.tables.records.CurrentAccountGroupAuthorityRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.CurrentGroupTransitionRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupOriginRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupTransitionRecord
@@ -18,9 +15,11 @@ import java.time.OffsetDateTime
 import java.util.*
 
 @Repository
-class GroupRepository(private val dslContext: DSLContext,
-                      private val materializedViewRepository: MaterializedViewRepository,
-                      private val idGeneratorService: IdGeneratorService) {
+class GroupRepository(
+  private val dslContext: DSLContext,
+  private val materializedViewRepository: MaterializedViewRepository,
+  private val idGeneratorService: IdGeneratorService
+) {
   fun insertNewGroup(
     now: OffsetDateTime,
     groupName: String,
@@ -125,13 +124,16 @@ class GroupRepository(private val dslContext: DSLContext,
 
   companion object {
     fun recordMapper(record: CurrentGroupTransitionRecord): GroupWithPath {
-      return GroupWithPath( Group(
-        record.groupTransitionId!!,
-        record.groupOriginId!!,
-        record.groupGenerationId!!,
-        record.groupName!!,
-        record.parentGroupTransitionId,
-      ), convertPath(record.path!!, record.pathName!!))
+      return GroupWithPath(
+        Group(
+          record.groupTransitionId!!,
+          record.groupOriginId!!,
+          record.groupGenerationId!!,
+          record.groupName!!,
+          record.parentGroupTransitionId,
+        ),
+        convertPath(record.path!!, record.pathName!!)
+      )
     }
 
     fun recordMapper(record: GroupTransitionRecord): Group {
@@ -162,6 +164,7 @@ class GroupRepository(private val dslContext: DSLContext,
       .where(
         GROUP_GENERATION_PERIOD.GROUP_GENERATION_ID.notEqual(ENTIRE_GROUP_GENERATION_ID)
           .and(GROUP_GENERATION_PERIOD.START_DATE.lessOrEqual(now).or(GROUP_GENERATION_PERIOD.START_DATE.isNull))
-          .and(GROUP_GENERATION_PERIOD.END_DATE.greaterThan(now).or(GROUP_GENERATION_PERIOD.END_DATE.isNull)))
+          .and(GROUP_GENERATION_PERIOD.END_DATE.greaterThan(now).or(GROUP_GENERATION_PERIOD.END_DATE.isNull))
+      )
   }
 }

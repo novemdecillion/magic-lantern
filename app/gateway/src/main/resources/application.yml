@@ -10,7 +10,7 @@ spring:
         - order: 1
           uri: http://localhost:8085
           predicates:
-            - Path=/api/**, /public/**, /webjars/**, /login, /login/**, /logout, /oauth2/**
+            - Path=/slideshow/**, /api/**, /public/**, /webjars/**, /login, /login/**, /logout, /oauth2/**
           filters:
             - PreserveHostHeader
         - uri: http://localhost:4200

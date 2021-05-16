@@ -1,9 +1,7 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Observable, Subscription } from 'rxjs';
-import { ColumnDefinition } from 'src/app/share/list-page/list-page.component';
+import { Component, OnInit } from '@angular/core';
+import { Observable } from 'rxjs';
 import { UserFragment, UsersGQL } from 'src/generated/graphql';
 import { map, share } from 'rxjs/operators';
-import { PageService } from 'src/app/share/page/page.service';
 
 interface UserRecord extends UserFragment {
   realmName?: string
@@ -13,35 +11,14 @@ interface UserRecord extends UserFragment {
   selector: 'app-user-list',
   templateUrl: './user-list.component.html'
 })
-export class UserListComponent implements OnInit, OnDestroy {
-  loadDataSubscription: Subscription;
+export class UserListComponent implements OnInit {
   dataLoad: Observable<UserRecord[]> | null = null;
 
-  columns: ColumnDefinition<UserRecord>[] = [
-    {
-      name: 'userName',
-      headerName: '氏名'
-    },
-    {
-      name: 'realmName',
-      headerName: '認証サーバ'
-    },
-    {
-      name: 'enabled',
-      headerName: '有効'
-    }
-  ];
-
-  constructor(private usersGql: UsersGQL, pageService: PageService) {
-    this.loadDataSubscription = pageService.onLoadData$.subscribe(() => this.onLoadData());
+  constructor(private usersGql: UsersGQL) {
   }
 
   ngOnInit(): void {
     this.onLoadData();
-  }
-
-  ngOnDestroy(): void {
-    this.loadDataSubscription.unsubscribe();
   }
 
   onLoadData() {

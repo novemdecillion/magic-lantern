@@ -1,4 +1,4 @@
-import { GroupCore, GroupFragment, Role, GroupWithPathFragment } from 'src/generated/graphql';
+import { GroupCore, GroupFragment, Role } from 'src/generated/graphql';
 import { DEFAULT_GROUP_ID } from './constants';
 
 export type RoleMap<R> = {[key in Role]: R};
@@ -44,7 +44,7 @@ export interface GroupNode extends GroupFragment {
   root?: boolean;
 }
 
-export function createGroupNodes(groupsQuery: GroupWithPathFragment[]): [{[key: string]: GroupNode}, GroupNode[]] {
+export function createGroupNodes(groupsQuery: GroupFragment[]): [{[key: string]: GroupNode}, GroupNode[]] {
   // let parentGroupNames: {[key: string]: string } = {}
   // groupsQuery.manageableGroupPaths.forEach(path => {
   //   let groupPath = [...path.groupPath];
@@ -57,9 +57,9 @@ export function createGroupNodes(groupsQuery: GroupWithPathFragment[]): [{[key: 
 
   let groups: {[key: string]: GroupNode} = {}
   groupsQuery.forEach(group => {
-    groups[group.group.groupId] = Object.assign({
+    groups[group.groupId] = Object.assign({
       parentGroupName: createGroupPathName(group.path.map(groupPath => groupPath.groupName))
-    }, group.group);
+    }, group);
   });
 
   let rootNodes: GroupNode[] = [];

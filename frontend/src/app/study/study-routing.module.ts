@@ -1,15 +1,19 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { LessonListComponent } from './lesson-list/lesson-list.component';
+import { StudyListComponent } from './study-list/study-list.component';
 import { SlideshowComponent } from './slideshow/slideshow.component';
 
 const routes: Routes = [
   {
-    path: 'lessons',
-    component: LessonListComponent
+    path: 'list',
+    component: StudyListComponent
   },
   {
-    path: 'slideshow/:courseId',
+    path: 'slide/start/:slideId',
+    component: SlideshowComponent
+  },
+  {
+    path: 'slide/:studyId',
     component: SlideshowComponent
   }
 ];

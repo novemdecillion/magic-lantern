@@ -1,0 +1,12 @@
+<h1 mat-dialog-title>{{ data.title }}</h1>
+<div mat-dialog-content>
+  <ng-container *ngTemplateOutlet="data.contentTemplateRef || defaultContent; context:{data: data}"></ng-container>
+</div>
+<div mat-dialog-actions>
+  <button mat-raised-button color="primary" mat-dialog-close="true" cdkFocusInitial>OK</button>
+  <button mat-stroked-button mat-dialog-close>キャンセル</button>
+</div>
+
+<ng-template #defaultContent let-data="data">
+  {{ data.message }}
+</ng-template>

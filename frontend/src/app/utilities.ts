@@ -1,5 +1,29 @@
-import { GroupCore, GroupFragment, Role } from 'src/generated/graphql';
+import parseISO from 'date-fns/parseISO';
+import { GroupCore, GroupFragment, NoticeFragment, Role } from 'src/generated/graphql';
 import { DEFAULT_GROUP_ID } from './constants';
+
+export function logout() {
+  location.href = '/login';
+}
+
+export function parseISOIfExist(dateTime?: string): Date | null {
+  if (dateTime) {
+    return parseISO(dateTime);
+  }
+  return null;
+}
+
+export function sortNotices(notices: NoticeFragment[]): NoticeFragment[] {
+  return notices.sort((a, b) => {
+    if(a.updateAt < b.updateAt) {
+      return 1;
+    } else if(a.updateAt == b.updateAt) {
+      return 0;
+    } else {
+      return -1;
+    }
+  });
+}
 
 export type RoleMap<R> = {[key in Role]: R};
 
@@ -89,11 +113,11 @@ export function createGroupNodes(groupsQuery: GroupFragment[]): [{[key: string]:
 
 export const roleDefine: RoleMap<{ name: string, order: number }>
 = {
-  ADMIN: { name: 'システム管理者', order: 0},
-  GROUP: { name: 'グループ管理者', order: 1},
-  SLIDE: { name: '教材管理者', order: 2},
-  LESSON: { name: '講座管理者', order: 3},
-  STUDY: { name: '受講者', order: 4},
+  ADMIN: { name: 'システム', order: 0},
+  GROUP: { name: 'グループ', order: 1},
+  SLIDE: { name: '教材', order: 2},
+  LESSON: { name: '講座', order: 3},
+  STUDY: { name: '受講', order: 4},
   NONE: { name: 'なし', order: 5}
 }
 

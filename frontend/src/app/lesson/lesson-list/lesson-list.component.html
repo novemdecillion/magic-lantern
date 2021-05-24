@@ -12,7 +12,7 @@
   </ng-template>
 
 
-  <app-list [columns]="columns" [dataLoad]="dataLoad">
+  <app-list [dataLoad]="dataLoad">
     <app-list-column name="groupName" headerName="グループ">
       <ng-template listCell let-row="row">
         {{row.group.groupName}}

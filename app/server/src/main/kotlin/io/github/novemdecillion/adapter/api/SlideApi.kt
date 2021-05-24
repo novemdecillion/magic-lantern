@@ -40,8 +40,6 @@ class SlideApi(private val slideRepository: SlideRepository, private val appSlid
     }
 
     slideRepository.insert(command.slideId, slideFile.inputStream)
-
-    // TODO
     return true
   }
 

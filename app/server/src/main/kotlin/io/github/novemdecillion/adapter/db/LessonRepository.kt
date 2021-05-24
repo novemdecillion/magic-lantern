@@ -55,13 +55,6 @@ class LessonRepository(private val dslContext: DSLContext,
     return dslContext.deleteFrom(LESSON).where(LESSON.LESSON_ID.equal(lessonId)).execute()
   }
 
-//  fun selectAll(): List<Lesson> {
-//    return dslContext.selectFrom(LESSON)
-//      .fetch { record ->
-//        Lesson(record.lessonId!!, record.slideId!!, /*TODO*/ record.groupOriginId!!)
-//      }
-//  }
-
   fun selectByIds(lessonIds: Collection<UUID>): List<LessonWithGroup> {
     return selectLesson {
       it.where(LESSON.LESSON_ID.`in`(lessonIds))

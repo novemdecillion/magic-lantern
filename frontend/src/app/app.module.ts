@@ -17,6 +17,8 @@ import { AppEffects } from './root/store/effects/app.effect';
 import { StoreDevtoolsModule } from '@ngrx/store-devtools';
 import { environment } from '../environments/environment';
 import { ShareModule } from './share/share.module';
+import { ChangePasswordComponent } from './root/change-password/change-password.component';
+import { logout } from './utilities';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
@@ -36,7 +38,7 @@ export class AuthInterceptor implements HttpInterceptor {
         error => {
           if (error instanceof HttpErrorResponse) {
             if(error.status == 403) {
-              location.href = '/login';
+              logout();
             }
           }
         }),
@@ -48,7 +50,8 @@ export class AuthInterceptor implements HttpInterceptor {
 @NgModule({
   declarations: [
     AppComponent,
-    HomeComponent
+    HomeComponent,
+    ChangePasswordComponent
   ],
   imports: [
     BrowserModule,

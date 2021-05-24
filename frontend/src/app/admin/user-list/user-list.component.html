@@ -4,11 +4,35 @@
     ユーザ
   </ng-template>
 
-  <app-list [dataLoad]="dataLoad">
+  <ng-template pageToolbar>
+    <span class="ms-auto"></span>
+    <button class="mx-2" (click)="onAddUser()" matTooltip="通知追加">
+      <span class="mdi mdi-account-plus"></span>
+    </button>
+  </ng-template>
 
-    <app-list-column name="userName" headerName="氏名"></app-list-column>
+  <app-list [dataLoad]="dataLoad">
+    <app-list-column name="userName" headerName="氏名">
+      <ng-template listCell let-row="row">
+        <a style="cursor: pointer;" (click)="onEditUser(row)">{{ row.userName }}</a>
+      </ng-template>
+    </app-list-column>
     <app-list-column name="realmName" headerName="認証サーバ"></app-list-column>
+    <app-list-column name="isAdmin" headerName="システム権限"></app-list-column>
+    <app-list-column name="isGroupManager" headerName="グループ権限"></app-list-column>
     <app-list-column name="enabled" headerName="有効"></app-list-column>
+
+    <app-list-column name="operation" [sort]="false">
+      <ng-template listCell let-row="row">
+        <button *ngIf="!row.isCurrentUser" mat-icon-button [matMenuTriggerFor]="menu">
+          <span class="mdi mdi-dots-vertical"></span>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button mat-menu-item (click)="onEditUser(row)">ユーザ編集</button>
+          <button *ngIf="canDelete(row)" mat-menu-item (click)="onDeleteUser(row)">ユーザ削除</button>
+        </mat-menu>
+      </ng-template>
+    </app-list-column>
 
   </app-list>
 </app-page>

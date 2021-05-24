@@ -1,0 +1,20 @@
+type Notice {
+  noticeId: ID!
+  message: String!
+  startAt: Date
+  endAt: Date
+  updateAt: DateTime!
+}
+
+input AddNoticeCommand {
+  message: String!
+  startAt: Date
+  endAt: Date
+}
+
+input UpdateNoticeCommand {
+  noticeId: ID!
+  message: String!
+  startAt: Date
+  endAt: Date
+}

@@ -14,6 +14,7 @@ import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupOriginTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionTable
 import io.github.novemdecillion.adapter.jooq.tables.LessonTable
+import io.github.novemdecillion.adapter.jooq.tables.NoticeTable
 import io.github.novemdecillion.adapter.jooq.tables.RealmTable
 import io.github.novemdecillion.adapter.jooq.tables.StudyTable
 import io.github.novemdecillion.adapter.jooq.tables.UserAggregateTable
@@ -89,6 +90,11 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
     val LESSON get() = LessonTable.LESSON
 
     /**
+     * The table <code>notice</code>.
+     */
+    val NOTICE get() = NoticeTable.NOTICE
+
+    /**
      * The table <code>realm</code>.
      */
     val REALM get() = RealmTable.REALM
@@ -116,6 +122,7 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
         GroupOriginTable.GROUP_ORIGIN,
         GroupTransitionTable.GROUP_TRANSITION,
         LessonTable.LESSON,
+        NoticeTable.NOTICE,
         RealmTable.REALM,
         StudyTable.STUDY,
         UserAggregateTable.USER_AGGREGATE

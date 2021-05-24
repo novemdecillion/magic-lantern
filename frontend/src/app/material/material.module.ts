@@ -3,6 +3,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import {MatDatepickerModule} from '@angular/material/datepicker';
 import { MatDialogModule, MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatGridListModule } from '@angular/material/grid-list';
@@ -22,6 +23,7 @@ import { MatTreeModule } from '@angular/material/tree';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatAutoHeaderRowDef, MatAutoRowDef } from "./table";
+import { MatNativeDateModule, MAT_DATE_LOCALE } from "@angular/material/core";
 
 const DECLARATIONS = [
   MatAutoHeaderRowDef,
@@ -33,6 +35,7 @@ const MODULES = [
   MatButtonToggleModule,
   MatCardModule,
   MatCheckboxModule,
+  MatDatepickerModule,
   MatDialogModule,
   MatExpansionModule,
   MatGridListModule,
@@ -40,6 +43,7 @@ const MODULES = [
   MatInputModule,
   MatListModule,
   MatMenuModule,
+  MatNativeDateModule,
   MatPaginatorModule,
   // MatProgressSpinnerModule,
   MatRadioModule,
@@ -65,8 +69,9 @@ const MODULES = [
     ...MODULES
   ],
   providers: [
-    // {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: {hasBackdrop: false}}
-    {provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 5000}}
+    {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: { minWidth: 320 }},
+    {provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 5000}},
+    {provide: MAT_DATE_LOCALE, useValue: 'ja-JP'},
   ]
 })
 export class MaterialModule { }

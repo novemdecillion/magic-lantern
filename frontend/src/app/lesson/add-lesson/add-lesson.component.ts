@@ -1,5 +1,5 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { ColumnDefinition, ListComponent } from 'src/app/share/list/list.component';
+import { ListComponent } from 'src/app/share/list/list.component';
 import { AddLessonGQL, PrepareAddLessonGQL, SlideFragment } from 'src/generated/graphql';
 import { Observable, of } from 'rxjs';
 import { createGroupNodes, GroupNode } from 'src/app/utilities';
@@ -19,18 +19,10 @@ export interface SelectableGroupNode extends GroupNode {
   ]
 })
 export class AddLessonComponent implements OnInit {
-  // @ViewChild('selectSlideTemplate', { static: true }) private selectSlideTemplate!: TemplateRef<any>;
-  // @ViewChild('selectGroupTemplate', { static: true }) private selectGroupTemplate!: TemplateRef<any>;
-  // @ViewChild('selectGroupHeaderTemplate', { static: true }) private selectGroupHeaderTemplate!: TemplateRef<any>;
   @ViewChild('groupList', { static: true }) private groupList!: ListComponent<SelectableGroupNode>;
 
   slideDataLoad: Observable<SlideFragment[]> | null = null;
-
-  // slideColumns: ColumnDefinition<SlideFragment>[] = [];
-
   groupDataLoad: Observable<GroupNode[]> | null = null;
-
-  // groupColumns: ColumnDefinition<GroupNode>[] = [];
 
   selectedSlide: string | null = null;
   selectedGroups: string[] | null = null;

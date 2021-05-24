@@ -11,6 +11,7 @@ import org.jooq.Record1
 import org.jooq.SelectConditionStep
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Repository
+import java.time.LocalDate
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -21,7 +22,7 @@ class GroupRepository(
   private val idGeneratorService: IdGeneratorService
 ) {
   fun insertNewGroup(
-    now: OffsetDateTime,
+    now: LocalDate,
     groupName: String,
     parentGroupTransitionId: UUID = ENTIRE_GROUP_ID,
     groupGenerationId: UUID? = null
@@ -159,7 +160,7 @@ class GroupRepository(
   }
 
 
-  fun selectCurrentGroupGenerationId(now: OffsetDateTime): SelectConditionStep<Record1<UUID?>> {
+  fun selectCurrentGroupGenerationId(now: LocalDate): SelectConditionStep<Record1<UUID?>> {
     return DSL.select(GROUP_GENERATION_PERIOD.GROUP_GENERATION_ID).from(GROUP_GENERATION_PERIOD)
       .where(
         GROUP_GENERATION_PERIOD.GROUP_GENERATION_ID.notEqual(ENTIRE_GROUP_GENERATION_ID)

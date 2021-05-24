@@ -30,6 +30,8 @@ export type Query = {
   users: Array<User>;
   userCount: Scalars['Int'];
   realms: Array<Realm>;
+  notices: Array<Notice>;
+  effectiveNotices: Array<Notice>;
   slides: Array<Slide>;
   manageableLessons: Array<Lesson>;
   myStudies: Array<Study>;
@@ -74,11 +76,18 @@ export type QueryGroupAppendableMembersArgs = {
 export type Mutation = {
   __typename?: 'Mutation';
   syncRealm?: Maybe<Scalars['Boolean']>;
+  addUser?: Maybe<AddUserResult>;
+  updateUser?: Maybe<UpdateUserResult>;
+  changePassword?: Maybe<ChangePasswordResult>;
+  deleteUser?: Maybe<Scalars['Boolean']>;
+  addNotice?: Maybe<Scalars['Boolean']>;
+  updateNotice?: Maybe<Scalars['Boolean']>;
+  deleteNotice?: Maybe<Scalars['Boolean']>;
   addGroup?: Maybe<Scalars['Boolean']>;
-  editGroup?: Maybe<Scalars['Boolean']>;
+  updateGroup?: Maybe<Scalars['Boolean']>;
   deleteGroup?: Maybe<Scalars['Boolean']>;
   addGroupMember?: Maybe<Scalars['Boolean']>;
-  editGroupMember?: Maybe<Scalars['Boolean']>;
+  updateGroupMember?: Maybe<Scalars['Boolean']>;
   deleteGroupMember?: Maybe<Scalars['Boolean']>;
   addSlide?: Maybe<Scalars['Boolean']>;
   deleteSlide?: Maybe<Scalars['Boolean']>;
@@ -93,13 +102,48 @@ export type MutationSyncRealmArgs = {
 };
 
 
+export type MutationAddUserArgs = {
+  command: AddUserCommand;
+};
+
+
+export type MutationUpdateUserArgs = {
+  command: UpdateUserCommand;
+};
+
+
+export type MutationChangePasswordArgs = {
+  command: ChangePasswordCommand;
+};
+
+
+export type MutationDeleteUserArgs = {
+  userId: Scalars['ID'];
+};
+
+
+export type MutationAddNoticeArgs = {
+  command: AddNoticeCommand;
+};
+
+
+export type MutationUpdateNoticeArgs = {
+  command: UpdateNoticeCommand;
+};
+
+
+export type MutationDeleteNoticeArgs = {
+  noticeId: Scalars['ID'];
+};
+
+
 export type MutationAddGroupArgs = {
   command: AddGroupCommand;
 };
 
 
-export type MutationEditGroupArgs = {
-  command: EditGroupCommand;
+export type MutationUpdateGroupArgs = {
+  command: UpdateGroupCommand;
 };
 
 
@@ -109,18 +153,17 @@ export type MutationDeleteGroupArgs = {
 
 
 export type MutationAddGroupMemberArgs = {
-  command: AddGroupMemberCommand;
+  command: GroupMemberCommand;
 };
 
 
-export type MutationEditGroupMemberArgs = {
+export type MutationUpdateGroupMemberArgs = {
   command: GroupMemberCommand;
 };
 
 
 export type MutationDeleteGroupMemberArgs = {
-  groupId: Scalars['ID'];
-  userId: Scalars['ID'];
+  command: DeleteGroupMemberCommand;
 };
 
 
@@ -183,21 +226,20 @@ export type AddGroupCommand = {
   parentGroupId: Scalars['ID'];
 };
 
-export type EditGroupCommand = {
+export type UpdateGroupCommand = {
   groupId: Scalars['ID'];
   groupName: Scalars['String'];
 };
 
-export type AddGroupMemberCommand = {
+export type GroupMemberCommand = {
   groupId: Scalars['ID'];
-  userId: Array<Scalars['ID']>;
+  userIds: Array<Scalars['ID']>;
   role: Array<Role>;
 };
 
-export type GroupMemberCommand = {
+export type DeleteGroupMemberCommand = {
   groupId: Scalars['ID'];
-  userId: Scalars['ID'];
-  role: Array<Role>;
+  userIds: Array<Scalars['ID']>;
 };
 
 export type Lesson = {
@@ -212,6 +254,28 @@ export type Lesson = {
 export type AddLessonCommand = {
   slideId: Scalars['ID'];
   groupIds: Array<Scalars['ID']>;
+};
+
+export type Notice = {
+  __typename?: 'Notice';
+  noticeId: Scalars['ID'];
+  message: Scalars['String'];
+  startAt?: Maybe<Scalars['Date']>;
+  endAt?: Maybe<Scalars['Date']>;
+  updateAt: Scalars['DateTime'];
+};
+
+export type AddNoticeCommand = {
+  message: Scalars['String'];
+  startAt?: Maybe<Scalars['Date']>;
+  endAt?: Maybe<Scalars['Date']>;
+};
+
+export type UpdateNoticeCommand = {
+  noticeId: Scalars['ID'];
+  message: Scalars['String'];
+  startAt?: Maybe<Scalars['Date']>;
+  endAt?: Maybe<Scalars['Date']>;
 };
 
 export type Chapter = {
@@ -237,19 +301,6 @@ export type AddSlideCommand = {
   slideFile: Scalars['Upload'];
 };
 
-export type Study = {
-  __typename?: 'Study';
-  studyId?: Maybe<Scalars['ID']>;
-  userId: Scalars['ID'];
-  slideId: Scalars['ID'];
-  progressRate?: Maybe<Scalars['Int']>;
-  score?: Maybe<Scalars['Int']>;
-  startAt?: Maybe<Scalars['DateTime']>;
-  endAt?: Maybe<Scalars['DateTime']>;
-  slide: Slide;
-  lessons: Array<Lesson>;
-};
-
 export enum Role {
   Admin = 'ADMIN',
   Group = 'GROUP',
@@ -268,11 +319,58 @@ export type Authority = {
 export type User = {
   __typename?: 'User';
   userId: Scalars['ID'];
+  accountName: Scalars['String'];
   userName: Scalars['String'];
-  realmId?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  realmId: Scalars['String'];
   enabled: Scalars['Boolean'];
   authorities: Array<Authority>;
+  isSystemRealm?: Maybe<Scalars['Boolean']>;
 };
+
+export type AddUserCommand = {
+  accountName: Scalars['String'];
+  userName: Scalars['String'];
+  password: Scalars['String'];
+  email?: Maybe<Scalars['String']>;
+  enabled: Scalars['Boolean'];
+  isAdmin: Scalars['Boolean'];
+  isGroupManager: Scalars['Boolean'];
+};
+
+export enum AddUserResult {
+  Success = 'Success',
+  DuplicateAccountName = 'DuplicateAccountName',
+  UnknownError = 'UnknownError'
+}
+
+export type UpdateUserCommand = {
+  userId: Scalars['ID'];
+  accountName?: Maybe<Scalars['String']>;
+  userName?: Maybe<Scalars['String']>;
+  password?: Maybe<Scalars['String']>;
+  email?: Maybe<Scalars['String']>;
+  enabled?: Maybe<Scalars['Boolean']>;
+  isAdmin: Scalars['Boolean'];
+  isGroupManager: Scalars['Boolean'];
+};
+
+export enum UpdateUserResult {
+  Success = 'Success',
+  UnknownError = 'UnknownError'
+}
+
+export type ChangePasswordCommand = {
+  oldPassword: Scalars['String'];
+  newPassword: Scalars['String'];
+};
+
+export enum ChangePasswordResult {
+  Success = 'Success',
+  UserNotFound = 'UserNotFound',
+  PasswordNotMatch = 'PasswordNotMatch',
+  UnknownError = 'UnknownError'
+}
 
 export type Realm = {
   __typename?: 'Realm';
@@ -282,18 +380,104 @@ export type Realm = {
   syncAt?: Maybe<Scalars['DateTime']>;
 };
 
-export type GroupMembersQueryVariables = Exact<{
+export enum StudyStatus {
+  NotStart = 'NOT_START',
+  OnGoing = 'ON_GOING',
+  Pass = 'PASS',
+  Failed = 'FAILED'
+}
+
+export type StudyQuestionRecord = {
+  __typename?: 'StudyQuestionRecord';
+  score: Scalars['Int'];
+  scoring: Scalars['Int'];
+};
+
+export type StudyChapterRecord = {
+  __typename?: 'StudyChapterRecord';
+  chapterIndex: Scalars['Int'];
+  passScore: Scalars['Int'];
+  questions: Array<StudyQuestionRecord>;
+};
+
+export type StudyQuestionAnswer = {
+  __typename?: 'StudyQuestionAnswer';
+  questionIndex: Scalars['Int'];
+  answers: Array<Scalars['Int']>;
+};
+
+export type StudyChapterAnswer = {
+  __typename?: 'StudyChapterAnswer';
+  chapterIndex: Scalars['Int'];
+  questions: Array<StudyQuestionAnswer>;
+};
+
+export type StudyProgress = {
+  __typename?: 'StudyProgress';
+  chapterIndex: Scalars['Int'];
+  pageIndexes: Array<Scalars['Int']>;
+};
+
+export type Study = {
+  __typename?: 'Study';
+  studyId?: Maybe<Scalars['ID']>;
+  userId: Scalars['ID'];
+  slideId: Scalars['ID'];
+  status: StudyStatus;
+  progressDetails: Array<StudyProgress>;
+  progressRate?: Maybe<Scalars['Int']>;
+  answerDetails: Array<StudyChapterAnswer>;
+  scoreDetails: Array<StudyChapterRecord>;
+  startAt?: Maybe<Scalars['DateTime']>;
+  endAt?: Maybe<Scalars['DateTime']>;
+  slide: Slide;
+  lessons: Array<Lesson>;
+};
+
+export type ForMemberListQueryVariables = Exact<{
   groupId: Scalars['ID'];
 }>;
 
 
-export type GroupMembersQuery = (
+export type ForMemberListQuery = (
   { __typename?: 'Query' }
   & Pick<Query, 'isTopManageableGroup'>
   & { group?: Maybe<(
     { __typename?: 'Group' }
     & GroupFragment
   )>, groupMembers: Array<(
+    { __typename?: 'User' }
+    & UserFragment
+  )> }
+);
+
+export type ForEditMemberQueryVariables = Exact<{
+  groupId: Scalars['ID'];
+}>;
+
+
+export type ForEditMemberQuery = (
+  { __typename?: 'Query' }
+  & { group?: Maybe<(
+    { __typename?: 'Group' }
+    & GroupFragment
+  )>, groupMembers: Array<(
+    { __typename?: 'User' }
+    & UserFragment
+  )> }
+);
+
+export type ForAddMemberQueryVariables = Exact<{
+  groupId: Scalars['ID'];
+}>;
+
+
+export type ForAddMemberQuery = (
+  { __typename?: 'Query' }
+  & { group?: Maybe<(
+    { __typename?: 'Group' }
+    & GroupFragment
+  )>, groupAppendableMembers: Array<(
     { __typename?: 'User' }
     & UserFragment
   )> }
@@ -362,14 +546,14 @@ export type AddGroupMutation = (
   & Pick<Mutation, 'addGroup'>
 );
 
-export type EditGroupMutationVariables = Exact<{
-  command: EditGroupCommand;
+export type UpdateGroupMutationVariables = Exact<{
+  command: UpdateGroupCommand;
 }>;
 
 
-export type EditGroupMutation = (
+export type UpdateGroupMutation = (
   { __typename?: 'Mutation' }
-  & Pick<Mutation, 'editGroup'>
+  & Pick<Mutation, 'updateGroup'>
 );
 
 export type DeleteGroupMutationVariables = Exact<{
@@ -383,7 +567,7 @@ export type DeleteGroupMutation = (
 );
 
 export type AddGroupMemberMutationVariables = Exact<{
-  command: AddGroupMemberCommand;
+  command: GroupMemberCommand;
 }>;
 
 
@@ -392,19 +576,18 @@ export type AddGroupMemberMutation = (
   & Pick<Mutation, 'addGroupMember'>
 );
 
-export type EditGroupMemberMutationVariables = Exact<{
+export type UpdateGroupMemberMutationVariables = Exact<{
   command: GroupMemberCommand;
 }>;
 
 
-export type EditGroupMemberMutation = (
+export type UpdateGroupMemberMutation = (
   { __typename?: 'Mutation' }
-  & Pick<Mutation, 'editGroupMember'>
+  & Pick<Mutation, 'updateGroupMember'>
 );
 
 export type DeleteGroupMemberMutationVariables = Exact<{
-  groupId: Scalars['ID'];
-  userId: Scalars['ID'];
+  command: DeleteGroupMemberCommand;
 }>;
 
 
@@ -425,22 +608,6 @@ export type LessonFragment = (
   ) }
 );
 
-export type StudyFragment = (
-  { __typename?: 'Study' }
-  & Pick<Study, 'studyId' | 'userId' | 'progressRate' | 'score' | 'startAt' | 'endAt'>
-  & { slide: (
-    { __typename?: 'Slide' }
-    & SlideFragment
-  ), lessons: Array<(
-    { __typename?: 'Lesson' }
-    & Pick<Lesson, 'lessonId'>
-    & { group: (
-      { __typename?: 'Group' }
-      & GroupFragment
-    ) }
-  )> }
-);
-
 export type ManageableLessonsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
@@ -449,17 +616,6 @@ export type ManageableLessonsQuery = (
   & { manageableLessons: Array<(
     { __typename?: 'Lesson' }
     & LessonFragment
-  )> }
-);
-
-export type MyStudiesQueryVariables = Exact<{ [key: string]: never; }>;
-
-
-export type MyStudiesQuery = (
-  { __typename?: 'Query' }
-  & { myStudies: Array<(
-    { __typename?: 'Study' }
-    & StudyFragment
   )> }
 );
 
@@ -498,6 +654,63 @@ export type DeleteLessonMutationVariables = Exact<{
 export type DeleteLessonMutation = (
   { __typename?: 'Mutation' }
   & Pick<Mutation, 'deleteLesson'>
+);
+
+export type NoticeFragment = (
+  { __typename?: 'Notice' }
+  & Pick<Notice, 'noticeId' | 'message' | 'startAt' | 'endAt' | 'updateAt'>
+);
+
+export type NoticesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type NoticesQuery = (
+  { __typename?: 'Query' }
+  & { notices: Array<(
+    { __typename?: 'Notice' }
+    & NoticeFragment
+  )> }
+);
+
+export type EffectiveNoticesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type EffectiveNoticesQuery = (
+  { __typename?: 'Query' }
+  & { effectiveNotices: Array<(
+    { __typename?: 'Notice' }
+    & NoticeFragment
+  )> }
+);
+
+export type AddNoticeMutationVariables = Exact<{
+  command: AddNoticeCommand;
+}>;
+
+
+export type AddNoticeMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'addNotice'>
+);
+
+export type UpdateNoticeMutationVariables = Exact<{
+  command: UpdateNoticeCommand;
+}>;
+
+
+export type UpdateNoticeMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'updateNotice'>
+);
+
+export type DeleteNoticeMutationVariables = Exact<{
+  noticeId: Scalars['ID'];
+}>;
+
+
+export type DeleteNoticeMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'deleteNotice'>
 );
 
 export type SlideConfigFragment = (
@@ -556,7 +769,7 @@ export type AuthorityFragment = (
 
 export type UserFragment = (
   { __typename?: 'User' }
-  & Pick<User, 'userId' | 'userName' | 'realmId' | 'enabled'>
+  & Pick<User, 'userId' | 'accountName' | 'userName' | 'realmId' | 'email' | 'enabled' | 'isSystemRealm'>
   & { authorities: Array<(
     { __typename?: 'Authority' }
     & AuthorityFragment
@@ -628,6 +841,105 @@ export type SyncRealmMutation = (
   & Pick<Mutation, 'syncRealm'>
 );
 
+export type StudyChapterRecordFragment = (
+  { __typename?: 'StudyChapterRecord' }
+  & Pick<StudyChapterRecord, 'chapterIndex' | 'passScore'>
+  & { questions: Array<(
+    { __typename?: 'StudyQuestionRecord' }
+    & Pick<StudyQuestionRecord, 'score' | 'scoring'>
+  )> }
+);
+
+export type StudyProgressFragment = (
+  { __typename?: 'StudyProgress' }
+  & Pick<StudyProgress, 'chapterIndex' | 'pageIndexes'>
+);
+
+export type StudyChapterAnswerFragment = (
+  { __typename?: 'StudyChapterAnswer' }
+  & Pick<StudyChapterAnswer, 'chapterIndex'>
+  & { questions: Array<(
+    { __typename?: 'StudyQuestionAnswer' }
+    & Pick<StudyQuestionAnswer, 'questionIndex' | 'answers'>
+  )> }
+);
+
+export type StudyFragment = (
+  { __typename?: 'Study' }
+  & Pick<Study, 'studyId' | 'userId' | 'status' | 'progressRate' | 'startAt' | 'endAt'>
+  & { progressDetails: Array<(
+    { __typename?: 'StudyProgress' }
+    & StudyProgressFragment
+  )>, answerDetails: Array<(
+    { __typename?: 'StudyChapterAnswer' }
+    & StudyChapterAnswerFragment
+  )>, scoreDetails: Array<(
+    { __typename?: 'StudyChapterRecord' }
+    & StudyChapterRecordFragment
+  )>, slide: (
+    { __typename?: 'Slide' }
+    & SlideFragment
+  ), lessons: Array<(
+    { __typename?: 'Lesson' }
+    & Pick<Lesson, 'lessonId'>
+    & { group: (
+      { __typename?: 'Group' }
+      & GroupFragment
+    ) }
+  )> }
+);
+
+export type MyStudiesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type MyStudiesQuery = (
+  { __typename?: 'Query' }
+  & { myStudies: Array<(
+    { __typename?: 'Study' }
+    & StudyFragment
+  )> }
+);
+
+export type AddUserMutationVariables = Exact<{
+  command: AddUserCommand;
+}>;
+
+
+export type AddUserMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'addUser'>
+);
+
+export type UpdateUserMutationVariables = Exact<{
+  command: UpdateUserCommand;
+}>;
+
+
+export type UpdateUserMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'updateUser'>
+);
+
+export type ChangePasswordMutationVariables = Exact<{
+  command: ChangePasswordCommand;
+}>;
+
+
+export type ChangePasswordMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'changePassword'>
+);
+
+export type DeleteUserMutationVariables = Exact<{
+  userId: Scalars['ID'];
+}>;
+
+
+export type DeleteUserMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'deleteUser'>
+);
+
 export const GroupCoreFragmentDoc = gql`
     fragment groupCore on GroupCore {
   groupId
@@ -677,26 +989,15 @@ export const LessonFragmentDoc = gql`
 }
     ${GroupFragmentDoc}
 ${SlideFragmentDoc}`;
-export const StudyFragmentDoc = gql`
-    fragment study on Study {
-  studyId
-  userId
-  progressRate
-  score
+export const NoticeFragmentDoc = gql`
+    fragment notice on Notice {
+  noticeId
+  message
   startAt
   endAt
-  slide {
-    ...slide
-  }
-  lessons {
-    lessonId
-    group {
-      ...group
-    }
-  }
+  updateAt
 }
-    ${SlideFragmentDoc}
-${GroupFragmentDoc}`;
+    `;
 export const AuthorityFragmentDoc = gql`
     fragment authority on Authority {
   groupId
@@ -706,9 +1007,12 @@ export const AuthorityFragmentDoc = gql`
 export const UserFragmentDoc = gql`
     fragment user on User {
   userId
+  accountName
   userName
   realmId
+  email
   enabled
+  isSystemRealm
   authorities {
     ...authority
   }
@@ -722,8 +1026,65 @@ export const RealmFragmentDoc = gql`
   syncAt
 }
     `;
-export const GroupMembersDocument = gql`
-    query groupMembers($groupId: ID!) {
+export const StudyProgressFragmentDoc = gql`
+    fragment studyProgress on StudyProgress {
+  chapterIndex
+  pageIndexes
+}
+    `;
+export const StudyChapterAnswerFragmentDoc = gql`
+    fragment studyChapterAnswer on StudyChapterAnswer {
+  chapterIndex
+  questions {
+    questionIndex
+    answers
+  }
+}
+    `;
+export const StudyChapterRecordFragmentDoc = gql`
+    fragment studyChapterRecord on StudyChapterRecord {
+  chapterIndex
+  passScore
+  questions {
+    score
+    scoring
+  }
+}
+    `;
+export const StudyFragmentDoc = gql`
+    fragment study on Study {
+  studyId
+  userId
+  status
+  progressDetails {
+    ...studyProgress
+  }
+  progressRate
+  answerDetails {
+    ...studyChapterAnswer
+  }
+  scoreDetails {
+    ...studyChapterRecord
+  }
+  startAt
+  endAt
+  slide {
+    ...slide
+  }
+  lessons {
+    lessonId
+    group {
+      ...group
+    }
+  }
+}
+    ${StudyProgressFragmentDoc}
+${StudyChapterAnswerFragmentDoc}
+${StudyChapterRecordFragmentDoc}
+${SlideFragmentDoc}
+${GroupFragmentDoc}`;
+export const ForMemberListDocument = gql`
+    query forMemberList($groupId: ID!) {
   group(groupId: $groupId) {
     ...group
   }
@@ -738,8 +1099,52 @@ ${UserFragmentDoc}`;
   @Injectable({
     providedIn: 'root'
   })
-  export class GroupMembersGQL extends Apollo.Query<GroupMembersQuery, GroupMembersQueryVariables> {
-    document = GroupMembersDocument;
+  export class ForMemberListGQL extends Apollo.Query<ForMemberListQuery, ForMemberListQueryVariables> {
+    document = ForMemberListDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const ForEditMemberDocument = gql`
+    query forEditMember($groupId: ID!) {
+  group(groupId: $groupId) {
+    ...group
+  }
+  groupMembers(groupId: $groupId) {
+    ...user
+  }
+}
+    ${GroupFragmentDoc}
+${UserFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class ForEditMemberGQL extends Apollo.Query<ForEditMemberQuery, ForEditMemberQueryVariables> {
+    document = ForEditMemberDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const ForAddMemberDocument = gql`
+    query forAddMember($groupId: ID!) {
+  group(groupId: $groupId) {
+    ...group
+  }
+  groupAppendableMembers(groupId: $groupId) {
+    ...user
+  }
+}
+    ${GroupFragmentDoc}
+${UserFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class ForAddMemberGQL extends Apollo.Query<ForAddMemberQuery, ForAddMemberQueryVariables> {
+    document = ForAddMemberDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
@@ -815,17 +1220,17 @@ export const AddGroupDocument = gql`
       super(apollo);
     }
   }
-export const EditGroupDocument = gql`
-    mutation editGroup($command: EditGroupCommand!) {
-  editGroup(command: $command)
+export const UpdateGroupDocument = gql`
+    mutation updateGroup($command: UpdateGroupCommand!) {
+  updateGroup(command: $command)
 }
     `;
 
   @Injectable({
     providedIn: 'root'
   })
-  export class EditGroupGQL extends Apollo.Mutation<EditGroupMutation, EditGroupMutationVariables> {
-    document = EditGroupDocument;
+  export class UpdateGroupGQL extends Apollo.Mutation<UpdateGroupMutation, UpdateGroupMutationVariables> {
+    document = UpdateGroupDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
@@ -848,7 +1253,7 @@ export const DeleteGroupDocument = gql`
     }
   }
 export const AddGroupMemberDocument = gql`
-    mutation addGroupMember($command: AddGroupMemberCommand!) {
+    mutation addGroupMember($command: GroupMemberCommand!) {
   addGroupMember(command: $command)
 }
     `;
@@ -863,25 +1268,25 @@ export const AddGroupMemberDocument = gql`
       super(apollo);
     }
   }
-export const EditGroupMemberDocument = gql`
-    mutation editGroupMember($command: GroupMemberCommand!) {
-  editGroupMember(command: $command)
+export const UpdateGroupMemberDocument = gql`
+    mutation updateGroupMember($command: GroupMemberCommand!) {
+  updateGroupMember(command: $command)
 }
     `;
 
   @Injectable({
     providedIn: 'root'
   })
-  export class EditGroupMemberGQL extends Apollo.Mutation<EditGroupMemberMutation, EditGroupMemberMutationVariables> {
-    document = EditGroupMemberDocument;
+  export class UpdateGroupMemberGQL extends Apollo.Mutation<UpdateGroupMemberMutation, UpdateGroupMemberMutationVariables> {
+    document = UpdateGroupMemberDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
     }
   }
 export const DeleteGroupMemberDocument = gql`
-    mutation deleteGroupMember($groupId: ID!, $userId: ID!) {
-  deleteGroupMember(groupId: $groupId, userId: $userId)
+    mutation deleteGroupMember($command: DeleteGroupMemberCommand!) {
+  deleteGroupMember(command: $command)
 }
     `;
 
@@ -908,24 +1313,6 @@ export const ManageableLessonsDocument = gql`
   })
   export class ManageableLessonsGQL extends Apollo.Query<ManageableLessonsQuery, ManageableLessonsQueryVariables> {
     document = ManageableLessonsDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
-  }
-export const MyStudiesDocument = gql`
-    query myStudies {
-  myStudies {
-    ...study
-  }
-}
-    ${StudyFragmentDoc}`;
-
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class MyStudiesGQL extends Apollo.Query<MyStudiesQuery, MyStudiesQueryVariables> {
-    document = MyStudiesDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
@@ -985,6 +1372,90 @@ export const DeleteLessonDocument = gql`
   })
   export class DeleteLessonGQL extends Apollo.Mutation<DeleteLessonMutation, DeleteLessonMutationVariables> {
     document = DeleteLessonDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const NoticesDocument = gql`
+    query notices {
+  notices {
+    ...notice
+  }
+}
+    ${NoticeFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class NoticesGQL extends Apollo.Query<NoticesQuery, NoticesQueryVariables> {
+    document = NoticesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const EffectiveNoticesDocument = gql`
+    query effectiveNotices {
+  effectiveNotices {
+    ...notice
+  }
+}
+    ${NoticeFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class EffectiveNoticesGQL extends Apollo.Query<EffectiveNoticesQuery, EffectiveNoticesQueryVariables> {
+    document = EffectiveNoticesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const AddNoticeDocument = gql`
+    mutation addNotice($command: AddNoticeCommand!) {
+  addNotice(command: $command)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class AddNoticeGQL extends Apollo.Mutation<AddNoticeMutation, AddNoticeMutationVariables> {
+    document = AddNoticeDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const UpdateNoticeDocument = gql`
+    mutation updateNotice($command: UpdateNoticeCommand!) {
+  updateNotice(command: $command)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class UpdateNoticeGQL extends Apollo.Mutation<UpdateNoticeMutation, UpdateNoticeMutationVariables> {
+    document = UpdateNoticeDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const DeleteNoticeDocument = gql`
+    mutation deleteNotice($noticeId: ID!) {
+  deleteNotice(noticeId: $noticeId)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class DeleteNoticeGQL extends Apollo.Mutation<DeleteNoticeMutation, DeleteNoticeMutationVariables> {
+    document = DeleteNoticeDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);
@@ -1128,6 +1599,88 @@ export const SyncRealmDocument = gql`
   })
   export class SyncRealmGQL extends Apollo.Mutation<SyncRealmMutation, SyncRealmMutationVariables> {
     document = SyncRealmDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const MyStudiesDocument = gql`
+    query myStudies {
+  myStudies {
+    ...study
+  }
+}
+    ${StudyFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class MyStudiesGQL extends Apollo.Query<MyStudiesQuery, MyStudiesQueryVariables> {
+    document = MyStudiesDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const AddUserDocument = gql`
+    mutation addUser($command: AddUserCommand!) {
+  addUser(command: $command)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class AddUserGQL extends Apollo.Mutation<AddUserMutation, AddUserMutationVariables> {
+    document = AddUserDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const UpdateUserDocument = gql`
+    mutation updateUser($command: UpdateUserCommand!) {
+  updateUser(command: $command)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class UpdateUserGQL extends Apollo.Mutation<UpdateUserMutation, UpdateUserMutationVariables> {
+    document = UpdateUserDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const ChangePasswordDocument = gql`
+    mutation changePassword($command: ChangePasswordCommand!) {
+  changePassword(command: $command)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class ChangePasswordGQL extends Apollo.Mutation<ChangePasswordMutation, ChangePasswordMutationVariables> {
+    document = ChangePasswordDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const DeleteUserDocument = gql`
+    mutation deleteUser($userId: ID!) {
+  deleteUser(userId: $userId)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class DeleteUserGQL extends Apollo.Mutation<DeleteUserMutation, DeleteUserMutationVariables> {
+    document = DeleteUserDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

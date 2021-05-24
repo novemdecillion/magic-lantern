@@ -17,13 +17,13 @@
         <div class="accordion-item" th:if="${!oauth2.isEmpty()}">
           <h2 class="accordion-header" id="oauth2LoginHeader">
             <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#oauth2Login" aria-expanded="true" aria-controls="oauth2Login">
-              Single Sign-On
+              外部認証サーバ
             </button>
           </h2>
           <div id="oauth2Login" class="accordion-collapse collapse show" aria-labelledby="oauth2LoginHeader" data-bs-parent="#logins">
             <div class="accordion-body">
               <div class="alert alert-info" role="alert">
-                認証サーバに登録されているアカウントでログインします。
+                外部認証サーバに登録されているアカウントでログインします。
               </div>
 
               <div class="w-100">
@@ -38,13 +38,13 @@
         <div class="accordion-item">
           <h2 class="accordion-header" id="formLoginHeader">
             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#formLogin" aria-expanded="false" aria-controls="formLogin">
-              System
+              Magic Lantern Server
             </button>
           </h2>
           <div id="formLogin" class="accordion-collapse collapse" aria-labelledby="formLoginHeader" data-bs-parent="#logins">
             <div class="accordion-body">
               <div class="alert alert-info" role="alert">
-                システムに登録されているアカウントでログインします。
+                本システムに登録されているアカウントでログインします。
               </div>
 
               <div th:if="!${#strings.isEmpty(error)}" class="alert alert-danger" role="alert" th:text="${error}">

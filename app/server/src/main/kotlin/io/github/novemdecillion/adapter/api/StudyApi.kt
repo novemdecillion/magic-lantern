@@ -28,8 +28,45 @@ class StudyApi(private val studyRepository: StudyRepository, private val lessonR
   }
 }
 
+class StudyChapterRecord(
+  val chapterIndex: Int,
+  chapterRecord: IExamChapterRecord
+): IExamChapterRecord by chapterRecord
+
+data class StudyQuestionAnswer(
+  val questionIndex: Int,
+  val answers: List<Int>
+)
+
+data class StudyChapterAnswer(
+  val chapterIndex: Int,
+  val questions: List<StudyQuestionAnswer>
+)
+
+data class StudyProgress(
+  val chapterIndex: Int,
+  val pageIndexes: Set<Int>
+)
+
 @Component
 class StudyResolver : GraphQLResolver<Study> {
+  fun progressDetails(study: Study, environment: DataFetchingEnvironment): CompletableFuture<List<StudyProgress>> {
+    return CompletableFuture.completedFuture(study.progress.map { StudyProgress(it.key, it.value) })
+  }
+
+  fun answerDetails(study: Study, environment: DataFetchingEnvironment): CompletableFuture<List<StudyChapterAnswer>> {
+    return CompletableFuture.completedFuture(study.answer.map {
+      StudyChapterAnswer(it.key, Study.convertForExamAnswer(it.value)
+        .map { (questionIndex, answers) ->
+          StudyQuestionAnswer(questionIndex, answers)
+        })
+    })
+  }
+  fun scoreDetails(study: Study, environment: DataFetchingEnvironment): CompletableFuture<List<StudyChapterRecord>> {
+    return CompletableFuture.completedFuture(study.score.map { StudyChapterRecord(it.key, it.value) })
+  }
+
+
   fun slide(study: Study, environment: DataFetchingEnvironment): CompletableFuture<Slide> {
     val loader = environment.getDataLoader<String, Slide>(SlideApi.SlideLoader::class.java.simpleName)
     return loader.load(study.slideId)

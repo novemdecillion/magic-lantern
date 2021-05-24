@@ -11,11 +11,11 @@
     <app-list-column name="syncAt" headerName="最終同期日時"></app-list-column>
     <app-list-column name="operation" [sort]="false">
       <ng-template listCell let-row="row">
-        <button mat-icon-button [matMenuTriggerFor]="menu">
+        <button *ngIf="canSync(row.realmId)" mat-icon-button [matMenuTriggerFor]="menu">
           <span class="mdi mdi-dots-vertical"></span>
         </button>
         <mat-menu #menu="matMenu">
-          <button mat-menu-item (click)="onSync(row.realmId)">手動同期</button>
+          <button *ngIf="canSync(row.realmId)" mat-menu-item (click)="onSync(row.realmId)">手動同期</button>
         </mat-menu>
       </ng-template>
     </app-list-column>

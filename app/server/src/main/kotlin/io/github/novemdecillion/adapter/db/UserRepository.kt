@@ -1,5 +1,6 @@
 package io.github.novemdecillion.adapter.db
 
+import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.adapter.jooq.tables.pojos.AccountGroupAuthorityEntity
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountGroupAuthorityRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountRecord
@@ -17,24 +18,28 @@ import org.springframework.stereotype.Repository
 import java.util.*
 
 @Repository
-class UserRepository(private val dslContext: DSLContext,
-                     private val materializedViewRepository: MaterializedViewRepository) {
+class UserRepository(
+  private val dslContext: DSLContext,
+  private val materializedViewRepository: MaterializedViewRepository
+) {
 
-//  fun insert(user: User) {
-//    val record = recordMapper(user)
-//    dslContext.insertInto(ACCOUNT)
-//        .set(record)
-//        .execute()
+//  fun insertAuthority(userId: UUID, groupId: UUID, role: Role) {
+//    val record = AccountGroupAuthorityRecord()
+//      .also {
+//        it.accountId = userId
+//        it.groupTransitionId = groupId
+//        it.role = role
+//      }
+//    dslContext.executeInsert(record)
+//    materializedViewRepository.refreshCurrentAccountGroupAuthorityTable()
 //  }
 //
-//  fun update(user: User) {
-//    val record = recordMapper(user)
-//    dslContext.update(ACCOUNT)
-//        .set(record)
-//        .execute()
-//  }
-
   fun insertAuthority(userId: UUID, authority: Authority) {
+    insertAuthorityOnly(userId, authority)
+    materializedViewRepository.refreshCurrentAccountGroupAuthorityTable()
+  }
+
+  private fun insertAuthorityOnly(userId: UUID, authority: Authority) {
     val records = authority.roles
       .map { role ->
         AccountGroupAuthorityRecord()
@@ -45,7 +50,6 @@ class UserRepository(private val dslContext: DSLContext,
           }
       }
     dslContext.batchInsert(records).execute()
-    materializedViewRepository.refreshCurrentAccountGroupAuthorityTable()
   }
 
   fun insertAuthorities(authorities: Collection<AccountGroupAuthorityEntity>) {
@@ -59,14 +63,62 @@ class UserRepository(private val dslContext: DSLContext,
     materializedViewRepository.refreshCurrentAccountGroupAuthorityTable()
   }
 
-  private fun selectWithAuthority(statementModifier: (SelectWhereStep<Record>) -> ResultQuery<Record> = { it }): List<User> {
-    val statement = CURRENT_ACCOUNT_GROUP_AUTHORITY.fields().filter { it.name != CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID.name }
-      .let {
-        dslContext.select(ACCOUNT.asterisk(), *it.toTypedArray())
-          .from(ACCOUNT)
-          .leftOuterJoin(CURRENT_ACCOUNT_GROUP_AUTHORITY)
-          .on(ACCOUNT.ACCOUNT_ID.equal(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID))
+  fun updateAuthorities(authorities: Collection<AccountGroupAuthorityEntity>) {
+    authorities
+      .groupBy { it.groupTransitionId }
+      .forEach { (groupTransitionId, authoritiesAtGroup) ->
+        dslContext.deleteFrom(ACCOUNT_GROUP_AUTHORITY)
+          .where(
+            ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID.`in`(authoritiesAtGroup.map { it.accountId })
+              .and(ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(groupTransitionId))
+          )
+          .execute()
       }
+    insertAuthorities(authorities)
+  }
+
+  fun updateAuthority(userId: UUID, authority: Authority) {
+    dslContext.deleteFrom(ACCOUNT_GROUP_AUTHORITY)
+      .where(
+        ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID.equal(userId)
+          .and(ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(authority.groupId))
+      )
+      .execute()
+    insertAuthorityOnly(userId, authority)
+    materializedViewRepository.refreshCurrentAccountGroupAuthorityTable()
+  }
+
+  fun deleteAuthorities(groupTransitionId: UUID, userIds: List<UUID>) {
+    dslContext.deleteFrom(ACCOUNT_GROUP_AUTHORITY)
+      .where(
+        ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID.`in`(userIds)
+          .and(ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(groupTransitionId))
+      )
+      .execute()
+    materializedViewRepository.refreshCurrentAccountGroupAuthorityTable()
+  }
+
+
+  fun selectAuthorityByUserIdAndGroupId(userId: UUID, groupId: UUID): Authority? {
+    return dslContext.selectFrom(CURRENT_ACCOUNT_GROUP_AUTHORITY)
+      .where(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID.equal(userId)
+        .and(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(groupId)))
+      .fetchGroups(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID)
+      .map { record ->
+        Authority(record.key!!, record.value.getValues(CURRENT_ACCOUNT_GROUP_AUTHORITY.ROLE).filterNotNull())
+      }
+      .firstOrNull()
+  }
+
+  private fun selectWithAuthority(statementModifier: (SelectWhereStep<Record>) -> ResultQuery<Record> = { it }): List<User> {
+    val statement =
+      CURRENT_ACCOUNT_GROUP_AUTHORITY.fields().filter { it.name != CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID.name }
+        .let {
+          dslContext.select(ACCOUNT.asterisk(), *it.toTypedArray())
+            .from(ACCOUNT)
+            .leftOuterJoin(CURRENT_ACCOUNT_GROUP_AUTHORITY)
+            .on(ACCOUNT.ACCOUNT_ID.equal(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID))
+        }
 
     return statementModifier(statement)
       .fetchGroups(ACCOUNT)
@@ -74,18 +126,18 @@ class UserRepository(private val dslContext: DSLContext,
 
         val authorities =
           result.intoGroups(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID, CURRENT_ACCOUNT_GROUP_AUTHORITY.ROLE)
-            .mapNotNull { (key, value) ->
-              if (null == key) {
-                return@mapNotNull null
-              }
-              val nonNullValues = value.filterNotNull()
-              if (nonNullValues.isEmpty()) {
-                return@mapNotNull null
-              }
-              return@mapNotNull key to nonNullValues
-            }
+//            .mapNotNull { (key, value) ->
+//              if (null == key) {
+//                return@mapNotNull null
+//              }
+//              val nonNullValues = value.filterNotNull()
+//              if (nonNullValues.isEmpty()) {
+//                return@mapNotNull null
+//              }
+//              return@mapNotNull key to nonNullValues
+//            }
             .map { (groupTransitionId, roles) ->
-              Authority(groupTransitionId, roles)
+              Authority(groupTransitionId!!, roles.filterNotNull())
             }
         recordMapper(account).copy(authorities = authorities)
       }
@@ -100,12 +152,10 @@ class UserRepository(private val dslContext: DSLContext,
     it.orderBy(ACCOUNT.USER_NAME)
   }
 
-  fun findByAccountNameAndRealmWithAuthority(accountName: String, realm: String?): User? {
+  fun findByAccountNameAndRealmWithAuthority(accountName: String, realm: String): User? {
     return selectWithAuthority { statement ->
       statement.where(ACCOUNT.ACCOUNT_NAME.equal(accountName))
-        .and(realm
-          ?.let { ACCOUNT.REALM_ID.equal(it) }
-          ?: ACCOUNT.REALM_ID.isNull)
+        .and(ACCOUNT.REALM_ID.equal(realm))
     }.firstOrNull()
   }
 
@@ -117,8 +167,10 @@ class UserRepository(private val dslContext: DSLContext,
 
     val appendableAccountIdsQuery = DSL.select(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID)
       .from(CURRENT_ACCOUNT_GROUP_AUTHORITY)
-      .where(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(groupTransitionId)
-        .or(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(parentGroupIdQuery)))
+      .where(
+        CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(groupTransitionId)
+          .or(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(parentGroupIdQuery))
+      )
       .groupBy(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID)
       .having(
         DSL.arrayAgg(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID).notContains(arrayOf(groupTransitionId))
@@ -137,7 +189,7 @@ class UserRepository(private val dslContext: DSLContext,
 
   fun recordMapper(record: AccountRecord): User {
     return User(
-      record.accountId!!, record.accountName!!, record.userName!!, record.email, record.realmId,
+      record.accountId!!, record.accountName!!, record.userName!!, record.email, record.realmId!!,
       record.enabled!!
     )
   }

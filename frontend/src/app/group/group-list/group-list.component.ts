@@ -1,53 +1,26 @@
-import { Component, OnInit, TemplateRef, ViewChild, OnDestroy } from '@angular/core';
-import { ColumnDefinition } from 'src/app/share/list/list.component';
+import { Component, OnInit } from '@angular/core';
 import { EffectiveGroupsGQL, Role } from 'src/generated/graphql';
-import { Observable, Subscription } from 'rxjs';
+import { Observable } from 'rxjs';
 import { map, share } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { EditGroupComponent } from '../edit-group/edit-group.component';
 import { DEFAULT_GROUP_ID } from 'src/app/constants'
 import { createGroupNodes, GroupNode } from '../../utilities';
+import { EditMemberCommand, EditMemberComponent } from '../edit-member/edit-member.component';
 
 @Component({
   selector: 'app-group-list',
   templateUrl: './group-list.component.html'
 })
 export class GroupListComponent implements OnInit {
-  // @ViewChild('operationTemplate', { static: true }) private operationTemplate!: TemplateRef<any>;
-
-  // columns: ColumnDefinition<GroupNode>[] = [];
-
   dataLoad: Observable<GroupNode[]> | null = null;
 
-  // loadDataSubscription: Subscription;
-
   constructor(private groupsGql: EffectiveGroupsGQL, public dialog: MatDialog) {
-    // this.loadDataSubscription = pageService.onLoadData$.subscribe(() => this.onLoadData());
   }
 
   ngOnInit(): void {
-    // this.columns = [
-    //   {
-    //     name: 'groupName',
-    //     headerName: 'グループ名'
-    //   },
-    //   {
-    //     name: 'parentGroupName',
-    //     headerName: '所属グループ名'
-    //   },
-    //   {
-    //     name: 'operation',
-    //     headerName: null,
-    //     sort: false,
-    //     cellTemplate: this.operationTemplate
-    //   }
-    // ];
     this.onLoadData();
   }
-
-  // ngOnDestroy(): void {
-  //   this.loadDataSubscription.unsubscribe();
-  // }
 
   onLoadData = (): void => {
     this.dataLoad = this.groupsGql.fetch({role: Role.Group})
@@ -78,8 +51,8 @@ export class GroupListComponent implements OnInit {
       });
   }
 
-  canDeleteGroup(group: GroupNode): boolean {
-    return group.groupId !== DEFAULT_GROUP_ID
+  isEntireGroup(group: GroupNode): boolean {
+    return group.groupId === DEFAULT_GROUP_ID
   }
 
   onDeleteGroup(group: GroupNode): void {
@@ -89,5 +62,38 @@ export class GroupListComponent implements OnInit {
           this.onLoadData();
         }
       });
+  }
+
+  onAddMember(group: GroupNode): void {
+    this.dataLoad!.subscribe(members => {
+      this.dialog.open(EditMemberComponent, { data: { groupId: group.groupId, type: 'add'} as EditMemberCommand })
+      .afterClosed().subscribe(res => {
+        if (res) {
+          this.onLoadData();
+        }
+      })
+    });
+  }
+
+  onEditMember(group: GroupNode): void {
+    this.dataLoad!.subscribe(members => {
+      this.dialog.open(EditMemberComponent, { data: { groupId: group.groupId, type: 'update'} as EditMemberCommand })
+      .afterClosed().subscribe(res => {
+        if (res) {
+          this.onLoadData();
+        }
+      })
+    });
+  }
+
+  onDeleteMember(group: GroupNode): void {
+    this.dataLoad!.subscribe(members => {
+      this.dialog.open(EditMemberComponent, { data: { groupId: group.groupId, type: 'delete'} as EditMemberCommand })
+      .afterClosed().subscribe(res => {
+        if (res) {
+          this.onLoadData();
+        }
+      })
+    });
   }
 }

@@ -1,6 +1,4 @@
-import { HttpClient } from '@angular/common/http';
-import { Component, ContentChild, ElementRef, OnInit, ViewChild,  } from '@angular/core';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { Component, ElementRef, OnInit, ViewChild,  } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
@@ -38,9 +36,9 @@ export class SlideshowComponent implements OnInit {
   }
 
   onNext() {
-    let formElement = this.viewer.nativeElement.contentDocument?.getElementsByTagName('form')[0]
-    if (formElement) {
-      formElement.submit();
+    let submitElement = this.viewer.nativeElement.contentDocument?.querySelector<HTMLInputElement>('form input[type="submit"]');
+    if (submitElement) {
+      submitElement.click();
     } else {
       this.postFromViewer(`${this.viewer.nativeElement.contentWindow?.location.href}?action=NEXT`);
     }

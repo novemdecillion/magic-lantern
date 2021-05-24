@@ -9,13 +9,15 @@ type Query {
   userCount: Int!
   realms: [Realm!]!
 
+  notices: [Notice!]!
+  effectiveNotices: [Notice!]!
+
   slides: [Slide!]!
   manageableLessons: [Lesson!]!
   myStudies: [Study!]!
 
   authoritativeGroups(role: Role!): [Group!]!
   effectiveGroups(role: Role!): [Group!]!
-
 
   group(groupId: ID!): Group
   isTopManageableGroup(groupId: ID!): Boolean!
@@ -26,13 +28,22 @@ type Query {
 type Mutation {
   syncRealm(realmId: String): Boolean
 
+  addUser(command: AddUserCommand!): AddUserResult
+  updateUser(command: UpdateUserCommand!): UpdateUserResult
+  changePassword(command: ChangePasswordCommand!): ChangePasswordResult
+  deleteUser(userId: ID!): Boolean
+
+  addNotice(command: AddNoticeCommand!): Boolean
+  updateNotice(command: UpdateNoticeCommand!): Boolean
+  deleteNotice(noticeId: ID!): Boolean
+
   addGroup(command: AddGroupCommand!): Boolean
-  editGroup(command: EditGroupCommand!): Boolean
+  updateGroup(command: UpdateGroupCommand!): Boolean
   deleteGroup(groupId: ID!): Boolean
 
-  addGroupMember(command: AddGroupMemberCommand!): Boolean
-  editGroupMember(command: GroupMemberCommand!): Boolean
-  deleteGroupMember(groupId: ID!, userId: ID!): Boolean
+  addGroupMember(command: GroupMemberCommand!): Boolean
+  updateGroupMember(command: GroupMemberCommand!): Boolean
+  deleteGroupMember(command: DeleteGroupMemberCommand!): Boolean
 
   addSlide(command: AddSlideCommand!): Boolean
   deleteSlide(slideId: ID!): Boolean

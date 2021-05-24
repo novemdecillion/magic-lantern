@@ -5,9 +5,12 @@ package io.github.novemdecillion.adapter.jooq.tables.pojos
 
 
 import io.github.novemdecillion.adapter.jooq.tables.interfaces.IStudy
+import io.github.novemdecillion.domain.StudyStatus
 
 import java.time.OffsetDateTime
 import java.util.UUID
+
+import org.jooq.JSONB
 
 
 /**
@@ -18,10 +21,11 @@ data class StudyEntity(
     override var studyId: UUID? = null, 
     override var accountId: UUID? = null, 
     override var slideId: String? = null, 
-    override var progress: String? = null, 
+    override var status: StudyStatus? = null, 
+    override var progress: JSONB? = null, 
     override var progressRate: Int? = null, 
-    override var answer: String? = null, 
-    override var score: Int? = null, 
+    override var answer: JSONB? = null, 
+    override var score: JSONB? = null, 
     override var startAt: OffsetDateTime? = null, 
     override var endAt: OffsetDateTime? = null
 ): IStudy {
@@ -33,6 +37,7 @@ data class StudyEntity(
         sb.append(studyId)
         sb.append(", ").append(accountId)
         sb.append(", ").append(slideId)
+        sb.append(", ").append(status)
         sb.append(", ").append(progress)
         sb.append(", ").append(progressRate)
         sb.append(", ").append(answer)
@@ -52,6 +57,7 @@ data class StudyEntity(
         studyId = from.studyId
         accountId = from.accountId
         slideId = from.slideId
+        status = from.status
         progress = from.progress
         progressRate = from.progressRate
         answer = from.answer

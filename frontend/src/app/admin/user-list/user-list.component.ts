@@ -1,10 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { UserFragment, UsersGQL } from 'src/generated/graphql';
-import { map, share } from 'rxjs/operators';
+import { Observable, merge } from 'rxjs';
+import { BUILT_IN_ADMIN_USER, DEFAULT_GROUP_ID } from 'src/app/constants';
+import { DeleteUserGQL, Role, UserFragment, UsersGQL } from 'src/generated/graphql';
+import { map, share, withLatestFrom } from 'rxjs/operators';
+import { MatDialog } from '@angular/material/dialog';
+import { EditUserComponent } from '../edit-user/edit-user.component';
+import { ConfirmDialogComponent } from 'src/app/share/confirm-dialog/confirm-dialog.component';
+import { select, Store } from '@ngrx/store';
+import { State, getUser } from 'src/app/root/store';
 
-interface UserRecord extends UserFragment {
-  realmName?: string
+export interface UserRecord extends UserFragment {
+  isAdmin: boolean;
+  isGroupManager: boolean;
+  isCurrentUser: boolean;
+  realmName: string;
 }
 
 @Component({
@@ -14,7 +23,12 @@ interface UserRecord extends UserFragment {
 export class UserListComponent implements OnInit {
   dataLoad: Observable<UserRecord[]> | null = null;
 
-  constructor(private usersGql: UsersGQL) {
+  currentUserId$ = this.store.pipe(select(getUser), map(user => user?.userId));
+
+  constructor(private dialog: MatDialog,
+    private store: Store<State>,
+    private usersGql: UsersGQL,
+    private deleteUserGql: DeleteUserGQL) {
   }
 
   ngOnInit(): void {
@@ -22,9 +36,13 @@ export class UserListComponent implements OnInit {
   }
 
   onLoadData() {
+
+
+
     this.dataLoad = this.usersGql.fetch()
       .pipe(
-        map(res => {
+        withLatestFrom(this.currentUserId$),
+        map(([res, currentUserId]) => {
           let realmToName: { [key: string]: string } = {};
           (res.data.realms ?? [])
             .forEach(realm => {
@@ -34,15 +52,74 @@ export class UserListComponent implements OnInit {
             });
 
           return (res.data.users ?? [])
-            .map((user: UserRecord) => {
-              user.realmName = 'システム'
-              if (user.realmId) {
-                user.realmName = realmToName[user.realmId]
-              }
-              return user
+            .map((user) => {
+              let defaultGroupRoles = user.authorities.find(auth => auth.groupId == DEFAULT_GROUP_ID)?.roles ?? [];
+              return Object.assign(user, {
+                isAdmin: defaultGroupRoles?.includes(Role.Admin),
+                isGroupManager: defaultGroupRoles?.includes(Role.Group),
+                isCurrentUser: user.userId === currentUserId,
+                realmName: realmToName[user.realmId]
+              });
             });
         }),
         share()
       );
+
+
+    // this.dataLoad = this.usersGql.fetch()
+    //   .pipe(
+    //     map(res => {
+    //       let realmToName: { [key: string]: string } = {};
+    //       (res.data.realms ?? [])
+    //         .forEach(realm => {
+    //           if (realm.realmName) {
+    //             realmToName[realm.realmId] = realm.realmName;
+    //           }
+    //         });
+
+    //       return (res.data.users ?? [])
+    //         .map((user) => {
+    //           return Object.assign(user, {
+    //             isAdmin: user.authorities.some(auth => auth.roles.includes(Role.Admin)),
+    //             realmName: realmToName[user.realmId]
+    //           });
+    //         });
+    //     }),
+    //     share()
+    //   );
   }
+
+  onAddUser() {
+    this.dialog.open(EditUserComponent)
+      .afterClosed()
+      .subscribe(res => {
+        if (res) {
+          this.onLoadData();
+        }
+      });
+  }
+
+  onEditUser(row: UserRecord) {
+    this.dialog.open(EditUserComponent, { data: row})
+      .afterClosed().subscribe(res => {
+        if (res) {
+          this.onLoadData();
+        }
+      });
+  }
+
+  canDelete(row: UserRecord): boolean {
+    return !row.isCurrentUser && (row.isSystemRealm === true) && (row.userId !== BUILT_IN_ADMIN_USER)
+  }
+
+  onDeleteUser(row: UserRecord) {
+    this.dialog.open(ConfirmDialogComponent, { data: { title: 'ユーザ削除', message: `「${row.userName}」を削除します。よろしですか?` } })
+      .afterClosed().subscribe(res => {
+        if (res) {
+          this.deleteUserGql.mutate({ userId: row.userId })
+            .subscribe(_ => this.onLoadData());
+        }
+      });
+  }
+
 }

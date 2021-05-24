@@ -2,6 +2,7 @@ package io.github.novemdecillion.adapter.security
 
 import io.github.novemdecillion.adapter.jooq.tables.pojos.AccountEntity
 import io.github.novemdecillion.adapter.jooq.tables.references.ACCOUNT
+import io.github.novemdecillion.domain.SYSTEM_REALM_ID
 import org.jooq.DSLContext
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
@@ -15,7 +16,7 @@ class UserDetailsService(val dslContext: DSLContext): org.springframework.securi
   override fun loadUserByUsername(username: String): UserDetails? {
     return dslContext.selectFrom(ACCOUNT)
       .where(ACCOUNT.ACCOUNT_NAME.equal(username)
-        .and(ACCOUNT.REALM_ID.isNull)
+        .and(ACCOUNT.REALM_ID.equal(SYSTEM_REALM_ID))
         .and(ACCOUNT.ENABLED.equal(true)))
       .fetchOneInto(AccountEntity::class.java)
       ?.let {

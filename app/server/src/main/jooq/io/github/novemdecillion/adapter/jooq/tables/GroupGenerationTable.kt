@@ -8,7 +8,7 @@ import io.github.novemdecillion.adapter.jooq.DefaultSchema
 import io.github.novemdecillion.adapter.jooq.keys.GROUP_GENERATION_PKEY
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupGenerationRecord
 
-import java.time.OffsetDateTime
+import java.time.LocalDate
 import java.util.UUID
 
 import kotlin.collections.List
@@ -70,7 +70,7 @@ open class GroupGenerationTable(
     /**
      * The column <code>group_generation.start_date</code>.
      */
-    val START_DATE: TableField<GroupGenerationRecord, OffsetDateTime?> = createField(DSL.name("start_date"), SQLDataType.TIMESTAMPWITHTIMEZONE(6), this, "")
+    val START_DATE: TableField<GroupGenerationRecord, LocalDate?> = createField(DSL.name("start_date"), SQLDataType.LOCALDATE, this, "")
 
     private constructor(alias: Name, aliased: Table<GroupGenerationRecord>?): this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<GroupGenerationRecord>?, parameters: Array<Field<*>?>?): this(alias, null, null, aliased, parameters)
@@ -110,5 +110,5 @@ open class GroupGenerationTable(
     // -------------------------------------------------------------------------
     // Row2 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row2<UUID?, OffsetDateTime?> = super.fieldsRow() as Row2<UUID?, OffsetDateTime?>
+    override fun fieldsRow(): Row2<UUID?, LocalDate?> = super.fieldsRow() as Row2<UUID?, LocalDate?>
 }

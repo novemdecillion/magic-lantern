@@ -4,7 +4,7 @@
       <button mat-icon-button (click)="snav.toggle()">
         <img src="favicon.svg" width="32" height="32">
       </button>
-      <button mat-button class="ps-0" routerLink="/home">
+      <button mat-button class="ps-0" routerLink="/home" matTooltip="ダッシュボード">
         <h1 class="app-name">Magic Lantern</h1>
       </button>
       <span class="flex-fill"></span>
@@ -14,7 +14,9 @@
         {{ (user$ | async)?.userName }}
       </button>
       <mat-menu #menu="matMenu">
-        <a mat-menu-item href="/logout">ログアウト</a>
+        <a *ngIf="isUserInSystem$ | async" mat-menu-item (click)="onChangePassword()">パスワード変更</a>
+        <mat-divider *ngIf="isUserInSystem$ | async"></mat-divider>
+        <a mat-menu-item (click)="onLogout()">ログアウト</a>
       </mat-menu>
     </mat-toolbar>
     <mat-sidenav-container class="app-sidenav-container" [style.marginTop.px]="mobileQuery.matches ? 56 : 0" [autosize]="true">

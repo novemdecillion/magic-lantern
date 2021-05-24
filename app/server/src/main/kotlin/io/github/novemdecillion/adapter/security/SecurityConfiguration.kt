@@ -42,6 +42,7 @@ class SecurityConfiguration(val clientRegistrationRepository: ClientRegistration
         .and()
       .formLogin()
         .loginPage(PATH_LOGIN).permitAll()
+        .defaultSuccessUrl("/", true)
         .and()
       .logout()
         // デフォルトだとPOSTしか受け付けない

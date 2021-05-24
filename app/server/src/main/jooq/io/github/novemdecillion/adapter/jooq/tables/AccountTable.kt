@@ -7,6 +7,7 @@ package io.github.novemdecillion.adapter.jooq.tables
 import io.github.novemdecillion.adapter.jooq.DefaultSchema
 import io.github.novemdecillion.adapter.jooq.keys.ACCOUNT_PKEY
 import io.github.novemdecillion.adapter.jooq.keys.ACCOUNT_REALM_ID_ACCOUNT_NAME_KEY
+import io.github.novemdecillion.adapter.jooq.keys.ACCOUNT__ACCOUNT_REALM_ID_FKEY
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountRecord
 
 import java.util.UUID
@@ -95,7 +96,7 @@ open class AccountTable(
     /**
      * The column <code>account.realm_id</code>.
      */
-    val REALM_ID: TableField<AccountRecord, String?> = createField(DSL.name("realm_id"), SQLDataType.VARCHAR(255), this, "")
+    val REALM_ID: TableField<AccountRecord, String?> = createField(DSL.name("realm_id"), SQLDataType.VARCHAR(255).nullable(false), this, "")
 
     /**
      * The column <code>account.enabled</code>.
@@ -124,6 +125,15 @@ open class AccountTable(
     override fun getSchema(): Schema = DefaultSchema.DEFAULT_SCHEMA
     override fun getPrimaryKey(): UniqueKey<AccountRecord> = ACCOUNT_PKEY
     override fun getKeys(): List<UniqueKey<AccountRecord>> = listOf(ACCOUNT_PKEY, ACCOUNT_REALM_ID_ACCOUNT_NAME_KEY)
+    override fun getReferences(): List<ForeignKey<AccountRecord, *>> = listOf(ACCOUNT__ACCOUNT_REALM_ID_FKEY)
+
+    private lateinit var _realm: RealmTable
+    fun realm(): RealmTable {
+        if (!this::_realm.isInitialized)
+            _realm = RealmTable(this, ACCOUNT__ACCOUNT_REALM_ID_FKEY)
+
+        return _realm;
+    }
     override fun `as`(alias: String): AccountTable = AccountTable(DSL.name(alias), this)
     override fun `as`(alias: Name): AccountTable = AccountTable(alias, this)
 

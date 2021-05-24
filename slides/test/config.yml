@@ -73,7 +73,7 @@ chapters:
       - 簡単だった。
       - ちょうど良かった。
       - 難しかった。
-  - type: Radio
+  - type: Checkbox
     text: 本教育のボリュームは如何でしたか？
     required: true
     choices:

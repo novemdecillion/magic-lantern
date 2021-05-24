@@ -1,0 +1,33 @@
+<form #form="ngForm">
+  <h1 mat-dialog-title>{{ isEdit? '通知編集' : '通知追加' }}</h1>
+  <div mat-dialog-content>
+    <div class="d-flex flex-column">
+      <mat-form-field appearance="outline" class="mb-2">
+        <mat-label>メッセージ</mat-label>
+        <textarea matInput rows="5" [(ngModel)]="notice.message" #message="ngModel" name="message" required></textarea>
+        <mat-hint *ngIf="message.errors?.required" class="text-danger">入力してください。</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="mb-2">
+        <mat-label>掲載開始日</mat-label>
+        <input matInput [matDatepicker]="startAtPicker" [(ngModel)]="notice.startAt" name="startAt">
+        <span matDatepickerToggleIcon (click)="$event.stopPropagation(); notice.startAt = null" class="mdi mdi-close" *ngIf="notice.startAt != null"></span>
+        <mat-datepicker-toggle matSuffix [for]="startAtPicker"></mat-datepicker-toggle>
+        <mat-datepicker #startAtPicker></mat-datepicker>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>掲載終了日</mat-label>
+        <input matInput [matDatepicker]="endAtPicker" [(ngModel)]="notice.endAt" name="endAt">
+        <span matDatepickerToggleIcon (click)="$event.stopPropagation(); notice.endAt = null" class="mdi mdi-close" *ngIf="notice.endAt != null"></span>
+        <mat-datepicker-toggle matSuffix [for]="endAtPicker"></mat-datepicker-toggle>
+        <mat-datepicker #endAtPicker></mat-datepicker>
+      </mat-form-field>
+
+    </div>
+  </div>
+  <div mat-dialog-actions>
+    <button mat-raised-button color="primary" (click)="onOK()" [disabled]="form.invalid">OK</button>
+    <button mat-stroked-button mat-dialog-close>キャンセル</button>
+  </div>
+</form>

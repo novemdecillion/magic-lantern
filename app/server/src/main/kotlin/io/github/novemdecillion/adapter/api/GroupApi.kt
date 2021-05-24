@@ -1,15 +1,12 @@
 package io.github.novemdecillion.adapter.api
 
-import graphql.execution.DataFetcherResult
 import graphql.kickstart.tools.GraphQLMutationResolver
 import graphql.kickstart.tools.GraphQLQueryResolver
-import graphql.kickstart.tools.GraphQLResolver
 import graphql.schema.DataFetchingEnvironment
 import io.github.novemdecillion.adapter.db.GroupRepository
 import io.github.novemdecillion.domain.*
 import org.springframework.stereotype.Component
 import java.util.*
-import java.util.concurrent.CompletableFuture
 
 @Component
 class GroupApi(private val groupRepository: GroupRepository): GraphQLQueryResolver, GraphQLMutationResolver {
@@ -20,29 +17,27 @@ class GroupApi(private val groupRepository: GroupRepository): GraphQLQueryResolv
     val parentGroupId: UUID
   )
 
-  data class EditGroupCommand(
+  data class UpdateGroupCommand(
     val groupId: UUID,
     val groupName: String
   )
 
   fun authoritativeGroups(role: Role, environment: DataFetchingEnvironment): List<GroupWithPath> {
     return environment.currentUser().authorities
-      ?.filter { it.roles.contains(role) }
-      ?.map { it.groupId }
-      ?.let {
+      .filter { it.roles.contains(role) }
+      .map { it.groupId }
+      .let {
         groupRepository.selectByIds(it)
       }
-      ?: listOf()
   }
 
   fun effectiveGroups(role: Role, environment: DataFetchingEnvironment): List<GroupWithPath> {
     return environment.currentUser().authorities
-      ?.filter { it.roles.contains(role) }
-      ?.map { it.groupId }
-      ?.let {
+      .filter { it.roles.contains(role) }
+      .map { it.groupId }
+      .let {
         groupRepository.selectChildrenByIds(it)
       }
-      ?: listOf()
   }
 
 //  fun topManageableGroups(environment: DataFetchingEnvironment): List<GroupWithPath> {
@@ -88,19 +83,17 @@ class GroupApi(private val groupRepository: GroupRepository): GraphQLQueryResolv
   }
 
   fun addGroup(command: AddGroupCommand, environment: DataFetchingEnvironment): Boolean {
-    val now = environment.now()
+    val now = environment.now().toLocalDate()
     groupRepository.insertNewGroup(now, command.groupName, command.parentGroupId, command.groupGenerationId)
     return true
   }
 
-  fun editGroup(command: EditGroupCommand): Boolean {
-    // TODO
+  fun updateGroup(command: UpdateGroupCommand): Boolean {
     groupRepository.updateGroup(command.groupId, command.groupName)
     return true
   }
 
   fun deleteGroup(groupTransitionId: UUID): Boolean {
-    // TODO
     groupRepository.deleteGroup(groupTransitionId)
     return true
   }

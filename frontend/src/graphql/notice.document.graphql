@@ -1,0 +1,31 @@
+fragment notice on Notice {
+  noticeId
+  message
+  startAt
+  endAt
+  updateAt
+}
+
+query notices {
+  notices {
+    ...notice
+  }
+}
+
+query effectiveNotices {
+  effectiveNotices {
+    ...notice
+  }
+}
+
+mutation addNotice($command: AddNoticeCommand!) {
+  addNotice(command: $command)
+}
+
+mutation updateNotice($command: UpdateNoticeCommand!) {
+  updateNotice(command: $command)
+}
+
+mutation deleteNotice($noticeId: ID!) {
+  deleteNotice(noticeId: $noticeId)
+}

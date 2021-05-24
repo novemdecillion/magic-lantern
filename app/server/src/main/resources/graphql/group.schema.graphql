@@ -31,19 +31,31 @@ input AddGroupCommand {
   parentGroupId: ID!
 }
 
-input EditGroupCommand {
+input UpdateGroupCommand {
   groupId: ID!
   groupName: String!
 }
 
-input AddGroupMemberCommand {
+input GroupMemberCommand {
   groupId: ID!
-  userId: [ID!]!
+  userIds: [ID!]!
   role: [Role!]!
 }
 
-input GroupMemberCommand {
+input DeleteGroupMemberCommand {
   groupId: ID!
-  userId: ID!
-  role: [Role!]!
+  userIds: [ID!]!
+}
+
+type Lesson {
+  lessonId: ID!
+  groupId: ID!
+  slideId: ID!
+  group: Group!
+  slide: Slide!
+}
+
+input AddLessonCommand {
+  slideId: ID!
+  groupIds: [ID!]!
 }

@@ -7,7 +7,7 @@ package io.github.novemdecillion.adapter.jooq.tables
 import io.github.novemdecillion.adapter.jooq.DefaultSchema
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupGenerationPeriodRecord
 
-import java.time.OffsetDateTime
+import java.time.LocalDate
 import java.util.UUID
 
 import org.jooq.Field
@@ -66,12 +66,12 @@ open class GroupGenerationPeriodTable(
     /**
      * The column <code>group_generation_period.start_date</code>.
      */
-    val START_DATE: TableField<GroupGenerationPeriodRecord, OffsetDateTime?> = createField(DSL.name("start_date"), SQLDataType.TIMESTAMPWITHTIMEZONE(6), this, "")
+    val START_DATE: TableField<GroupGenerationPeriodRecord, LocalDate?> = createField(DSL.name("start_date"), SQLDataType.LOCALDATE, this, "")
 
     /**
      * The column <code>group_generation_period.end_date</code>.
      */
-    val END_DATE: TableField<GroupGenerationPeriodRecord, OffsetDateTime?> = createField(DSL.name("end_date"), SQLDataType.TIMESTAMPWITHTIMEZONE(6), this, "")
+    val END_DATE: TableField<GroupGenerationPeriodRecord, LocalDate?> = createField(DSL.name("end_date"), SQLDataType.LOCALDATE, this, "")
 
     private constructor(alias: Name, aliased: Table<GroupGenerationPeriodRecord>?): this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<GroupGenerationPeriodRecord>?, parameters: Array<Field<*>?>?): this(alias, null, null, aliased, parameters)
@@ -109,5 +109,5 @@ open class GroupGenerationPeriodTable(
     // -------------------------------------------------------------------------
     // Row3 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row3<UUID?, OffsetDateTime?, OffsetDateTime?> = super.fieldsRow() as Row3<UUID?, OffsetDateTime?, OffsetDateTime?>
+    override fun fieldsRow(): Row3<UUID?, LocalDate?, LocalDate?> = super.fieldsRow() as Row3<UUID?, LocalDate?, LocalDate?>
 }

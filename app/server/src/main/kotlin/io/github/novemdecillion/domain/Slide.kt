@@ -126,6 +126,21 @@ data class ExamQuestion(
   }
 }
 
+data class ExamQuestionRecord(
+  val score: Int,
+  val scoring: Int
+)
+
+interface IExamChapterRecord {
+  val passScore: Int
+  val questions: List<ExamQuestionRecord>
+}
+
+data class ExamChapterRecord(
+  override val passScore: Int,
+  override val questions: List<ExamQuestionRecord>
+) : IExamChapterRecord
+
 data class ExamChapter(
   override val title: String,
   override val path: String?,
@@ -138,23 +153,39 @@ data class ExamChapter(
   /**
    * 得点
    */
-  fun scores(answer: Map<Int, List<Int>>, scoringMethod: ScoringMethod): List<Int> = answer
-    .map { questions[it.key].score(it.value, scoringMethod) }
+  fun questionRecords(answer: Map<Int, List<Int>>, scoringMethod: ScoringMethod): List<ExamQuestionRecord>
+    = questions
+    .mapIndexed { index, question ->
+      ExamQuestionRecord(answer[index]?.let { question.score(it, scoringMethod) } ?: 0, question.score)
+    }
 
-  fun score(answer: Map<Int, List<Int>>, scoringMethod: ScoringMethod): Int = scores(answer, scoringMethod)
-    .sum()
+  fun chapterRecord(answer: Map<Int, List<Int>>, scoringMethod: ScoringMethod): ExamChapterRecord
+    = ExamChapterRecord(passScore(), questionRecords(answer, scoringMethod))
+
+  fun scoringPerQuestion(answer: Map<Int, List<Int>>, scoringMethod: ScoringMethod): List<Int>
+    = questionRecords(answer, scoringMethod)
+      .map { it.scoring }
+
+  fun scoring(answer: Map<Int, List<Int>>, scoringMethod: ScoringMethod): Int
+    = scoringPerQuestion(answer, scoringMethod).sum()
+
+  fun passScore(): Int {
+    return passScore
+      ?: questions.map { it.score }.sum()
+  }
 }
 
 /**
  * アンケート
  */
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type", visible = true)
 @JsonSubTypes(
   JsonSubTypes.Type(name = "Radio", value = SurveyQuestion::class),
   JsonSubTypes.Type(name = "Checkbox", value = SurveyQuestion::class),
   JsonSubTypes.Type(name = "Textarea", value = TextareaSurveyQuestion::class)
 )
 interface ISurveyQuestion {
+  val type: SurveyQuestionType
   val text: String
   val required: Boolean
 }
@@ -163,13 +194,19 @@ interface ISelectSurveyQuestion : ISurveyQuestion {
   val choices: List<String>
 }
 
+enum class SurveyQuestionType {
+  Radio, Checkbox, Textarea
+}
+
 data class SurveyQuestion(
+  override val type: SurveyQuestionType,
   override val text: String,
   override val required: Boolean = false,
   override val choices: List<String>
 ) : ISelectSurveyQuestion
 
 data class TextareaSurveyQuestion(
+  override val type: SurveyQuestionType = SurveyQuestionType.Textarea,
   override val text: String,
   override val required: Boolean = false
 ) : ISurveyQuestion
@@ -240,7 +277,7 @@ data class SlideConfig(
     return answer
       .map {
         (chapters[it.key] as? ExamChapter)
-          ?.score(it.value, option.scoringMethod)
+          ?.scoring(it.value, option.scoringMethod)
           ?: throw IllegalArgumentException()
       }
       .sum()

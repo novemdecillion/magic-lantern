@@ -11,6 +11,7 @@ import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupOriginTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionTable
 import io.github.novemdecillion.adapter.jooq.tables.LessonTable
+import io.github.novemdecillion.adapter.jooq.tables.NoticeTable
 import io.github.novemdecillion.adapter.jooq.tables.RealmTable
 import io.github.novemdecillion.adapter.jooq.tables.StudyTable
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountGroupAuthorityRecord
@@ -20,6 +21,7 @@ import io.github.novemdecillion.adapter.jooq.tables.records.GroupGenerationRecor
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupOriginRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupTransitionRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.LessonRecord
+import io.github.novemdecillion.adapter.jooq.tables.records.NoticeRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.RealmRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.StudyRecord
 
@@ -43,6 +45,7 @@ val GROUP_ORIGIN_PKEY: UniqueKey<GroupOriginRecord> = Internal.createUniqueKey(G
 val GROUP_TRANSITION_PKEY: UniqueKey<GroupTransitionRecord> = Internal.createUniqueKey(GroupTransitionTable.GROUP_TRANSITION, DSL.name("group_transition_pkey"), arrayOf(GroupTransitionTable.GROUP_TRANSITION.GROUP_TRANSITION_ID), true)
 val LESSON_GROUP_ORIGIN_ID_SLIDE_ID_KEY: UniqueKey<LessonRecord> = Internal.createUniqueKey(LessonTable.LESSON, DSL.name("lesson_group_origin_id_slide_id_key"), arrayOf(LessonTable.LESSON.GROUP_ORIGIN_ID, LessonTable.LESSON.SLIDE_ID), true)
 val LESSON_PKEY: UniqueKey<LessonRecord> = Internal.createUniqueKey(LessonTable.LESSON, DSL.name("lesson_pkey"), arrayOf(LessonTable.LESSON.LESSON_ID), true)
+val NOTICE_PKEY: UniqueKey<NoticeRecord> = Internal.createUniqueKey(NoticeTable.NOTICE, DSL.name("notice_pkey"), arrayOf(NoticeTable.NOTICE.NOTICE_ID), true)
 val REALM_PKEY: UniqueKey<RealmRecord> = Internal.createUniqueKey(RealmTable.REALM, DSL.name("realm_pkey"), arrayOf(RealmTable.REALM.REALM_ID), true)
 val STUDY_ACCOUNT_ID_SLIDE_ID_KEY: UniqueKey<StudyRecord> = Internal.createUniqueKey(StudyTable.STUDY, DSL.name("study_account_id_slide_id_key"), arrayOf(StudyTable.STUDY.ACCOUNT_ID, StudyTable.STUDY.SLIDE_ID), true)
 val STUDY_PKEY: UniqueKey<StudyRecord> = Internal.createUniqueKey(StudyTable.STUDY, DSL.name("study_pkey"), arrayOf(StudyTable.STUDY.STUDY_ID), true)
@@ -51,6 +54,7 @@ val STUDY_PKEY: UniqueKey<StudyRecord> = Internal.createUniqueKey(StudyTable.STU
 // FOREIGN KEY definitions
 // -------------------------------------------------------------------------
 
+val ACCOUNT__ACCOUNT_REALM_ID_FKEY: ForeignKey<AccountRecord, RealmRecord> = Internal.createForeignKey(AccountTable.ACCOUNT, DSL.name("account_realm_id_fkey"), arrayOf(AccountTable.ACCOUNT.REALM_ID), io.github.novemdecillion.adapter.jooq.keys.REALM_PKEY, arrayOf(RealmTable.REALM.REALM_ID), true)
 val ACCOUNT_GROUP_AUTHORITY__ACCOUNT_GROUP_AUTHORITY_ACCOUNT_ID_FKEY: ForeignKey<AccountGroupAuthorityRecord, AccountRecord> = Internal.createForeignKey(AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY, DSL.name("account_group_authority_account_id_fkey"), arrayOf(AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID), io.github.novemdecillion.adapter.jooq.keys.ACCOUNT_PKEY, arrayOf(AccountTable.ACCOUNT.ACCOUNT_ID), true)
 val ACCOUNT_GROUP_AUTHORITY__ACCOUNT_GROUP_AUTHORITY_GROUP_TRANSITION_ID_FKEY: ForeignKey<AccountGroupAuthorityRecord, GroupTransitionRecord> = Internal.createForeignKey(AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY, DSL.name("account_group_authority_group_transition_id_fkey"), arrayOf(AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID), io.github.novemdecillion.adapter.jooq.keys.GROUP_TRANSITION_PKEY, arrayOf(GroupTransitionTable.GROUP_TRANSITION.GROUP_TRANSITION_ID), true)
 val GROUP_TRANSITION__GROUP_TRANSITION_GROUP_GENERATION_ID_FKEY: ForeignKey<GroupTransitionRecord, GroupGenerationRecord> = Internal.createForeignKey(GroupTransitionTable.GROUP_TRANSITION, DSL.name("group_transition_group_generation_id_fkey"), arrayOf(GroupTransitionTable.GROUP_TRANSITION.GROUP_GENERATION_ID), io.github.novemdecillion.adapter.jooq.keys.GROUP_GENERATION_PKEY, arrayOf(GroupGenerationTable.GROUP_GENERATION.GROUP_GENERATION_ID), true)

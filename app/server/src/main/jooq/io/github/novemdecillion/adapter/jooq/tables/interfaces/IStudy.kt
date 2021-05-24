@@ -4,9 +4,13 @@
 package io.github.novemdecillion.adapter.jooq.tables.interfaces
 
 
+import io.github.novemdecillion.domain.StudyStatus
+
 import java.io.Serializable
 import java.time.OffsetDateTime
 import java.util.UUID
+
+import org.jooq.JSONB
 
 
 /**
@@ -17,10 +21,11 @@ interface IStudy : Serializable {
     var studyId: UUID?
     var accountId: UUID?
     var slideId: String?
-    var progress: String?
+    var status: StudyStatus?
+    var progress: JSONB?
     var progressRate: Int?
-    var answer: String?
-    var score: Int?
+    var answer: JSONB?
+    var score: JSONB?
     var startAt: OffsetDateTime?
     var endAt: OffsetDateTime?
 

@@ -20,12 +20,6 @@ query group($groupId: ID!) {
   }
 }
 
-#query topManageableGroups {
-#  topManageableGroups {
-#    ...groupWithPath
-#  }
-#}
-
 query authoritativeGroups($role: Role!) {
   authoritativeGroups(role: $role) {
     ...group
@@ -42,22 +36,62 @@ mutation addGroup($command: AddGroupCommand!) {
   addGroup(command: $command)
 }
 
-mutation editGroup($command: EditGroupCommand!) {
-  editGroup(command: $command)
+mutation updateGroup($command: UpdateGroupCommand!) {
+  updateGroup(command: $command)
 }
 
 mutation deleteGroup($groupId: ID!) {
   deleteGroup(groupId: $groupId)
 }
 
-mutation addGroupMember($command: AddGroupMemberCommand!) {
+mutation addGroupMember($command: GroupMemberCommand!) {
   addGroupMember(command: $command)
 }
 
-mutation editGroupMember($command: GroupMemberCommand!) {
-  editGroupMember(command: $command)
+mutation updateGroupMember($command: GroupMemberCommand!) {
+  updateGroupMember(command: $command)
 }
 
-mutation deleteGroupMember($groupId: ID!, $userId: ID!) {
-  deleteGroupMember(groupId: $groupId, userId: $userId)
+mutation deleteGroupMember($command: DeleteGroupMemberCommand!) {
+  deleteGroupMember(command: $command)
+}
+
+fragment lesson on Lesson {
+  lessonId
+  groupId
+  slideId
+  group {
+    ...group
+  }
+  slide {
+    ...slide
+  }
+}
+
+query manageableLessons {
+  manageableLessons {
+    ...lesson
+  }
+}
+
+query prepareAddLesson {
+  manageableLessons {
+    lessonId
+    groupId
+    slideId
+  }
+  authoritativeGroups(role: LESSON) {
+    ...group
+  }
+  slides {
+    ...slide
+  }
+}
+
+mutation addLesson($command: AddLessonCommand!) {
+  addLesson(command: $command)
+}
+
+mutation deleteLesson($lessonId: ID!) {
+  deleteLesson(lessonId: $lessonId)
 }

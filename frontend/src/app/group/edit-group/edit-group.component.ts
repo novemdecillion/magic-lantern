@@ -1,6 +1,6 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { AddGroupGQL, EditGroupGQL, DeleteGroupGQL } from 'src/generated/graphql';
+import { AddGroupGQL, UpdateGroupGQL, DeleteGroupGQL } from 'src/generated/graphql';
 import { GroupNode } from '../../utilities';
 
 export interface EditGroupCommand extends GroupNode {
@@ -20,7 +20,7 @@ export class EditGroupComponent implements OnInit {
       private dialogRef: MatDialogRef<EditGroupComponent>,
       @Inject(MAT_DIALOG_DATA) public command: EditGroupCommand,
       private addGroupGql: AddGroupGQL,
-      private editGroupGql: EditGroupGQL,
+      private editGroupGql: UpdateGroupGQL,
       private deleteGroupGql: DeleteGroupGQL) {
     switch (command.type) {
       case 'new':

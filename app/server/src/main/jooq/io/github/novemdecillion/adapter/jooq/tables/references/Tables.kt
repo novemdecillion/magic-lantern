@@ -14,6 +14,7 @@ import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupOriginTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionTable
 import io.github.novemdecillion.adapter.jooq.tables.LessonTable
+import io.github.novemdecillion.adapter.jooq.tables.NoticeTable
 import io.github.novemdecillion.adapter.jooq.tables.RealmTable
 import io.github.novemdecillion.adapter.jooq.tables.StudyTable
 import io.github.novemdecillion.adapter.jooq.tables.UserAggregateTable
@@ -69,6 +70,11 @@ val GROUP_TRANSITION = GroupTransitionTable.GROUP_TRANSITION
  * The table <code>lesson</code>.
  */
 val LESSON = LessonTable.LESSON
+
+/**
+ * The table <code>notice</code>.
+ */
+val NOTICE = NoticeTable.NOTICE
 
 /**
  * The table <code>realm</code>.

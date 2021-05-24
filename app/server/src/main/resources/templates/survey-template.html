@@ -11,38 +11,29 @@
     <div class="row mb-2">
       <div class="col">
         <span class="fs-2" th:text="${page.title}" ></span>
-        <th:block th:if="${confirm == true}"
-                  th:with="pass=${page.passScore <= totalScore}">
-          <span th:if="${pass == true}" class="ms-3 fs-2 text-success">合格</span>
-          <span th:if="${pass == false}" class="ms-3 fs-2 text-danger">不合格</span>
-          <span class="ms-auto fs-5" th:text="|(採点合計:${totalScore}点, 合格ライン:${page.passScore}点)|"></span>
-        </th:block>
+        <div th:if="${confirm == true}" class="alert alert-info">以下の内容で回答します。</div>
       </div>
     </div>
     <div class="row mb-2 fs-5" th:each="question : ${page.questions}">
       <div class="col">
-        <div th:if="${confirm == true" class="alert alert-info">以下の内容で回答します。</div>
 
         <!--/* 問題文 */-->
         <div>
           <span th:utext="${question.text}"></span>
         </div>
 
-        <ul class="list-group list-group-flush">
+        <ul th:if="${question.type.name != 'Textarea'}" class="list-group list-group-flush">
           <!--/* 選択肢 */-->
           <li class="list-group-item d-flex" th:each="choice : ${question.choices}"
               th:with="choiceId=|${questionStat.index}-${choiceStat.index}|">
 
-            <i th:if="${(confirm == true) && (choice.correct == true)}"
-               class="bi bi-check text-success fs-2"
-               style="margin-left: calc(-1.325rem - .9vw);"></i>
-
-            <div th:if="${question.type.name != 'Textarea'}" class="form-check">
+            <div class="form-check">
               <input th:if="${question.type.name == 'Radio'}" th:id="${choiceId}"
                      th:name="${questionStat.index}" th:value="${choiceStat.index}"
                      type="radio" class="form-check-input"
                      th:onclick="|return ${confirm != true};|"
-                     th:checked="${answer[questionStat.index]?.contains(choiceStat.index)}">
+                     th:checked="${answer[questionStat.index]?.contains(choiceStat.index)}"
+                     th:required="${question.required == true}">
 
               <input th:if="${question.type.name == 'Checkbox'}" th:id="${choiceId}"
                      th:name="${questionStat.index}" th:value="${choiceStat.index}"
@@ -50,19 +41,21 @@
                      th:onclick="|return ${confirm != true};|"
                      th:checked="${answer[questionStat.index]?.contains(choiceStat.index)}">
 
-              <label class="form-check-label" th:for="${choiceId}" th:utext="${choice.text}"></label>
+              <label class="form-check-label" th:for="${choiceId}" th:utext="${choice}"></label>
             </div>
-
-            <textarea th:if="${question.type.name == 'Textarea'}"
-                      th:name="${questionStat.index}" th:value="${choiceStat.index}"
-                      th:readonly="${confirm == true}"></textarea>
-
           </li>
         </ul>
+        <textarea class="w-100" th:if="${question.type.name == 'Textarea'}"
+                  th:name="${questionStat.index}"
+                  rows="5"
+                  th:readonly="${confirm == true}"
+                  th:required="${question.required == true}"
+                  th:text="${answer[questionStat.index]?.get(0)}"></textarea>
 
       </div>
     </div>
   </div>
+  <input type="submit" style="display:none">
 </form>
 
 <!--/*-->

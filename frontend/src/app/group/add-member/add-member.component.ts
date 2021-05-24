@@ -1,10 +1,8 @@
 import { Component, Inject, OnInit, TemplateRef, ViewChild } from '@angular/core';
-import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
-import { select } from '@ngrx/store';
 import { Observable } from 'rxjs';
 import { map, share } from 'rxjs/operators';
-import { ColumnDefinition, ListComponent } from 'src/app/share/list/list.component';
+import { ListComponent } from 'src/app/share/list/list.component';
 import { RoleMap } from 'src/app/utilities';
 import { AddGroupMemberGQL, GroupAppendableMembersGQL, Role, UserFragment } from 'src/generated/graphql';
 
@@ -19,13 +17,9 @@ export interface MemberRecord extends UserFragment {
   ]
 })
 export class AddMemberComponent implements OnInit {
-  // @ViewChild('selectedTemplate', { static: true }) private selectedTemplate!: TemplateRef<any>;
-  // @ViewChild('selectedHeaderTemplate', { static: true }) private selectedHeaderTemplate!: TemplateRef<any>;
   @ViewChild(ListComponent, { static: true }) private list!: ListComponent<MemberRecord>;
 
   dataLoad: Observable<MemberRecord[]> | null = null;
-
-  columns: ColumnDefinition<MemberRecord>[] = [];
 
   roles: RoleMap<boolean> = {
     ADMIN: false,
@@ -44,20 +38,6 @@ export class AddMemberComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // this.columns = [
-    //   {
-    //     name: 'selected',
-    //     headerName: '選択',
-    //     cellTemplate: this.selectedTemplate,
-    //     headerCellTemplate: this.selectedHeaderTemplate
-    //   },
-    //   {
-    //     name: 'userName',
-    //     headerName: '氏名'
-    //   }
-    // ];
-
-
     this.dataLoad = this.groupAppendableMembersGql
       .fetch({ groupId: this.groupId })
       .pipe(
@@ -74,7 +54,7 @@ export class AddMemberComponent implements OnInit {
       memberRoles = [Role.None];
     }
 
-    this.addGroupMemberGql.mutate({command: { groupId: this.groupId, userId: addMemberIds, role: memberRoles }})
+    this.addGroupMemberGql.mutate({command: { groupId: this.groupId, userIds: addMemberIds, role: memberRoles }})
       .subscribe(_ => this.dialogRef.close(true))
   }
 

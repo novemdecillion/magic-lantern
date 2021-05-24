@@ -3,12 +3,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, share } from 'rxjs/operators';
-import { ColumnDefinition } from 'src/app/share/list/list.component';
-import { GroupMembersGQL, UserFragment } from 'src/generated/graphql';
+import { ForMemberListGQL, UserFragment } from 'src/generated/graphql';
 import { AddMemberComponent } from '../add-member/add-member.component';
-import { EditMemberComponent } from '../edit-member/edit-member.component';
+import { EditMemberCommand, EditMemberComponent } from '../edit-member/edit-member.component';
 import { createGroupName, createRoleName } from '../../utilities';
-
 
 export interface MemberRecord extends UserFragment {
   roleName?: string
@@ -23,27 +21,11 @@ export interface MemberRecord extends UserFragment {
 export class MemberListComponent implements OnInit {
   dataLoad: Observable<MemberRecord[]> | null = null;
   groupId: string;
-
-  // columns: ColumnDefinition<MemberRecord>[] = [
-  //   {
-  //     name: 'userName',
-  //     headerName: '氏名'
-  //   },
-  //   {
-  //     name: 'roleName',
-  //     headerName: '権限'
-  //   },
-    // {
-    //   name: 'enabled',
-    //   displayName: '有効'
-    // }
-  // ];
-
   groupName: string = ''
   isTopManageableGroup = false;
 
   constructor(
-      private groupMembersGql: GroupMembersGQL,
+      private forMemberListPageGql: ForMemberListGQL,
       route: ActivatedRoute,
       private router: Router,
       public dialog: MatDialog) {
@@ -55,7 +37,7 @@ export class MemberListComponent implements OnInit {
   }
 
   onLoadData(): void {
-    this.dataLoad = this.groupMembersGql.fetch({groupId: this.groupId})
+    this.dataLoad = this.forMemberListPageGql.fetch({groupId: this.groupId})
       .pipe(
         map(res => {
           if (res.data.group) {
@@ -79,17 +61,25 @@ export class MemberListComponent implements OnInit {
   }
 
   onAddMember() {
-    this.dialog.open(AddMemberComponent, { data: this.groupId })
-    .afterClosed().subscribe(res => {
-      if (res) {
-        this.onLoadData();
-      }
+    // this.dialog.open(AddMemberComponent, { data: this.groupId })
+    // .afterClosed().subscribe(res => {
+    //   if (res) {
+    //     this.onLoadData();
+    //   }
+    // });
+    this.dataLoad!.subscribe(members => {
+      this.dialog.open(EditMemberComponent, { data: { groupId: this.groupId,  type: 'add'} as EditMemberCommand})
+      .afterClosed().subscribe(res => {
+        if (res) {
+          this.onLoadData();
+        }
+      })
     });
   }
 
   onDeleteMember() {
     this.dataLoad!.subscribe(members => {
-      this.dialog.open(EditMemberComponent, { data: { type: 'delete', members}})
+      this.dialog.open(EditMemberComponent, { data: { groupId: this.groupId,  type: 'delete'} as EditMemberCommand})
       .afterClosed().subscribe(res => {
         if (res) {
           this.onLoadData();
@@ -100,7 +90,7 @@ export class MemberListComponent implements OnInit {
 
   onEditMember() {
     this.dataLoad!.subscribe(members => {
-      this.dialog.open(EditMemberComponent, { data: { type: 'edit', members}})
+      this.dialog.open(EditMemberComponent, { data: { groupId: this.groupId, type: 'update'} as EditMemberCommand })
       .afterClosed().subscribe(res => {
         if (res) {
           this.onLoadData();

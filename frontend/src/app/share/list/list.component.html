@@ -1,7 +1,7 @@
-<table *ngIf="this.dataSource.filteredData?.length; else emptyMessage" mat-table [dataSource]="dataSource" matSort matSortDirection="asc" class="w-100">
+<table [hidden]="!dataSource.data?.length" mat-table [dataSource]="dataSource" matSort matSortDirection="asc" class="w-100">
   <ng-content></ng-content>
 
-  <caption *ngIf="enableFilter" style="caption-side: right; text-align: end;">
+  <caption *ngIf="enableFilter" style="caption-side: top; text-align: end;">
     <mat-form-field  style="margin-bottom: -1.25em" [floatLabel]="'never'">
       <input type="text" matInput placeholder="検索" #filterInput (keyup)="applyFilter(filterInput.value)">
       <button mat-button *ngIf="filterInput.value" matSuffix mat-icon-button aria-label="Clear" (click)="filterInput.value=''; applyFilter('')">
@@ -10,8 +10,7 @@
     </mat-form-field>
   </caption>
 
-  <ng-container *ngFor="let column of columnDefs; let i = index" matColumnDef="{{ column.name }}"
-    [sticky]="column.sticky === 'start'" [stickyEnd]="column.sticky === 'end'">
+  <ng-container *ngFor="let column of columnDefs; let i = index" matColumnDef="{{ column.name }}">
     <th mat-header-cell *matHeaderCellDef mat-sort-header="{{ column.name }}" [disabled]="column.sort === false">
       <ng-container *ngTemplateOutlet="column.headerCell?.template || defaultHeaderTextCell; context:{column: column}">
       </ng-container>
@@ -22,11 +21,13 @@
     </td>
   </ng-container>
 
-  <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true" style="height: 36px;"></tr>
+  <tr mat-header-row *matHeaderRowDef="displayedColumns;" style="height: 36px;"></tr>
+
   <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
 </table>
-<mat-paginator *ngIf="this.dataSource.filteredData?.length" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions" [hidePageSize]="hidePageSize" showFirstLastButtons>
+
+<mat-paginator [hidden]="!dataSource.data?.length" [pageSize]="pageSize" [pageSizeOptions]="pageSizeOptions" [hidePageSize]="hidePageSize" showFirstLastButtons>
 </mat-paginator>
 
 <ng-template #defaultHeaderTextCell let-column="column">
@@ -37,6 +38,6 @@
   {{ defaultDisplayValue(column, row) }}
 </ng-template>
 
-<ng-template #emptyMessage>
+<ng-container *ngIf="!dataSource.data?.length">
   <div class="ms-2 mt-2">データはありません。</div>
-</ng-template>
+</ng-container>

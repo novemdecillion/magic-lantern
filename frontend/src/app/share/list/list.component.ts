@@ -2,6 +2,7 @@ import { Component, ContentChildren, Directive, Input, OnInit, TemplateRef, View
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
+import { format } from 'date-fns';
 import { Observable } from 'rxjs';
 
 
@@ -23,7 +24,6 @@ export interface ColumnDefinition<Record> {
   name: string;
   valueFrom?: (column: ColumnDefinition<Record>, row: Record)=>string;
   headerName: string | null;
-  sticky?: 'start' | 'end';
   sort?: boolean;
   cellTemplate?: TemplateRef<any>;
   headerCellTemplate?: TemplateRef<any>;
@@ -50,20 +50,7 @@ export class ColumnDefinitionDirective<Record> implements ColumnDefinition<Recor
   @ContentChild(ListHeaderCellDirective)
   headerCell: ListCellDirective | null = null;
 
-  // headerCellTemplate?: TemplateRef<any>;
-  // cellTemplate?: TemplateRef<any>;
-
   constructor() { }
-
-  // ngAfterContentInit(): void {
-  //   if (this.cell) {
-  //     this.cellTemplate = this.cell.template;
-  //   }
-  //   if (this.headerCell) {
-  //     this.headerCellTemplate = this.headerCell.template;
-  //   }
-  // }
-
 }
 
 @Component({
@@ -101,6 +88,9 @@ export class ListComponent<Record extends {[key: string]: any}> implements OnIni
     this.dataSource.filterPredicate = (data: Record, filter: string) => {
       let dataStr = this.columns.reduce<string>((accumulator, column) => {
         let val = this.defaultDisplayValue(column, data)
+        if ((val === undefined) || (val === null)) {
+          return accumulator;
+        }
         return (0 < accumulator.length)? `${accumulator} ${val}`: val
       }, '')
       return filter.trim().split(' ').some(filterWord => dataStr.indexOf(filterWord) != -1);
@@ -129,7 +119,9 @@ export class ListComponent<Record extends {[key: string]: any}> implements OnIni
 
     switch (Object.prototype.toString.call(val)) {
       case '[object Boolean]':
-        return val ? '○' : '×'
+        return val ? '○' : '×';
+      case '[object Date]':
+        return format(val, 'yyyy-MM-dd HH:mm');
     }
     return val
   }

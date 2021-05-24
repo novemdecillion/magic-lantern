@@ -2,13 +2,15 @@ import { MediaMatcher } from '@angular/cdk/layout';
 import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs';
 import { select, Store } from '@ngrx/store';
-import { Role, SlideConfigFragment, UserFragment } from 'src/generated/graphql';
+import { Role, UserFragment } from 'src/generated/graphql';
 import { State, getUser, getServiceAvailable } from './root/store/index';
 import * as AppActions from './root/store/actions/app.action'
 import { tap, map } from 'rxjs/operators';
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
-import { roleDefine, RoleMap } from './utilities';
+import { logout, roleDefine, RoleMap } from './utilities';
+import { MatDialog } from '@angular/material/dialog';
+import { ChangePasswordComponent } from './root/change-password/change-password.component';
 
 interface SideMenu {
   name: string;
@@ -30,7 +32,11 @@ const SIDE_MENUS: RoleMap<SideMenu[]> = {
           name: '認証サーバ',
           icon: 'mdi mdi-certificate',
           link: '/admin/realms'
-        },
+        }, {
+          name: '通知',
+          icon: 'mdi mdi-alert-circle',
+          link: '/admin/notices'
+        }
       ]
     }
   ],
@@ -39,12 +45,14 @@ const SIDE_MENUS: RoleMap<SideMenu[]> = {
       name: 'グループ',
       children: [
         {
-          name: 'グループ',
+          name: '現行',
           icon: 'mdi mdi-file-tree-outline',
           link: '/group/list'
-        // }, {
-        //   name: '世代',
-//        icon: 'mdi mdi-certificate'
+        },
+        {
+          name: '次世代',
+          icon: 'mdi mdi-file-tree-outline',
+          link: '/group/next'
         }
       ]
     }
@@ -73,7 +81,6 @@ const SIDE_MENUS: RoleMap<SideMenu[]> = {
   NONE: []
 };
 
-
 interface SideMenuNode {
   expandable: boolean;
   name: string;
@@ -91,9 +98,11 @@ export class AppComponent implements OnInit, OnDestroy {
   user$ = this.store.pipe(
     select(getUser),
     tap(user => this.createSideMenu(user)));
-  serviceAvailable$ = this.store.pipe(select(getServiceAvailable));
 
-  // slides: SlideConfigFragment[] = [];
+  isUserInSystem$: Observable<boolean> =
+    this.user$.pipe(map(user => user?.isSystemRealm == true));
+
+  serviceAvailable$ = this.store.pipe(select(getServiceAvailable));
 
   mobileQuery: MediaQueryList;
   private mobileQueryListener: () => void;
@@ -116,8 +125,8 @@ export class AppComponent implements OnInit, OnDestroy {
 
   sideMenu = new MatTreeFlatDataSource(this.sideMenuControl, this.treeFlattener);
 
-
   constructor(
+      private dialog: MatDialog,
       private store: Store<State>,
       changeDetectorRef: ChangeDetectorRef, media: MediaMatcher) {
     this.mobileQuery = media.matchMedia('(max-width: 600px)');
@@ -171,19 +180,14 @@ export class AppComponent implements OnInit, OnDestroy {
       return set;
     }))
 
-  // hasAdminRole$
-  //   = this.userUniqueRoles$.pipe(map(roles => roles.has(Role.Admin)))
-  // hasGroupRole$ =
-  //   this.userUniqueRoles$.pipe(map(roles => roles.has(Role.
-  //     Group)))
-  // hasSlideRole$ =
-  //   this.userUniqueRoles$.pipe(map(roles => roles.has(Role.
-  //     Slide)))
-  // hasCourseRole$ =
-  //   this.userUniqueRoles$.pipe(map(roles => roles.has(Role.
-  //     Course)))
-  // hasAttendanceRole$ =
-  //   this.userUniqueRoles$.pipe(map(roles => roles.has(Role.Attendance)))
-
   hasChild = (_: number, node: SideMenuNode) => node.expandable;
+
+  onChangePassword() {
+    this.dialog.open(ChangePasswordComponent)
+  }
+
+  onLogout() {
+    logout();
+  }
+
 }

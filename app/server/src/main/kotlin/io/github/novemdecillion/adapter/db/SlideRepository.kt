@@ -109,9 +109,6 @@ class SlideRepository(/*private val dslContext: DSLContext,*/ private val appSli
         yamlMapper.readValue(inputStream, SlideConfig::class.java)
       }
 
-    val adoc = Asciidoctor.Factory.create()
-
-
     val convertedChapters = slideConfig.chapters
       .map { chapter ->
         when (chapter) {
@@ -143,8 +140,11 @@ class SlideRepository(/*private val dslContext: DSLContext,*/ private val appSli
               questions = chapter.questions
                 .map { question ->
                   when (question) {
-                    is SurveyQuestion -> question.copy(text = convertText(question.text, textType))
-                    is TextareaSurveyQuestion -> question.copy(text = convertText(question.text, textType))
+                    is SurveyQuestion -> question.copy(
+                      text = convertText(question.text, textType),
+                      choices = question.choices.map { convertText(it, textType) })
+                    is TextareaSurveyQuestion -> question.copy(
+                      text = convertText(question.text, textType))
                     else -> throw UnsupportedOperationException()
                   }
                 })

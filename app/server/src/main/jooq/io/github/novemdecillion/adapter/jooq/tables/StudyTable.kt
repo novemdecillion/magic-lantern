@@ -9,6 +9,7 @@ import io.github.novemdecillion.adapter.jooq.keys.STUDY_ACCOUNT_ID_SLIDE_ID_KEY
 import io.github.novemdecillion.adapter.jooq.keys.STUDY_PKEY
 import io.github.novemdecillion.adapter.jooq.keys.STUDY__STUDY_ACCOUNT_ID_FKEY
 import io.github.novemdecillion.adapter.jooq.tables.records.StudyRecord
+import io.github.novemdecillion.domain.StudyStatus
 
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -17,15 +18,17 @@ import kotlin.collections.List
 
 import org.jooq.Field
 import org.jooq.ForeignKey
+import org.jooq.JSONB
 import org.jooq.Name
 import org.jooq.Record
-import org.jooq.Row9
+import org.jooq.Row10
 import org.jooq.Schema
 import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.TableOptions
 import org.jooq.UniqueKey
 import org.jooq.impl.DSL
+import org.jooq.impl.EnumConverter
 import org.jooq.impl.Internal
 import org.jooq.impl.SQLDataType
 import org.jooq.impl.TableImpl
@@ -80,9 +83,14 @@ open class StudyTable(
     val SLIDE_ID: TableField<StudyRecord, String?> = createField(DSL.name("slide_id"), SQLDataType.VARCHAR(255).nullable(false), this, "")
 
     /**
+     * The column <code>study.status</code>.
+     */
+    val STATUS: TableField<StudyRecord, StudyStatus?> = createField(DSL.name("status"), SQLDataType.VARCHAR(255).nullable(false), this, "", EnumConverter<String, StudyStatus>(String::class.java, StudyStatus::class.java))
+
+    /**
      * The column <code>study.progress</code>.
      */
-    val PROGRESS: TableField<StudyRecord, String?> = createField(DSL.name("progress"), SQLDataType.CLOB, this, "")
+    val PROGRESS: TableField<StudyRecord, JSONB?> = createField(DSL.name("progress"), SQLDataType.JSONB, this, "")
 
     /**
      * The column <code>study.progress_rate</code>.
@@ -92,12 +100,12 @@ open class StudyTable(
     /**
      * The column <code>study.answer</code>.
      */
-    val ANSWER: TableField<StudyRecord, String?> = createField(DSL.name("answer"), SQLDataType.CLOB, this, "")
+    val ANSWER: TableField<StudyRecord, JSONB?> = createField(DSL.name("answer"), SQLDataType.JSONB, this, "")
 
     /**
      * The column <code>study.score</code>.
      */
-    val SCORE: TableField<StudyRecord, Int?> = createField(DSL.name("score"), SQLDataType.INTEGER, this, "")
+    val SCORE: TableField<StudyRecord, JSONB?> = createField(DSL.name("score"), SQLDataType.JSONB, this, "")
 
     /**
      * The column <code>study.start_at</code>.
@@ -154,7 +162,7 @@ open class StudyTable(
     override fun rename(name: Name): StudyTable = StudyTable(name, null)
 
     // -------------------------------------------------------------------------
-    // Row9 type methods
+    // Row10 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row9<UUID?, UUID?, String?, String?, Int?, String?, Int?, OffsetDateTime?, OffsetDateTime?> = super.fieldsRow() as Row9<UUID?, UUID?, String?, String?, Int?, String?, Int?, OffsetDateTime?, OffsetDateTime?>
+    override fun fieldsRow(): Row10<UUID?, UUID?, String?, StudyStatus?, JSONB?, Int?, JSONB?, JSONB?, OffsetDateTime?, OffsetDateTime?> = super.fieldsRow() as Row10<UUID?, UUID?, String?, StudyStatus?, JSONB?, Int?, JSONB?, JSONB?, OffsetDateTime?, OffsetDateTime?>
 }

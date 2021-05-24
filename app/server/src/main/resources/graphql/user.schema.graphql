@@ -14,10 +14,57 @@ type Authority {
 
 type User {
   userId: ID!
+  accountName: String!
   userName: String!
-  realmId: String
+  email: String
+  realmId: String!
   enabled: Boolean!
   authorities: [Authority!]!
+  isSystemRealm: Boolean
+}
+
+input AddUserCommand {
+  accountName: String!
+  userName: String!
+  password: String!
+  email: String
+  enabled: Boolean!
+  isAdmin: Boolean!
+  isGroupManager: Boolean!
+}
+
+enum AddUserResult {
+  Success,
+  DuplicateAccountName,
+  UnknownError
+}
+
+input UpdateUserCommand {
+  userId: ID!
+  accountName: String
+  userName: String
+  password: String
+  email: String
+  enabled: Boolean
+  isAdmin: Boolean!
+  isGroupManager: Boolean!
+}
+
+enum UpdateUserResult {
+  Success,
+  UnknownError
+}
+
+input ChangePasswordCommand {
+  oldPassword: String!
+  newPassword: String!
+}
+
+enum ChangePasswordResult {
+  Success,
+  UserNotFound,
+  PasswordNotMatch,
+  UnknownError
 }
 
 type Realm {
@@ -25,4 +72,54 @@ type Realm {
   realmName: String!
   enabled: Boolean!
   syncAt: DateTime
+}
+
+enum StudyStatus {
+  NOT_START,
+  ON_GOING,
+  PASS,
+  FAILED
+}
+
+type StudyQuestionRecord {
+  score: Int!
+  scoring: Int!
+}
+
+type StudyChapterRecord {
+  chapterIndex: Int!
+  passScore: Int!
+  questions: [StudyQuestionRecord!]!
+}
+
+type StudyQuestionAnswer {
+  questionIndex: Int!
+  answers: [Int!]!
+}
+
+type StudyChapterAnswer {
+  chapterIndex: Int!
+  questions: [StudyQuestionAnswer!]!
+}
+
+type StudyProgress {
+  chapterIndex: Int!
+  pageIndexes: [Int!]!
+}
+
+type Study {
+  studyId: ID
+  userId: ID!
+  slideId: ID!
+  status: StudyStatus!
+
+  progressDetails: [StudyProgress!]!
+  progressRate: Int
+  answerDetails: [StudyChapterAnswer!]!
+  scoreDetails: [StudyChapterRecord!]!
+  startAt: DateTime
+  endAt: DateTime
+
+  slide: Slide!
+  lessons: [Lesson!]!
 }

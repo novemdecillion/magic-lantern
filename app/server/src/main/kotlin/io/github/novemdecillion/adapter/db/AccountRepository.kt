@@ -8,9 +8,11 @@ import io.github.novemdecillion.adapter.jooq.tables.references.ACCOUNT
 import io.github.novemdecillion.adapter.jooq.tables.references.REALM
 import org.jooq.DSLContext
 import org.springframework.stereotype.Repository
+import java.util.*
 
 @Repository
 class AccountRepository(private val dslContext: DSLContext) {
+
   fun recordMapper(account: AccountEntity): AccountRecord {
     val record = AccountRecord()
     account.accountId?.also { record.accountId = it }
@@ -31,9 +33,9 @@ class AccountRepository(private val dslContext: DSLContext) {
       .execute()
   }
 
-  fun update(account: AccountEntity) {
+  fun update(account: AccountEntity): Int {
     val record = recordMapper(account)
-    dslContext.update(ACCOUNT)
+    return dslContext.update(ACCOUNT)
       .set(record)
       .let {
         if (null != account.accountId) {
@@ -43,33 +45,45 @@ class AccountRepository(private val dslContext: DSLContext) {
       .execute()
   }
 
-  fun updateEnableByAccountNameAndRealm(accountNames: Collection<String>, realm: String?, enabled: Boolean) {
+  fun changePassword(accountId: UUID, encodedNewPassword: String): Int {
+    return dslContext.update(ACCOUNT)
+      .set(ACCOUNT.PASSWORD, encodedNewPassword)
+      .where(ACCOUNT.ACCOUNT_ID.equal(accountId))
+      .execute()
+  }
+
+  fun delete(userId: UUID): Int {
+    return dslContext.deleteFrom(ACCOUNT).where(ACCOUNT.ACCOUNT_ID.equal(userId)).execute()
+  }
+
+  fun updateEnableByAccountNameAndRealm(accountNames: Collection<String>, realm: String, enabled: Boolean) {
     dslContext.updateQuery(ACCOUNT)
       .also {
         it.addConditions(ACCOUNT.ACCOUNT_NAME.`in`(accountNames)
-          .and(realm
-            ?.let { ACCOUNT.REALM_ID.equal(it) }
-            ?: ACCOUNT.REALM_ID.isNull))
+          .and(ACCOUNT.REALM_ID.equal(realm)))
         it.addValue(ACCOUNT.ENABLED, enabled)
         it.execute()
       }
   }
 
 
-  fun selectAccountNames(realm: String?): List<String> {
+  fun selectAccountNamesByRealmId(realm: String): List<String> {
     return dslContext.select(ACCOUNT.ACCOUNT_NAME).from(ACCOUNT)
-      .where(realm
-        ?.let { ACCOUNT.REALM_ID.equal(it) }
-        ?: ACCOUNT.REALM_ID.isNull)
+      .where(ACCOUNT.REALM_ID.equal(realm))
       .fetchInto(String::class.java)
   }
 
-  fun selectByAccountNameAndRealm(accountNames: Collection<String>, realm: String?): List<AccountEntity> {
+  fun selectByAccountNameAndRealmId(accountName: String, realmId: String): AccountEntity? {
+    return dslContext.selectFrom(ACCOUNT)
+      .where(ACCOUNT.ACCOUNT_NAME.equal(accountName))
+      .and(ACCOUNT.REALM_ID.equal(realmId))
+      .fetchOneInto(AccountEntity::class.java)
+  }
+
+  fun selectByAccountNamesAndRealmId(accountNames: Collection<String>, realmId: String): List<AccountEntity> {
     return dslContext.selectFrom(ACCOUNT)
       .where(ACCOUNT.ACCOUNT_NAME.`in`(accountNames))
-      .and(realm
-        ?.let { ACCOUNT.REALM_ID.equal(it) }
-        ?: ACCOUNT.REALM_ID.isNull)
+      .and(ACCOUNT.REALM_ID.equal(realmId))
       .fetchInto(AccountEntity::class.java)
   }
 
@@ -84,21 +98,12 @@ class AccountRepository(private val dslContext: DSLContext) {
 
   fun insert(realm: RealmEntity) {
     val record = recordMapper(realm)
-    dslContext.insertInto(REALM)
-      .set(record)
-      .execute()
+    dslContext.executeInsert(record)
   }
 
   fun update(realm: RealmEntity) {
     val record = recordMapper(realm)
-    dslContext.update(REALM)
-      .set(record)
-      .let {
-        if (null != realm.realmId) {
-          it.where(REALM.REALM_ID.equal(realm.realmId))
-        } else it
-      }
-      .execute()
+    dslContext.executeUpdate(record)
   }
 
   fun selectRealm(): List<RealmEntity> {

@@ -82,6 +82,7 @@ graphql:
     # Gatewayの背後で動作するので不要
     # cors-enabled: false
     context-setting: PER_REQUEST_WITH_INSTRUMENTATION
+    exception-handlers-enabled: true
   tools:
     schema-location-pattern: graphql/*.schema.graphql
 

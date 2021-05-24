@@ -64,5 +64,11 @@ jooqGenerator {
         it.isEnumConverter = true
         it.includeExpression = """.*\.ROLE"""
         it.userType = "io.github.novemdecillion.domain.Role"
-      })
+      },
+    ForcedType()
+      .also {
+        it.isEnumConverter = true
+        it.includeExpression = """STUDY\.STATUS"""
+        it.userType = "io.github.novemdecillion.domain.StudyStatus"
+      }  )
 }

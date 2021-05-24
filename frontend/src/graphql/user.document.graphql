@@ -5,9 +5,12 @@ fragment authority on Authority {
 
 fragment user on User {
   userId
+  accountName
   userName
   realmId
+  email
   enabled
+  isSystemRealm
   authorities {
     ...authority
   }
@@ -51,4 +54,80 @@ query groupAppendableMembers($groupId: ID!) {
 
 mutation syncRealm($realmId: String) {
   syncRealm(realmId: $realmId)
+}
+
+fragment studyChapterRecord on StudyChapterRecord {
+  chapterIndex
+  passScore
+  questions {
+    score
+    scoring
+  }
+}
+
+fragment studyProgress on StudyProgress {
+  chapterIndex
+  pageIndexes
+}
+
+fragment studyChapterAnswer on StudyChapterAnswer {
+  chapterIndex
+  questions {
+    questionIndex
+    answers
+  }
+}
+
+fragment study on Study {
+  studyId
+  userId
+  status
+
+  progressDetails {
+    ...studyProgress
+  }
+  progressRate
+
+  answerDetails {
+    ...studyChapterAnswer
+  }
+
+  scoreDetails {
+    ...studyChapterRecord
+  }
+
+  startAt
+  endAt
+
+  slide {
+    ...slide
+  }
+  lessons {
+    lessonId
+    group {
+      ...group
+    }
+  }
+}
+
+query myStudies {
+  myStudies {
+    ...study
+  }
+}
+
+mutation addUser($command: AddUserCommand!) {
+  addUser(command: $command)
+}
+
+mutation updateUser($command: UpdateUserCommand!) {
+  updateUser(command: $command)
+}
+
+mutation changePassword($command: ChangePasswordCommand!) {
+  changePassword(command: $command)
+}
+
+mutation deleteUser($userId: ID!) {
+  deleteUser(userId: $userId)
 }

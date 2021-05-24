@@ -7,6 +7,7 @@ package io.github.novemdecillion.adapter.jooq.tables.daos
 import io.github.novemdecillion.adapter.jooq.tables.StudyTable
 import io.github.novemdecillion.adapter.jooq.tables.pojos.StudyEntity
 import io.github.novemdecillion.adapter.jooq.tables.records.StudyRecord
+import io.github.novemdecillion.domain.StudyStatus
 
 import java.time.OffsetDateTime
 import java.util.UUID
@@ -14,6 +15,7 @@ import java.util.UUID
 import kotlin.collections.List
 
 import org.jooq.Configuration
+import org.jooq.JSONB
 import org.jooq.impl.DAOImpl
 
 
@@ -66,14 +68,24 @@ open class StudyDao(configuration: Configuration?) : DAOImpl<StudyRecord, StudyE
     fun fetchBySlideIdTable(vararg values: String): List<StudyEntity> = fetch(StudyTable.STUDY.SLIDE_ID, *values)
 
     /**
+     * Fetch records that have <code>status BETWEEN lowerInclusive AND upperInclusive</code>
+     */
+    fun fetchRangeOfStatusTable(lowerInclusive: StudyStatus?, upperInclusive: StudyStatus?): List<StudyEntity> = fetchRange(StudyTable.STUDY.STATUS, lowerInclusive, upperInclusive)
+
+    /**
+     * Fetch records that have <code>status IN (values)</code>
+     */
+    fun fetchByStatusTable(vararg values: StudyStatus): List<StudyEntity> = fetch(StudyTable.STUDY.STATUS, *values)
+
+    /**
      * Fetch records that have <code>progress BETWEEN lowerInclusive AND upperInclusive</code>
      */
-    fun fetchRangeOfProgressTable(lowerInclusive: String?, upperInclusive: String?): List<StudyEntity> = fetchRange(StudyTable.STUDY.PROGRESS, lowerInclusive, upperInclusive)
+    fun fetchRangeOfProgressTable(lowerInclusive: JSONB?, upperInclusive: JSONB?): List<StudyEntity> = fetchRange(StudyTable.STUDY.PROGRESS, lowerInclusive, upperInclusive)
 
     /**
      * Fetch records that have <code>progress IN (values)</code>
      */
-    fun fetchByProgressTable(vararg values: String): List<StudyEntity> = fetch(StudyTable.STUDY.PROGRESS, *values)
+    fun fetchByProgressTable(vararg values: JSONB): List<StudyEntity> = fetch(StudyTable.STUDY.PROGRESS, *values)
 
     /**
      * Fetch records that have <code>progress_rate BETWEEN lowerInclusive AND upperInclusive</code>
@@ -88,22 +100,22 @@ open class StudyDao(configuration: Configuration?) : DAOImpl<StudyRecord, StudyE
     /**
      * Fetch records that have <code>answer BETWEEN lowerInclusive AND upperInclusive</code>
      */
-    fun fetchRangeOfAnswerTable(lowerInclusive: String?, upperInclusive: String?): List<StudyEntity> = fetchRange(StudyTable.STUDY.ANSWER, lowerInclusive, upperInclusive)
+    fun fetchRangeOfAnswerTable(lowerInclusive: JSONB?, upperInclusive: JSONB?): List<StudyEntity> = fetchRange(StudyTable.STUDY.ANSWER, lowerInclusive, upperInclusive)
 
     /**
      * Fetch records that have <code>answer IN (values)</code>
      */
-    fun fetchByAnswerTable(vararg values: String): List<StudyEntity> = fetch(StudyTable.STUDY.ANSWER, *values)
+    fun fetchByAnswerTable(vararg values: JSONB): List<StudyEntity> = fetch(StudyTable.STUDY.ANSWER, *values)
 
     /**
      * Fetch records that have <code>score BETWEEN lowerInclusive AND upperInclusive</code>
      */
-    fun fetchRangeOfScoreTable(lowerInclusive: Int?, upperInclusive: Int?): List<StudyEntity> = fetchRange(StudyTable.STUDY.SCORE, lowerInclusive, upperInclusive)
+    fun fetchRangeOfScoreTable(lowerInclusive: JSONB?, upperInclusive: JSONB?): List<StudyEntity> = fetchRange(StudyTable.STUDY.SCORE, lowerInclusive, upperInclusive)
 
     /**
      * Fetch records that have <code>score IN (values)</code>
      */
-    fun fetchByScoreTable(vararg values: Int): List<StudyEntity> = fetch(StudyTable.STUDY.SCORE, *values.toTypedArray())
+    fun fetchByScoreTable(vararg values: JSONB): List<StudyEntity> = fetch(StudyTable.STUDY.SCORE, *values)
 
     /**
      * Fetch records that have <code>start_at BETWEEN lowerInclusive AND upperInclusive</code>

@@ -1,6 +1,5 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ColumnDefinition } from 'src/app/share/list/list.component';
 import { map, share } from 'rxjs/operators';
 import { DeleteLessonGQL, LessonFragment, ManageableLessonsGQL } from 'src/generated/graphql';
 import { MatDialog } from '@angular/material/dialog';
@@ -16,32 +15,11 @@ export class LessonListComponent implements OnInit {
 
   dataLoad: Observable<LessonFragment[]> | null = null;
 
-  columns: ColumnDefinition<LessonFragment>[] = [];
-
   constructor(public dialog: MatDialog,
       private lessonsGql: ManageableLessonsGQL, private deleteLessonGql: DeleteLessonGQL) {
   }
 
   ngOnInit(): void {
-    this.columns = [
-      {
-        name: 'groupName',
-        headerName: 'グループ',
-        valueFrom: (_, row): string => row.group.groupName
-      },
-      {
-        name: 'slideTitle',
-        headerName: '教材タイトル',
-        valueFrom: (_, row): string => row.slide.config.title
-      },
-      {
-        name: 'operation',
-        headerName: null,
-        sort: false,
-        cellTemplate: this.operationTemplate
-      }
-    ];
-
     this.onLoadData();
   }
 

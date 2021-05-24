@@ -1,8 +1,7 @@
 import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map, share } from 'rxjs/operators';
-import { ColumnDefinition } from 'src/app/share/list/list.component';
-import { MyStudiesGQL, StudyFragment } from 'src/generated/graphql';
+import { MyStudiesGQL, StudyFragment, StudyStatus } from 'src/generated/graphql';
 
 @Component({
   selector: 'app-study-list',
@@ -13,26 +12,10 @@ export class StudyListComponent implements OnInit {
 
   dataLoad: Observable<StudyFragment[]> | null = null;
 
-  // columns: ColumnDefinition<StudyFragment>[] = [];
-
   constructor(private myStudiesGql: MyStudiesGQL) {
   }
 
   ngOnInit(): void {
-    // this.columns = [
-    //   {
-    //     name: 'slideTitle',
-    //     headerName: '教材タイトル',
-    //     valueFrom: (_, row): string => row.config.title
-    //   },
-    //   {
-    //     name: 'operation',
-    //     headerName: null,
-    //     sort: false,
-    //     cellTemplate: this.operationTemplate
-    //   }
-    // ];
-
     this.onLoadData();
   }
 
@@ -46,7 +29,6 @@ export class StudyListComponent implements OnInit {
       );
   }
 
-  // title = (_: ColumnDefinition<StudyFragment>, row: StudyFragment): string => row.slide.config.title
   studyPath(row: StudyFragment) {
     if (!row.studyId) {
       return `/study/slide/start/${row.slide.slideId}`
@@ -54,12 +36,32 @@ export class StudyListComponent implements OnInit {
     return `/study/slide/${row.studyId}`
   }
 
-  studyStatus(row: StudyFragment) {
+  studyStatus(row: StudyFragment): string {
     if (!row.studyId) {
       return '未着手'
     }
-    // TODO
-    return '実施中'
+
+    switch(row.status) {
+      case StudyStatus.NotStart:
+        return '未着手';
+      case StudyStatus.OnGoing:
+        return `実施中(${row.progressRate}%)`;
+      case StudyStatus.Pass:
+        let sumPass = this.studyScore(row)
+        return `合格(${sumPass[0]}/${sumPass[1]}/${sumPass[2]})`;
+      case StudyStatus.Failed:
+        let sumFailed = this.studyScore(row)
+        return `不合格(${sumFailed[0]}/${sumFailed[1]}/${sumFailed[2]})`;
+    }
+  }
+
+  studyScore(study: StudyFragment): [number, number, number] {
+    return study.scoreDetails.reduce((sum, chapter)=> {
+      let sumQuestions = chapter.questions.reduce((prevSum, question)=>{
+        return [prevSum[0] + question.scoring, prevSum[1] + question.score];
+      }, [0, 0]);
+      return [sum[0] + sumQuestions[0], sum[1] + chapter.passScore, sum[1] + sumQuestions[1]];
+    }, [0, 0, 0]);
   }
 
 }

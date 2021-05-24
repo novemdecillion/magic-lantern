@@ -1,9 +1,27 @@
-query groupMembers($groupId: ID!) {
+query forMemberList($groupId: ID!) {
   group(groupId: $groupId) {
     ...group
   }
   isTopManageableGroup(groupId: $groupId)
   groupMembers(groupId: $groupId) {
+    ...user
+  }
+}
+
+query forEditMember($groupId: ID!) {
+  group(groupId: $groupId) {
+    ...group
+  }
+  groupMembers(groupId: $groupId) {
+    ...user
+  }
+}
+
+query forAddMember($groupId: ID!) {
+  group(groupId: $groupId) {
+    ...group
+  }
+  groupAppendableMembers(groupId: $groupId) {
     ...user
   }
 }

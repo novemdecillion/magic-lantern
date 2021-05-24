@@ -19,15 +19,12 @@ import org.springframework.boot.context.properties.ConstructorBinding
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener
-import org.springframework.core.Ordered
-import org.springframework.core.annotation.Order
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.security.oauth2.client.registration.ClientRegistration
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import org.springframework.transaction.support.TransactionTemplate
-import java.time.LocalDateTime
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -104,14 +101,14 @@ class SyncKeycloakUsersService(
 
     var newComerCount = 0
     var updateCount = 0
-    val storedAccountNames = accountRepository.selectAccountNames(realm).toMutableSet()
+    val storedAccountNames = accountRepository.selectAccountNamesByRealmId(realm).toMutableSet()
 
     users.windowed(100, 1, true)
       .forEach { userRepresentations ->
 
         val accountNames = userRepresentations.map { it.username }
         val storedAccounts =
-          accountRepository.selectByAccountNameAndRealm(accountNames, realm).associateBy { it.accountName }
+          accountRepository.selectByAccountNamesAndRealmId(accountNames, realm).associateBy { it.accountName }
 
         userRepresentations
           .forEach { userRepresentation ->

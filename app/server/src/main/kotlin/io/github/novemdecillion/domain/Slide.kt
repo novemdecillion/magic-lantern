@@ -127,7 +127,9 @@ data class ExamQuestion(
 }
 
 data class ExamQuestionRecord(
+  // 得点
   val scoring: Int,
+  // 配点
   val score: Int
 )
 
@@ -139,7 +141,11 @@ interface IExamChapterRecord {
 data class ExamChapterRecord(
   override val passScore: Int,
   override val questions: List<ExamQuestionRecord>
-) : IExamChapterRecord
+) : IExamChapterRecord {
+  fun isPass(): Boolean {
+    return passScore <= questions.sumOf { it.scoring }
+  }
+}
 
 data class ExamChapter(
   override val title: String,

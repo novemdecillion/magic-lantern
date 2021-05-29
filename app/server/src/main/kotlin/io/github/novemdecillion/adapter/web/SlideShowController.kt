@@ -3,7 +3,6 @@ package io.github.novemdecillion.adapter.web
 import io.github.novemdecillion.adapter.db.SlideRepository
 import io.github.novemdecillion.adapter.db.StudyRepository
 import io.github.novemdecillion.adapter.db.UserRepository
-import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.adapter.security.currentAccount
 import io.github.novemdecillion.domain.*
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -19,8 +18,8 @@ import org.springframework.web.bind.annotation.*
 import org.springframework.web.server.ResponseStatusException
 import org.springframework.web.servlet.HandlerMapping
 import org.springframework.web.servlet.ModelAndView
+import org.springframework.web.servlet.mvc.support.RedirectAttributes
 import org.springframework.web.servlet.view.UrlBasedViewResolver
-import java.time.OffsetDateTime
 import java.util.*
 import javax.servlet.http.HttpServletRequest
 
@@ -37,8 +36,7 @@ class SlideShowController(
   private val userRepository: UserRepository,
   private val studyRepository: StudyRepository,
   private val slideRepository: SlideRepository,
-  private val appSlideProp: AppSlideProperties,
-  private val idGeneratorService: IdGeneratorService,
+  private val appSlideProp: AppSlideProperties
 ) {
 
   enum class SlideAction {
@@ -90,22 +88,6 @@ class SlideShowController(
     )
   }
 
-//  @PostMapping("/slideshow/start/{slideId}")
-//  @Transactional(rollbackFor = [Throwable::class])
-//  fun startSlide(@PathVariable slideId: String, slideProgress: SlideProgress): String {
-//    val currentUser = currentUser()
-//    val startStudy = Study(
-//      studyId = idGeneratorService.generate(),
-//      slideId = slideId,
-//      userId = currentUser.userId,
-//      startAt = OffsetDateTime.now(),
-//      status = StudyStatus.ON_GOING
-//    )
-//    studyRepository.insert(startStudy)
-//    slideProgress.update(startStudy.studyId, slideId, 0)
-//    return "${UrlBasedViewResolver.REDIRECT_URL_PREFIX}/slideshow/${startStudy.studyId}/"
-//  }
-
   @GetMapping(path = ["/slideshow/{studyId}/**"])
   fun slideResource(
     @PathVariable studyId: UUID,
@@ -148,15 +130,29 @@ class SlideShowController(
           modelAndView.model[PAGE_KEY] = page
         }
         is ExamChapter -> {
+          val answer = study.score[chapterIndex]
+          val examChapterRecord = study.score[chapterIndex]
+
           modelAndView.viewName = if (currentChapter.path.isNullOrBlank()) "exam-template" else currentChapter.path
           modelAndView.model[PAGE_KEY] = currentChapter
           modelAndView.model[OPTION_KEY] = slide.config.option
-          modelAndView.model[ANSWER_KEY] = study.answer[chapterIndex] ?: emptyMap<Int, List<String>>()
-          if (1 == pageIndexInChapter) {
-            modelAndView.model[CONFIRM_KEY] = true
-            val scores = study.score[chapterIndex]?.questions?.map { it.scoring } ?: listOf()
-            modelAndView.model[SCORES_KEY] = scores
-            modelAndView.model[TOTAL_SCORE_KEY] = scores.sum()
+
+          if ((null != answer) && (null != examChapterRecord)) {
+            modelAndView.model[ANSWER_KEY] = if (examChapterRecord.isPass()) answer else emptyMap<Int, List<String>>()
+            // 回答済み
+            if (1 == pageIndexInChapter) {
+              // 採点ページ
+              modelAndView.model[CONFIRM_KEY] = true
+              val scores = examChapterRecord.questions.map { it.scoring }
+              modelAndView.model[SCORES_KEY] = scores
+              modelAndView.model[TOTAL_SCORE_KEY] = scores.sum()
+            }
+          } else {
+            // 未回答
+            check(0 == pageIndexInChapter)
+            // 問題ページ
+            modelAndView.model[ANSWER_KEY] = emptyMap<Int, List<String>>()
+
           }
         }
         is SurveyChapter -> {

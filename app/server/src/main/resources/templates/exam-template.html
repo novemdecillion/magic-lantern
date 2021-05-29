@@ -12,11 +12,12 @@
     <div class="row mb-2">
       <div class="col">
         <span class="fs-2" th:text="${page.title}" ></span>
+        <span class="ms-auto fs-5" th:if="${confirm != true}" th:text="|(合格:${page.passScore()}点)|"></span>
         <th:block th:if="${confirm == true}"
-        th:with="pass=${page.passScore() <= totalScore}">
+            th:with="pass=${page.passScore() <= totalScore}">
           <span th:if="${pass == true}" class="ms-3 fs-2 text-success">合格</span>
           <span th:if="${pass == false}" class="ms-3 fs-2 text-danger">不合格</span>
-          <span class="ms-auto fs-5" th:text="|(得点:${totalScore}点, 合格:${page.passScore()}点)|"></span>
+          <span class="fs-5" th:text="|(合格:${page.passScore()}点, 得点:${totalScore}点)|"></span>
         </th:block>
       </div>
     </div>
@@ -24,9 +25,21 @@
       <div class="col">
         <!--/* 問題文 */-->
         <div>
-          <span th:utext="${question.text}"></span>
+          <span class="fs-4" th:text="|問${questionStat.index + 1}|"></span>
           <span th:if="${confirm != true}" th:text="|(配点:${question.score}点)|"></span>
-          <span th:if="${confirm == true}" th:text="|(配点:${question.score}点, 得点:${scores[questionStat.index]}点)|"></span>
+
+          <th:block th:if="${confirm == true}" th:with="isCorrect=${question.score == scores[questionStat.index]}">
+            <th:block th:if="${isCorrect == true}">
+              <span class="ms-3 fs-4 text-success">正解</span>
+            </th:block>
+            <th:block th:if="${isCorrect == false}">
+              <span class="ms-3 fs-4 text-danger">不正解</span>
+            </th:block>
+            <span th:text="|(配点:${question.score}点, 得点:${scores[questionStat.index]}点)|"></span>
+          </th:block>
+        </div>
+        <div>
+          <span th:utext="${question.text}"></span>
         </div>
 
         <!--/* 解説 */-->
@@ -38,7 +51,8 @@
           <li class="list-group-item d-flex" th:each="choice : ${question.choices}"
               th:with="choiceId=|${questionStat.index}-${choiceStat.index}|">
 
-            <i th:if="${(confirm == true) && (choice.correct == true)}"
+            <!--/* 正答マーク */-->
+            <i th:if="${(confirm == true) && (choice.correct == true) && (option.showCorrectAnswer == true)}"
                class="bi bi-check text-success fs-2"
                style="margin-left: calc(-1.325rem - .9vw);"></i>
 

@@ -1,4 +1,6 @@
 title: 情報セキュリティ10大脅威 2019
+option:
+  showCorrectAnswer: false
 chapters:
 - type: Explain
   title: 概要

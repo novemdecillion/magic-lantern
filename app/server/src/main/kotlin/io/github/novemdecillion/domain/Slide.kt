@@ -225,7 +225,8 @@ enum class ScoringMethod {
 }
 
 data class SlideConfigOption(
-  val scoringMethod: ScoringMethod = ScoringMethod.Neutralize
+  val scoringMethod: ScoringMethod = ScoringMethod.Neutralize,
+  val showCorrectAnswer: Boolean = true
 )
 
 data class SlideConfig(

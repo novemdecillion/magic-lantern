@@ -67,6 +67,7 @@ class SlideShowController(
     const val CONFIRM_KEY = "confirm"
     const val SCORES_KEY = "scores"
     const val TOTAL_SCORE_KEY = "totalScore"
+    const val OPTION_KEY = "option"
 
     const val SLIDESHOW_PATH = "/slideshow"
     const val ENDING_PATH = "$SLIDESHOW_PATH/ending"
@@ -149,6 +150,7 @@ class SlideShowController(
         is ExamChapter -> {
           modelAndView.viewName = if (currentChapter.path.isNullOrBlank()) "exam-template" else currentChapter.path
           modelAndView.model[PAGE_KEY] = currentChapter
+          modelAndView.model[OPTION_KEY] = slide.config.option
           modelAndView.model[ANSWER_KEY] = study.answer[chapterIndex] ?: emptyMap<Int, List<String>>()
           if (1 == pageIndexInChapter) {
             modelAndView.model[CONFIRM_KEY] = true

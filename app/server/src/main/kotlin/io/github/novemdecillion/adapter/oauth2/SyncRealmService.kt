@@ -2,6 +2,7 @@ package io.github.novemdecillion.adapter.oauth2
 
 import io.github.novemdecillion.adapter.db.AccountRepository
 import io.github.novemdecillion.adapter.jooq.tables.pojos.RealmEntity
+import io.github.novemdecillion.domain.SYSTEM_REALM_ID
 import org.springframework.context.event.ContextRefreshedEvent
 import org.springframework.context.event.EventListener
 import org.springframework.core.Ordered
@@ -26,6 +27,7 @@ class SyncRealmService(
 
   fun sync() {
     val realms = accountRepository.selectRealm()
+      .filter { it.realmId != SYSTEM_REALM_ID }
       .associateBy { it.realmId }
       .toMutableMap()
     clientRegistrationRepository

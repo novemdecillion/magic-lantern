@@ -8,7 +8,7 @@ import * as AppActions from './root/store/actions/app.action'
 import { tap, map } from 'rxjs/operators';
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';
-import { logout, roleDefine, RoleMap } from './utilities';
+import { hasRootGroupAuthority, logout, roleDefine, RoleMap } from './utilities';
 import { MatDialog } from '@angular/material/dialog';
 import { ChangePasswordComponent } from './root/change-password/change-password.component';
 
@@ -17,6 +17,7 @@ interface SideMenu {
   icon?: string;
   link?: string;
   children?: SideMenu[];
+  isEnable?: (user: UserFragment) => boolean
 }
 
 const SIDE_MENUS: RoleMap<SideMenu[]> = {
@@ -43,6 +44,13 @@ const SIDE_MENUS: RoleMap<SideMenu[]> = {
   GROUP: [
     {
       name: 'グループ',
+      icon: 'mdi mdi-file-tree-outline',
+      link: '/group/list',
+      isEnable: (user: UserFragment) => !hasRootGroupAuthority(user.authorities)
+    },
+    {
+      name: 'グループ',
+      isEnable: (user: UserFragment) => hasRootGroupAuthority(user.authorities),
       children: [
         {
           name: '現行',
@@ -51,8 +59,8 @@ const SIDE_MENUS: RoleMap<SideMenu[]> = {
         },
         {
           name: '次世代',
-          icon: 'mdi mdi-file-tree-outline',
-          link: '/group/next'
+          icon: 'mdi mdi-page-next-outline',
+          link: '/group/next',
         }
       ]
     }
@@ -77,8 +85,7 @@ const SIDE_MENUS: RoleMap<SideMenu[]> = {
       icon: 'mdi mdi-notebook-edit',
       link: '/study/list'
     }
-  ],
-  NONE: []
+  ]
 };
 
 interface SideMenuNode {
@@ -159,10 +166,14 @@ export class AppComponent implements OnInit, OnDestroy {
     this.sideMenu.data = [];
 
     Array.from(roles)
-    .sort((a, b) => roleDefine[a].order -  roleDefine[b].order)
-    .forEach(role => {
-      this.sideMenu.data = this.sideMenu.data.concat(SIDE_MENUS[role])
-    })
+      .sort((a, b) => roleDefine[a].order -  roleDefine[b].order)
+      .forEach(role => {
+        let menu = SIDE_MENUS[role].filter(menu => {
+          return !menu.isEnable
+              || menu.isEnable(user);
+        });
+        this.sideMenu.data = this.sideMenu.data.concat(menu)
+      })
     this.sideMenuControl.expandAll();
   }
 

@@ -1,8 +1,13 @@
-import { Component, Input, ViewChild, ViewEncapsulation, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, ViewChild, ViewEncapsulation, OnInit, OnDestroy, ElementRef } from '@angular/core';
 import { MatButtonToggleChange } from '@angular/material/button-toggle';
 import { Router } from '@angular/router';
+import { select, Store } from '@ngrx/store';
 import { Observable, Subscription } from 'rxjs';
+import { getUser, State } from 'src/app/root/store';
 import { PageComponent } from 'src/app/share/page/page.component';
+import { hasRootGroupAuthority } from 'src/app/utilities';
+import { ExportGroupGenerationGQL, UserFragment } from 'src/generated/graphql';
+import { downloadGroupGeneration } from '../utilities';
 
 @Component({
   selector: 'app-group-page',
@@ -19,7 +24,12 @@ export class GroupPageComponent implements OnInit, OnDestroy {
 
   subscription: Subscription | null = null;
 
-  constructor(private router: Router) {
+  user$ = this.store.pipe(select(getUser));
+
+  constructor(private router: Router,
+              private store: Store<State>,
+              private exportGroupGenerationGql: ExportGroupGenerationGQL,
+              private hostElementRef: ElementRef<HTMLElement>) {
   }
 
   ngOnInit(): void {
@@ -42,4 +52,14 @@ export class GroupPageComponent implements OnInit, OnDestroy {
     }
   }
 
+  onExportGeneration() {
+    downloadGroupGeneration(this.exportGroupGenerationGql, this.hostElementRef.nativeElement);
+  }
+
+  hasRootGroupAuthority(user: UserFragment | null): boolean {
+    if (user) {
+      return hasRootGroupAuthority(user.authorities);
+    }
+    return false;
+  }
 }

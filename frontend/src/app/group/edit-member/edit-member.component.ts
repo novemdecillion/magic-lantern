@@ -27,6 +27,7 @@ export class EditMemberComponent implements OnInit {
   @ViewChild(ListComponent, { static: true }) private list!: ListComponent<EditMemberRecord>;
 
   title: string
+  currentGenerationId!: number
 
   dataLoad: Observable<EditMemberRecord[]> | null = null;
 
@@ -35,8 +36,7 @@ export class EditMemberComponent implements OnInit {
     GROUP: false,
     SLIDE: false,
     LESSON: false,
-    STUDY: false,
-    NONE: false
+    STUDY: false
   };
   constructor(
     private dialogRef: MatDialogRef<EditMemberComponent>,
@@ -66,6 +66,7 @@ export class EditMemberComponent implements OnInit {
         .fetch({ groupId: this.command.groupId })
         .pipe(
           tap(res => {
+            this.currentGenerationId = res.data.currentGroupGenerationId
             if (res.data.group) {
               this.updateTitle(res.data.group)
             }
@@ -78,6 +79,7 @@ export class EditMemberComponent implements OnInit {
         .fetch({ groupId: this.command.groupId })
         .pipe(
           tap(res => {
+            this.currentGenerationId = res.data.currentGroupGenerationId
             if (res.data.group) {
               this.updateTitle(res.data.group)
             }
@@ -97,27 +99,27 @@ export class EditMemberComponent implements OnInit {
     let selectedMemberIds = this.list.dataSource.data.filter(member => member.selected).map(member => member.userId)
 
     let memberRoles = Object.entries(this.roles).filter(([_, value]) => value).map(([key, _]) => key as Role);
-    if (0 === memberRoles.length) {
-      memberRoles = [Role.None];
-    }
 
     switch (this.command.type) {
       case 'add':
         this.addGroupMemberGql.mutate({command: {
+          currentGenerationId: this.currentGenerationId,
           groupId: this.command.groupId,
           userIds: selectedMemberIds,
-          role: memberRoles }})
+          roles: memberRoles }})
         .subscribe(_ => this.dialogRef.close(true))
         break;
       case 'update':
         this.updateGroupMemberGql.mutate({command: {
+          currentGenerationId: this.currentGenerationId,
           groupId: this.command.groupId,
           userIds: selectedMemberIds,
-          role: memberRoles }})
+          roles: memberRoles }})
         .subscribe(_ => this.dialogRef.close(true))
         break;
       case 'delete':
         this.deleteGroupMemberGql.mutate({command: {
+          currentGenerationId: this.currentGenerationId,
           groupId: this.command.groupId,
           userIds: selectedMemberIds
         }})

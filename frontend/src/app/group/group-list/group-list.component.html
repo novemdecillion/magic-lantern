@@ -2,6 +2,7 @@
   <app-list [dataLoad]="dataLoad">
     <app-list-column name="groupName" headerName="グループ名"></app-list-column>
     <app-list-column name="parentGroupName" headerName="所属グループ名"></app-list-column>
+    <app-list-column name="memberCount" headerName="メンバー数"></app-list-column>
     <app-list-column name="operation" [sort]="false">
       <ng-template listCell let-row="row">
         <button mat-icon-button [matMenuTriggerFor]="menu">

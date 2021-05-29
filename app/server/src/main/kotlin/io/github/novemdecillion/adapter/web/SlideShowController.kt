@@ -3,6 +3,7 @@ package io.github.novemdecillion.adapter.web
 import io.github.novemdecillion.adapter.db.SlideRepository
 import io.github.novemdecillion.adapter.db.StudyRepository
 import io.github.novemdecillion.adapter.db.UserRepository
+import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.adapter.security.currentAccount
 import io.github.novemdecillion.domain.*
 import org.springframework.boot.context.properties.ConfigurationProperties
@@ -33,10 +34,11 @@ data class AppSlideProperties(
 @Controller
 @SessionAttributes(types = [SlideShowController.SlideProgress::class])
 class SlideShowController(
-  val userRepository: UserRepository,
-  val studyRepository: StudyRepository,
-  val slideRepository: SlideRepository,
-  val appSlideProp: AppSlideProperties
+  private val userRepository: UserRepository,
+  private val studyRepository: StudyRepository,
+  private val slideRepository: SlideRepository,
+  private val appSlideProp: AppSlideProperties,
+  private val idGeneratorService: IdGeneratorService,
 ) {
 
   enum class SlideAction {
@@ -80,25 +82,28 @@ class SlideShowController(
     return "ending"
   }
 
-  @PostMapping("/slideshow/start/{slideId}")
-  @Transactional(rollbackFor = [Throwable::class])
-  fun startSlide(@PathVariable slideId: String, slideProgress: SlideProgress): String {
+  fun currentUser(): User {
     val (accountName, realmId) = currentAccount()
-    val currentUser =
-      userRepository.findByAccountNameAndRealmWithAuthority(accountName, realmId) ?: throw ResponseStatusException(
-        HttpStatus.FORBIDDEN
-      )
-    val startedStudy = studyRepository.insert(
-      Study(
-        slideId = slideId,
-        userId = currentUser.userId,
-        startAt = OffsetDateTime.now(),
-        status = StudyStatus.ON_GOING
-      )
+    return userRepository.findByAccountNameAndRealmWithAuthority(accountName, realmId) ?: throw ResponseStatusException(
+      HttpStatus.FORBIDDEN
     )
-    slideProgress.update(startedStudy.studyId, slideId, 0)
-    return "${UrlBasedViewResolver.REDIRECT_URL_PREFIX}/slideshow/${startedStudy.studyId}/"
   }
+
+//  @PostMapping("/slideshow/start/{slideId}")
+//  @Transactional(rollbackFor = [Throwable::class])
+//  fun startSlide(@PathVariable slideId: String, slideProgress: SlideProgress): String {
+//    val currentUser = currentUser()
+//    val startStudy = Study(
+//      studyId = idGeneratorService.generate(),
+//      slideId = slideId,
+//      userId = currentUser.userId,
+//      startAt = OffsetDateTime.now(),
+//      status = StudyStatus.ON_GOING
+//    )
+//    studyRepository.insert(startStudy)
+//    slideProgress.update(startStudy.studyId, slideId, 0)
+//    return "${UrlBasedViewResolver.REDIRECT_URL_PREFIX}/slideshow/${startStudy.studyId}/"
+//  }
 
   @GetMapping(path = ["/slideshow/{studyId}/**"])
   fun slideResource(
@@ -117,12 +122,17 @@ class SlideShowController(
 
   @GetMapping(path = ["/slideshow/{studyId}/"])
   @Transactional(rollbackFor = [Throwable::class])
-  fun showSlide(@PathVariable studyId: UUID, slideProgress: SlideProgress, modelAndView: ModelAndView): ModelAndView {
-    handleStudy(studyId, slideProgress) { study, slide, chapter, chapterIndex, pageIndexInChapter ->
+  fun showSlide(@PathVariable studyId: UUID,
+                @RequestParam chapter: Int?,
+                slideProgress: SlideProgress,
+                modelAndView: ModelAndView): ModelAndView {
+    val currentUser = currentUser()
 
-      when (chapter) {
+    handleStudy(studyId, currentUser.userId, slideProgress, chapter) { study, slide, currentChapter, chapterIndex, pageIndexInChapter ->
+
+      when (currentChapter) {
         is ExplainChapter -> {
-          val page = chapter.pages[pageIndexInChapter]
+          val page = currentChapter.pages[pageIndexInChapter]
           modelAndView.viewName = if (page.path.isNullOrBlank()) {
             "explain-template"
           } else {
@@ -137,8 +147,8 @@ class SlideShowController(
           modelAndView.model[PAGE_KEY] = page
         }
         is ExamChapter -> {
-          modelAndView.viewName = if (chapter.path.isNullOrBlank()) "exam-template" else chapter.path
-          modelAndView.model[PAGE_KEY] = chapter
+          modelAndView.viewName = if (currentChapter.path.isNullOrBlank()) "exam-template" else currentChapter.path
+          modelAndView.model[PAGE_KEY] = currentChapter
           modelAndView.model[ANSWER_KEY] = study.answer[chapterIndex] ?: emptyMap<Int, List<String>>()
           if (1 == pageIndexInChapter) {
             modelAndView.model[CONFIRM_KEY] = true
@@ -148,14 +158,19 @@ class SlideShowController(
           }
         }
         is SurveyChapter -> {
-          modelAndView.viewName = if (chapter.path.isNullOrBlank()) "survey-template" else chapter.path
-          modelAndView.model[PAGE_KEY] = chapter
+          modelAndView.viewName = if (currentChapter.path.isNullOrBlank()) "survey-template" else currentChapter.path
+          modelAndView.model[PAGE_KEY] = currentChapter
           modelAndView.model[ANSWER_KEY] = study.answer[chapterIndex] ?: emptyMap<Int, String>()
           if (1 == pageIndexInChapter) {
             modelAndView.model[CONFIRM_KEY] = true
           }
         }
       }
+
+      var updatedStudy = study
+        .recordProgress(chapterIndex, pageIndexInChapter, slide.config.numberOfPages())
+      updatedStudy = updatedStudy.updateStatus()
+      studyRepository.update(updatedStudy)
     }
     return modelAndView
   }
@@ -170,8 +185,9 @@ class SlideShowController(
   ): String {
 
     lateinit var redirectUrl: String
+    val currentUser = currentUser()
 
-    handleStudy(studyId, slideProgress) { study, slide, chapter, chapterIndex, pageIndexInChapter ->
+    handleStudy(studyId, currentUser.userId, slideProgress, null) { study, slide, chapter, chapterIndex, pageIndexInChapter ->
       redirectUrl = "$SLIDESHOW_PATH/${study.studyId}/"
       when (action) {
         SlideAction.PREV -> {
@@ -182,28 +198,30 @@ class SlideShowController(
           }
         }
         SlideAction.NEXT -> {
-          var updatedStudy = study
-            .recordProgress(chapterIndex, pageIndexInChapter, slide.config.numberOfPages())
+          var updatedStudy = study.copy()
           if (slide.config.numberOfPages() <= (slideProgress.pageIndex + 1)) {
             redirectUrl = ENDING_PATH
           } else {
             slideProgress.pageIndex++
           }
-          if (0 == pageIndexInChapter) {
-            val answer = convertToAnswer(params)
-            when (chapter) {
-              is ExamChapter -> {
-                updatedStudy
-                  .recordAnswer(chapterIndex, answer,
-                    chapter.chapterRecord(Study.convertForExamAnswer(answer), slide.config.option.scoringMethod))
+          when (chapter) {
+            is ExamChapter ->
+              if (0 == pageIndexInChapter) {
+                val answer = convertToAnswer(params)
+                updatedStudy = updatedStudy
+                  .recordAnswer(
+                    chapterIndex, answer,
+                    chapter.chapterRecord(Study.convertForExamAnswer(answer), slide.config.option.scoringMethod)
+                  )
               }
-              is SurveyChapter -> {
-                updatedStudy
+            is SurveyChapter ->
+              if (0 == pageIndexInChapter) {
+                val answer = convertToAnswer(params)
+                updatedStudy = updatedStudy
                   .recordAnswer(chapterIndex, answer)
               }
-            }
           }
-          updatedStudy.updateStatus()
+          updatedStudy = updatedStudy.updateStatus()
           studyRepository.update(updatedStudy)
         }
       }
@@ -222,17 +240,22 @@ class SlideShowController(
       }
   }
 
-
   fun handleStudy(
-    studyId: UUID,
+    studyId: UUID, userId: UUID,
     slideProgress: SlideProgress,
+    requestChapterIndex: Int?,
     callback: (study: Study, slide: Slide, chapter: IChapter, chapterIndex: Int, pageIndexInChapter: Int) -> Unit
   ) {
-    val study = studyRepository.selectById(studyId) ?: throw ResponseStatusException(HttpStatus.FORBIDDEN)
+    val study = studyRepository.selectById(studyId, userId) ?: throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
     val slide = slideRepository.loadSlide(study.slideId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
-    val (chapter, pageIndexInChapter) = slide.config.chapterAndPageIndex(slideProgress.pageIndex)
-      ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+
+    val (chapter, pageIndexInChapter) = if (requestChapterIndex == null) {
+      slide.config.chapterAndPageIndex(slideProgress.pageIndex)
+        ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
+    } else {
+      IndexedValue(requestChapterIndex, slide.config.chapters[requestChapterIndex]) to 0
+    }
 
     if ((slideProgress.studyId != studyId) || (slideProgress.slideId != slide.slideId)) {
       slideProgress.update(studyId, study.slideId, 0)

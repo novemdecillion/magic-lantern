@@ -6,25 +6,37 @@ import graphql.kickstart.tools.GraphQLResolver
 import graphql.schema.DataFetchingEnvironment
 import io.github.novemdecillion.adapter.db.LessonRepository
 import io.github.novemdecillion.adapter.db.StudyRepository
+import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.domain.*
 import io.github.novemdecillion.domain.Slide
 import org.springframework.stereotype.Component
+import java.time.OffsetDateTime
+import java.util.*
 import java.util.concurrent.CompletableFuture
 
 @Component
-class StudyApi(private val studyRepository: StudyRepository, private val lessonRepository: LessonRepository): GraphQLQueryResolver, GraphQLMutationResolver {
-
-  fun myStudies(environment: DataFetchingEnvironment): List<Study> {
+class StudyApi(private val studyRepository: StudyRepository, private val idGeneratorService: IdGeneratorService): GraphQLQueryResolver, GraphQLMutationResolver {
+  fun study(studyId: UUID, environment: DataFetchingEnvironment): Study? {
     val userId = environment.currentUser().userId
-    val startedStudies = studyRepository.selectByUserId(userId)
-    val startedSlides = startedStudies.map { it.slideId }.toSet()
+    return studyRepository.selectById(studyId, userId)
+  }
 
-    val notStartedStudies = lessonRepository.selectByUserId(userId)
-      .filter { !startedSlides.contains(it.slideId) }
-      .map {
-        Study(userId = userId, slideId = it.slideId)
-      }
-    return startedStudies.plus(notStartedStudies)
+  fun studiesByUser(environment: DataFetchingEnvironment): List<Study> {
+    val userId = environment.currentUser().userId
+    return studyRepository.selectByUserId(userId)
+  }
+
+  fun startStudy(slideId: String, environment: DataFetchingEnvironment): UUID {
+    val userId = environment.currentUser().userId
+    val startStudy = Study(
+      studyId = idGeneratorService.generate(),
+      slideId = slideId,
+      userId = userId,
+      startAt = OffsetDateTime.now(),
+      status = StudyStatus.ON_GOING
+    )
+    studyRepository.insert(startStudy)
+    return startStudy.studyId
   }
 }
 
@@ -66,17 +78,20 @@ class StudyResolver : GraphQLResolver<Study> {
     return CompletableFuture.completedFuture(study.score.map { StudyChapterRecord(it.key, it.value) })
   }
 
+  fun user(study: Study, environment: DataFetchingEnvironment): CompletableFuture<User> {
+    val loader = environment.dataLoader(UserApi.UserLoader::class)
+    return loader.load(study.userId)
+  }
 
   fun slide(study: Study, environment: DataFetchingEnvironment): CompletableFuture<Slide> {
-    val loader = environment.getDataLoader<String, Slide>(SlideApi.SlideLoader::class.java.simpleName)
+    val loader = environment.dataLoader(SlideApi.SlideLoader::class)
     return loader.load(study.slideId)
   }
 
   fun lessons(study: Study, environment: DataFetchingEnvironment): CompletableFuture<List<LessonWithGroup>> {
     val keys = environment.currentUser().authorities
-      ?.filter { it.roles.contains(Role.STUDY) }
-      ?.map { it.groupId to study.slideId }
-      ?: return CompletableFuture.completedFuture(listOf())
+      .filter { it.roles?.contains(Role.STUDY) == true }
+      .map { it.groupId to study.slideId }
     val loader = environment.dataLoader(LessonApi.LessonWithGroupLoader::class)
     return loader.loadMany(keys)
   }

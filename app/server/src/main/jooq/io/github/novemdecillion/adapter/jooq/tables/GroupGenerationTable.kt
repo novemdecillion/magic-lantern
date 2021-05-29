@@ -8,13 +8,11 @@ import io.github.novemdecillion.adapter.jooq.DefaultSchema
 import io.github.novemdecillion.adapter.jooq.keys.GROUP_GENERATION_PKEY
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupGenerationRecord
 
-import java.time.LocalDate
-import java.util.UUID
-
 import kotlin.collections.List
 
 import org.jooq.Field
 import org.jooq.ForeignKey
+import org.jooq.Identity
 import org.jooq.Name
 import org.jooq.Record
 import org.jooq.Row2
@@ -65,12 +63,12 @@ open class GroupGenerationTable(
     /**
      * The column <code>group_generation.group_generation_id</code>.
      */
-    val GROUP_GENERATION_ID: TableField<GroupGenerationRecord, UUID?> = createField(DSL.name("group_generation_id"), SQLDataType.UUID.nullable(false), this, "")
+    val GROUP_GENERATION_ID: TableField<GroupGenerationRecord, Int?> = createField(DSL.name("group_generation_id"), SQLDataType.INTEGER.nullable(false).identity(true), this, "")
 
     /**
-     * The column <code>group_generation.start_date</code>.
+     * The column <code>group_generation.is_current</code>.
      */
-    val START_DATE: TableField<GroupGenerationRecord, LocalDate?> = createField(DSL.name("start_date"), SQLDataType.LOCALDATE, this, "")
+    val IS_CURRENT: TableField<GroupGenerationRecord, Boolean?> = createField(DSL.name("is_current"), SQLDataType.BOOLEAN.nullable(false), this, "")
 
     private constructor(alias: Name, aliased: Table<GroupGenerationRecord>?): this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<GroupGenerationRecord>?, parameters: Array<Field<*>?>?): this(alias, null, null, aliased, parameters)
@@ -92,6 +90,7 @@ open class GroupGenerationTable(
 
     constructor(child: Table<out Record>, key: ForeignKey<out Record, GroupGenerationRecord>): this(Internal.createPathAlias(child, key), child, key, GROUP_GENERATION, null)
     override fun getSchema(): Schema = DefaultSchema.DEFAULT_SCHEMA
+    override fun getIdentity(): Identity<GroupGenerationRecord, Int?> = super.getIdentity() as Identity<GroupGenerationRecord, Int?>
     override fun getPrimaryKey(): UniqueKey<GroupGenerationRecord> = GROUP_GENERATION_PKEY
     override fun getKeys(): List<UniqueKey<GroupGenerationRecord>> = listOf(GROUP_GENERATION_PKEY)
     override fun `as`(alias: String): GroupGenerationTable = GroupGenerationTable(DSL.name(alias), this)
@@ -110,5 +109,5 @@ open class GroupGenerationTable(
     // -------------------------------------------------------------------------
     // Row2 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row2<UUID?, LocalDate?> = super.fieldsRow() as Row2<UUID?, LocalDate?>
+    override fun fieldsRow(): Row2<Int?, Boolean?> = super.fieldsRow() as Row2<Int?, Boolean?>
 }

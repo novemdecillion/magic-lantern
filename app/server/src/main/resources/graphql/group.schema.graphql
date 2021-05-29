@@ -15,44 +15,90 @@ type GroupCore implements IGroupCOre {
 
 type Group implements IGroupCOre {
   groupId: ID!
-  groupOriginId: ID!
-  groupGenerationId: ID!
+  groupGenerationId: Int!
   groupName: String!
   parentGroupId: ID
-#  members: [Member!]
-#  courses: [ID!]
   path: [GroupCore!]!
+  memberCount: Int!
 }
 
 input AddGroupCommand {
-  groupOriginId: ID
-  groupGenerationId: ID
+  currentGenerationId: Int!
+  targetGenerationId: Int
   groupName: String!
   parentGroupId: ID!
 }
 
 input UpdateGroupCommand {
+  currentGenerationId: Int!
+  targetGenerationId: Int
   groupId: ID!
   groupName: String!
+  parentGroupId: ID!
+}
+
+input DeleteGroupCommand {
+  currentGenerationId: Int!
+  targetGenerationId: Int
+  groupId: ID!
 }
 
 input GroupMemberCommand {
+  currentGenerationId: Int!
+  targetGenerationId: Int
   groupId: ID!
   userIds: [ID!]!
-  role: [Role!]!
+  roles: [Role!]!
 }
 
 input DeleteGroupMemberCommand {
+  currentGenerationId: Int!
+  targetGenerationId: Int
   groupId: ID!
   userIds: [ID!]!
 }
 
-type Lesson {
+input SwitchGroupGenerationCommand {
+  currentGenerationId: Int!
+  nextGenerationId: Int!
+}
+
+input ImportGroupGenerationCommand {
+  groupGenerationId: Int!
+  generationFile: Upload!
+}
+
+type GroupGeneration {
+  groupGenerationId: Int!
+  isCurrent: Boolean!
+}
+
+type LessonStatistics {
+  onGoingCount: Int!
+  passCount: Int!
+  failCount: Int!
+}
+
+interface ILessonCore {
+  lessonId: ID!
+  slideId: ID!
+  slide: Slide!
+}
+
+type LessonByUser implements ILessonCore {
+  lessonId: ID!
+  slideId: ID!
+  slide: Slide!
+}
+
+type Lesson implements ILessonCore {
   lessonId: ID!
   groupId: ID!
   slideId: ID!
   group: Group!
   slide: Slide!
+  studentCount: Int!
+  statistics: LessonStatistics!
 }
 
 input AddLessonCommand {

@@ -4,6 +4,7 @@ import graphql.kickstart.servlet.context.DefaultGraphQLServletContext
 import graphql.kickstart.servlet.context.DefaultGraphQLServletContextBuilder
 import graphql.kickstart.servlet.context.GraphQLServletContext
 import graphql.schema.DataFetchingEnvironment
+import io.github.novemdecillion.adapter.db.GroupRepository
 import io.github.novemdecillion.adapter.db.UserRepository
 import io.github.novemdecillion.adapter.security.currentAccount
 import io.github.novemdecillion.domain.Group
@@ -22,12 +23,20 @@ import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import kotlin.reflect.KClass
 
-class GraphQLContext(servletContext: GraphQLServletContext, val now: OffsetDateTime, val user: User) : GraphQLServletContext by servletContext
+class GraphQLContext(
+  servletContext: GraphQLServletContext,
+  val now: OffsetDateTime,
+  val user: User,
+  val currentGroupGenerationId: Int
+) : GraphQLServletContext by servletContext
 
 interface LoaderFunctionMaker<K, V>
 
 @Component
-class GraphQLServletContextBuilder(private val userRepository: UserRepository, @Autowired(required = false) private val loaderFunctions: Collection<LoaderFunctionMaker<*, *>>?) : DefaultGraphQLServletContextBuilder() {
+class GraphQLServletContextBuilder(
+  private val userRepository: UserRepository,
+  private val groupRepository: GroupRepository,
+  @Autowired(required = false) private val loaderFunctions: Collection<LoaderFunctionMaker<*, *>>?) : DefaultGraphQLServletContextBuilder() {
 
   val dataLoaderRegistry: DataLoaderRegistry = DataLoaderRegistry()
     .also { registry ->
@@ -50,13 +59,18 @@ class GraphQLServletContextBuilder(private val userRepository: UserRepository, @
   override fun build(request: HttpServletRequest, response: HttpServletResponse): GraphQLContext {
     val (accountName, realmId) = currentAccount()
     val user = userRepository.findByAccountNameAndRealmWithAuthority(accountName, realmId)!!
+    val currentGroupGenerationId = groupRepository.selectCurrentGroupGenerationId()!!
     val servletContext = DefaultGraphQLServletContext.createServletContext().with(dataLoaderRegistry).with(request).with(response).build()
-    return GraphQLContext(servletContext, OffsetDateTime.now(), user)
+    return GraphQLContext(servletContext, OffsetDateTime.now(), user, currentGroupGenerationId)
   }
 }
 
 fun DataFetchingEnvironment.currentUser(): User {
   return getContext<GraphQLContext>().user
+}
+
+fun DataFetchingEnvironment.currentGroupGenerationId(): Int {
+  return getContext<GraphQLContext>().currentGroupGenerationId
 }
 
 fun DataFetchingEnvironment.now(): OffsetDateTime {

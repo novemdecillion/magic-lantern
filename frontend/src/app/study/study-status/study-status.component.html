@@ -1,0 +1,22 @@
+<app-page>
+  <ng-template pageTitle>
+    <span class="mdi mdi-notebook-edit"></span>
+    {{ slide?.config?.title }} 受講状況
+  </ng-template>
+
+  <app-list [dataLoad]="dataLoad" >
+    <app-list-column name="title" headerName="章">
+      <ng-template listCell let-row="row">
+        <a [routerLink]="" (click)="onStartStudy(row)">{{ row.title }}</a>
+      </ng-template>
+    </app-list-column>
+    <app-list-column name="prog" headerName="進捗">
+      <ng-template listCell let-row="row">
+        {{ row.pages }} / {{ row.numberOfPages }}
+      </ng-template>
+    </app-list-column>
+    <app-list-column name="status" headerName="状況">
+    </app-list-column>
+  </app-list>
+
+</app-page>

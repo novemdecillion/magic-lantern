@@ -1,10 +1,32 @@
-type Chapter {
+interface IChapter {
   title: String!
+  numberOfPages: Int!
+}
+
+type ExplainChapter implements IChapter{
+  title: String!
+  numberOfPages: Int!
+}
+
+type SurveyChapter implements IChapter{
+  title: String!
+  numberOfPages: Int!
+}
+
+type ExamQuestion {
+  score: Int
+}
+
+type ExamChapter implements IChapter{
+  title: String!
+  numberOfPages: Int!
+  passScore: Int
+  questions: [ExamQuestion!]!
 }
 
 type SlideConfig {
   title: String!
-  chapters: [Chapter!]
+  chapters: [IChapter!]
 }
 
 type Slide {

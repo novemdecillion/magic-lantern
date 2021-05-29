@@ -8,12 +8,12 @@ import { GroupPageComponent } from './group-page/group-page.component';
 import { EditGroupComponent } from './edit-group/edit-group.component';
 import { MemberListComponent } from './member-list/member-list.component';
 import { EditMemberComponent } from './edit-member/edit-member.component';
-import { AddMemberComponent } from './add-member/add-member.component';
 import { EditGenerationComponent } from './edit-generation/edit-generation.component';
 import { NextGenerationComponent } from './next-generation/next-generation.component';
+import { ImportGroupComponent } from './import-group/import-group.component';
 
 @NgModule({
-  declarations: [GroupListComponent, GroupTreeComponent, GroupPageComponent, EditGroupComponent, MemberListComponent, EditMemberComponent, AddMemberComponent, EditGenerationComponent, NextGenerationComponent],
+  declarations: [GroupListComponent, GroupTreeComponent, GroupPageComponent, EditGroupComponent, MemberListComponent, EditMemberComponent, EditGenerationComponent, NextGenerationComponent, ImportGroupComponent],
   imports: [
     CommonModule,
     GroupRoutingModule,

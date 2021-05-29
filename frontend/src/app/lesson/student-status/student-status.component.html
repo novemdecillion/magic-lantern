@@ -1,0 +1,19 @@
+<app-page>
+  <ng-template pageTitle>
+    <span class="mdi mdi-school"></span>
+    {{ user?.userName }} - {{ slide?.config?.title }} 講座 受講状況
+  </ng-template>
+
+  <app-list [dataLoad]="dataLoad" >
+    <app-list-column name="title" headerName="章">
+    </app-list-column>
+    <app-list-column name="prog" headerName="進捗">
+      <ng-template listCell let-row="row">
+        {{ row.pages }} / {{ row.numberOfPages }}
+      </ng-template>
+    </app-list-column>
+    <app-list-column name="status" headerName="状況">
+    </app-list-column>
+  </app-list>
+
+</app-page>

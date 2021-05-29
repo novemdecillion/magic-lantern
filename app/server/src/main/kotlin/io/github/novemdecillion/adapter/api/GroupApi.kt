@@ -1,69 +1,203 @@
 package io.github.novemdecillion.adapter.api
 
+import com.fasterxml.jackson.annotation.JsonIgnore
+import com.fasterxml.jackson.databind.ObjectMapper
 import graphql.kickstart.tools.GraphQLMutationResolver
 import graphql.kickstart.tools.GraphQLQueryResolver
+import graphql.kickstart.tools.GraphQLResolver
 import graphql.schema.DataFetchingEnvironment
-import io.github.novemdecillion.adapter.db.GroupRepository
+import io.github.novemdecillion.adapter.db.*
+import io.github.novemdecillion.adapter.jooq.tables.pojos.AccountGroupAuthorityEntity
+import io.github.novemdecillion.adapter.jooq.tables.pojos.GroupGenerationEntity
+import io.github.novemdecillion.adapter.jooq.tables.pojos.GroupTransitionEntity
 import io.github.novemdecillion.domain.*
+import io.github.novemdecillion.usecase.GroupUseCase
+import org.apache.poi.ss.usermodel.WorkbookFactory
+import org.dataloader.MappedBatchLoader
 import org.springframework.stereotype.Component
+import java.io.ByteArrayOutputStream
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionStage
+import javax.servlet.http.Part
 
 @Component
-class GroupApi(private val groupRepository: GroupRepository): GraphQLQueryResolver, GraphQLMutationResolver {
+class GroupApi(private val groupRepository: GroupRepository,
+               private val accountRepository: AccountRepository,
+               private val userRepository: UserRepository,
+               private val authorityRepository: GroupAuthorityRepository,
+               private val groupUseCase: GroupUseCase): GraphQLQueryResolver, GraphQLMutationResolver {
+  @Component
+  class GroupMemberCountLoader(private val authorityRepository: GroupAuthorityRepository): MappedBatchLoader<IGroup, Int>, LoaderFunctionMaker<IGroup, Int> {
+    override fun load(keys: Set<IGroup>): CompletionStage<Map<IGroup, Int>> {
+      val groupToCountMap = keys
+        .groupBy { it.groupGenerationId }
+        .flatMap { (groupGenerationId, groups) ->
+          authorityRepository.selectCount(groups.map{ it.groupId }, groupGenerationId)
+            .map { (groupId, count) ->
+              groups.first { it.groupId == groupId } to count
+            }
+        }
+        .toMap()
+      return CompletableFuture.completedFuture(groupToCountMap)
+    }
+  }
+
+  @Component
+  class GroupStudentCountLoader(private val authorityRepository: GroupAuthorityRepository): MappedBatchLoader<IGroup, Int>, LoaderFunctionMaker<IGroup, Int> {
+    override fun load(keys: Set<IGroup>): CompletionStage<Map<IGroup, Int>> {
+      val groupToCountMap = keys
+        .groupBy { it.groupGenerationId }
+        .flatMap { (groupGenerationId, groups) ->
+          authorityRepository.selectCount(groups.map{ it.groupId }, groupGenerationId, Role.STUDY)
+            .map { (groupId, count) ->
+              groups.first { it.groupId == groupId } to count
+            }
+        }
+        .toMap()
+      return CompletableFuture.completedFuture(groupToCountMap)
+    }
+  }
+
   data class AddGroupCommand(
-    val groupOriginId: UUID?,
-    val groupGenerationId: UUID?,
+    val currentGenerationId: Int,
+    val targetGenerationId: Int?,
     val groupName: String,
     val parentGroupId: UUID
   )
 
   data class UpdateGroupCommand(
+    val currentGenerationId: Int,
+    val targetGenerationId: Int?,
     val groupId: UUID,
     val groupName: String
   )
 
-  fun authoritativeGroups(role: Role, environment: DataFetchingEnvironment): List<GroupWithPath> {
+  data class DeleteGroupCommand(
+    val currentGenerationId: Int,
+    val targetGenerationId: Int?,
+    val groupId: UUID
+  )
+
+  data class GroupMemberCommand(
+    val currentGenerationId: Int,
+    val targetGenerationId: Int?,
+    val groupId: UUID,
+    val userIds: List<UUID>,
+    val roles: List<Role>
+  )
+
+  data class DeleteGroupMemberCommand(
+    val currentGenerationId: Int,
+    val targetGenerationId: Int?,
+    val groupId: UUID,
+    val userIds: List<UUID>
+  )
+
+  data class SwitchGroupGenerationCommand(
+    val currentGenerationId: Int,
+    val nextGenerationId: Int
+  )
+
+  data class ImportGroupGenerationCommand(
+    val groupGenerationId: Int,
+    @field:JsonIgnore
+    val generationFile: Part? = null)
+
+
+  fun currentGroupGenerationId(environment: DataFetchingEnvironment): Int {
+    return environment.currentGroupGenerationId()
+  }
+
+  fun currentAndNextGroupGenerations(): List<GroupGenerationEntity> {
+    return groupRepository.findCurrentAndAvailableGeneration()
+  }
+
+  fun switchGroupGeneration(command: SwitchGroupGenerationCommand, environment: DataFetchingEnvironment): Boolean {
+    if (command.nextGenerationId == environment.currentGroupGenerationId()) {
+      return true
+    } else if (command.currentGenerationId != environment.currentGroupGenerationId()) {
+      return false
+    }
+    groupRepository.updateCurrentGroupGeneration(command.currentGenerationId, command.nextGenerationId)
+    return true
+  }
+
+  fun authoritativeGroupsByUser(role: Role, environment: DataFetchingEnvironment): List<GroupWithPath> {
     return environment.currentUser().authorities
-      .filter { it.roles.contains(role) }
+      .filter { it.roles?.contains(role) == true }
       .map { it.groupId }
       .let {
-        groupRepository.selectByIds(it)
+        groupRepository.selectByIds(it, environment.currentGroupGenerationId())
       }
   }
 
-  fun effectiveGroups(role: Role, environment: DataFetchingEnvironment): List<GroupWithPath> {
+  fun effectiveGroupsByUser(role: Role, environment: DataFetchingEnvironment): List<GroupWithPath> {
     return environment.currentUser().authorities
-      .filter { it.roles.contains(role) }
+      .filter { it.roles?.contains(role) == true }
       .map { it.groupId }
       .let {
-        groupRepository.selectChildrenByIds(it)
+        groupRepository.selectChildrenByIds(it, environment.currentGroupGenerationId())
       }
   }
 
-//  fun topManageableGroups(environment: DataFetchingEnvironment): List<GroupWithPath> {
-//    val manageableGroupIds = environment.currentUser().authorities
-//      ?.filter { it.roles.contains(Role.MANAGER) }
-//      ?.map { it.groupId }
-//      ?: return listOf()
-//    val groups = groupRepository.selectByIds(manageableGroupIds).map { group -> group.groupIdPath() to group }
-//
-//    return groups
-//      .filter { group ->
-//        groups.firstOrNull { path -> path.first.contains(group.first) }?.let { false } ?: true
-//      }
-//      .map { it.second }
-//  }
+  fun nextGenerationGroups(): List<GroupWithPath> {
+    val generations = groupRepository.findCurrentAndAvailableGeneration()
+    if (generations.size != 2) {
+      return listOf()
+    }
+    return groupRepository.select(generations.last().groupGenerationId)
+  }
 
-  fun isTopManageableGroup(groupId: UUID, environment: DataFetchingEnvironment): Boolean {
+  fun exportGroupGeneration(groupGenerationId: Int?, environment: DataFetchingEnvironment): String {
+    // TODO 現行グループIDチェック
+    val resolvedGenerationId = groupGenerationId ?: environment.currentGroupGenerationId()
+
+    val groups = groupRepository.select(resolvedGenerationId)
+    val realmIdToNameMap = accountRepository.selectRealm().associate { it.realmId!! to it.realmName!! }
+    val workbook = groupUseCase.exportGroupGeneration(groups, realmIdToNameMap) { groupId, _ ->
+      userRepository.selectMemberByGroupTransitionId(groupId, resolvedGenerationId)
+    }
+
+    val workbookBinary = ByteArrayOutputStream()
+      .use { outStream ->
+        workbook.write(outStream)
+        outStream.toByteArray()
+      }
+    return Base64.getEncoder().encodeToString(workbookBinary)
+  }
+
+  fun importGroupGeneration(command: ImportGroupGenerationCommand, environment: DataFetchingEnvironment): Boolean {
+    val generationFile = (environment.variables["command"] as Map<String, Part>)["generationFile"] ?: return false
+
+    if (generationFile.contentType != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+      return false
+    }
+    val workbook = WorkbookFactory.create(generationFile.inputStream)
+    val realmNameToIdMap = accountRepository.selectRealm().associate { it.realmName!! to it.realmId!! }
+
+    groupUseCase.importGroupGeneration(command.groupGenerationId, workbook, realmNameToIdMap,
+      { groups, groupGenerationId ->
+        groupRepository.deleteAndInsertGroups(groupGenerationId,
+          groups.map { GroupTransitionEntity(it.groupId, it.groupGenerationId, it.groupName, it.parentGroupId) })
+      }, { userId, authorities ->
+        authorityRepository.insertAuthorities(userId, authorities)
+      }, { warningMessage ->
+        // TODO 警告メッセージの返却
+      })
+
+    return true
+  }
+
+  fun isTopManageableGroupByUser(groupId: UUID, environment: DataFetchingEnvironment): Boolean {
     val manageableGroupIds = environment.currentUser().authorities
-      ?.filter { it.roles.contains(Role.GROUP) }
-      ?.map { it.groupId }
+      .filter { it.roles?.contains(Role.GROUP) == true }
+      .map { it.groupId }
     if (manageableGroupIds.isNullOrEmpty()
       || !manageableGroupIds.contains(groupId)) {
       return false
     }
-
-    val groups = groupRepository.selectByIds(manageableGroupIds).map { group -> group.groupIdPath() to group.groupId }
+    val groups = groupRepository.selectByIds(manageableGroupIds, environment.currentGroupGenerationId()).map { group -> group.groupIdPath() to group.groupId }
     return groups
       .filter { group ->
         groups
@@ -78,23 +212,88 @@ class GroupApi(private val groupRepository: GroupRepository): GraphQLQueryResolv
       .contains(groupId)
   }
 
-  fun group(groupId: UUID, environment: DataFetchingEnvironment): GroupWithPath? {
-    return groupRepository.selectById(groupId)
+  fun group(groupId: UUID, groupGenerationId: Int?, environment: DataFetchingEnvironment): GroupWithPath? {
+    return groupRepository.selectById(groupId, groupGenerationId)
   }
 
   fun addGroup(command: AddGroupCommand, environment: DataFetchingEnvironment): Boolean {
-    val now = environment.now().toLocalDate()
-    groupRepository.insertNewGroup(now, command.groupName, command.parentGroupId, command.groupGenerationId)
+    // TODO 現行グループIDチェック
+    val resolvedGenerationId = command.targetGenerationId ?: environment.currentGroupGenerationId()
+    groupRepository.insertGroup(command.groupName, command.parentGroupId, resolvedGenerationId)
     return true
   }
 
-  fun updateGroup(command: UpdateGroupCommand): Boolean {
-    groupRepository.updateGroup(command.groupId, command.groupName)
+  fun updateGroup(command: UpdateGroupCommand, environment: DataFetchingEnvironment): Boolean {
+    // TODO 現行グループIDチェック
+    val resolvedGenerationId = command.targetGenerationId ?: environment.currentGroupGenerationId()
+    groupRepository.updateGroup(command.groupId, command.groupName, resolvedGenerationId)
     return true
   }
 
-  fun deleteGroup(groupTransitionId: UUID): Boolean {
-    groupRepository.deleteGroup(groupTransitionId)
+  fun deleteGroup(command: DeleteGroupCommand, environment: DataFetchingEnvironment): Boolean {
+    // TODO 現行グループIDチェック
+    val resolvedGenerationId = command.targetGenerationId ?: environment.currentGroupGenerationId()
+    groupRepository.deleteGroup(command.groupId, resolvedGenerationId)
     return true
+  }
+
+  fun groupMembers(groupId: UUID, groupGenerationId: Int?, environment: DataFetchingEnvironment): List<User> {
+    return userRepository.selectMemberByGroupTransitionId(groupId, groupGenerationId)
+  }
+
+  fun groupAppendableMembers(groupId: UUID, groupGenerationId: Int?, environment: DataFetchingEnvironment): List<User> {
+    return userRepository.selectAppendableMemberByGroupTransitionId(groupId, groupGenerationId)
+  }
+
+  fun addGroupMember(command: GroupMemberCommand, environment: DataFetchingEnvironment): Boolean {
+    // TODO 現行グループIDチェック
+
+    val resolvedGenerationId = command.targetGenerationId ?: environment.currentGroupGenerationId()
+    command.userIds
+      .windowed(100, 100, true)
+      .forEach{ userIds ->
+        val authorities = userIds
+          .map {
+            it to listOf(Authority(command.groupId, resolvedGenerationId, command.roles))
+          }
+        authorityRepository.insertAuthorities(authorities)
+      }
+    return true
+  }
+
+  fun updateGroupMember(command: GroupMemberCommand, environment: DataFetchingEnvironment): Boolean {
+    // TODO 現行グループIDチェック
+
+    val resolvedGenerationId = command.targetGenerationId ?: environment.currentGroupGenerationId()
+    command.userIds
+      .windowed(100, 100, true)
+      .forEach{ userIds ->
+        val authorities = userIds
+          .map {
+            it to listOf(Authority(command.groupId, resolvedGenerationId, command.roles))
+          }
+        authorityRepository.updateAuthorities(authorities)
+      }
+    return true
+  }
+
+  fun deleteGroupMember(command: DeleteGroupMemberCommand, environment: DataFetchingEnvironment): Boolean {
+    // TODO 現行グループIDチェック
+
+    val resolvedGenerationId = command.targetGenerationId ?: environment.currentGroupGenerationId()
+    command.userIds
+      .windowed(100, 100, true)
+      .forEach{ userIds ->
+        authorityRepository.deleteAuthorities(command.groupId, userIds, resolvedGenerationId)
+      }
+    return true
+  }
+}
+
+@Component
+class GroupWithPathResolver(val authorityRepository: GroupAuthorityRepository) : GraphQLResolver<GroupWithPath> {
+  fun memberCount(group: GroupWithPath, environment: DataFetchingEnvironment): CompletableFuture<Int> {
+    val loader = environment.dataLoader(GroupApi.GroupMemberCountLoader::class)
+    return loader.load(group)
   }
 }

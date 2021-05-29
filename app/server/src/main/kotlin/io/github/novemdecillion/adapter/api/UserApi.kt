@@ -4,29 +4,41 @@ import graphql.kickstart.tools.GraphQLMutationResolver
 import graphql.kickstart.tools.GraphQLQueryResolver
 import graphql.schema.DataFetchingEnvironment
 import io.github.novemdecillion.adapter.db.AccountRepository
+import io.github.novemdecillion.adapter.db.GroupAuthorityRepository
+import io.github.novemdecillion.adapter.db.SlideRepository
 import io.github.novemdecillion.adapter.db.UserRepository
 import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.adapter.jooq.tables.pojos.AccountEntity
-import io.github.novemdecillion.adapter.jooq.tables.pojos.AccountGroupAuthorityEntity
 import io.github.novemdecillion.adapter.jooq.tables.pojos.RealmEntity
 import io.github.novemdecillion.adapter.oauth2.SyncKeycloakUsersService
 import io.github.novemdecillion.domain.*
 import io.github.novemdecillion.utils.lang.logger
+import org.dataloader.MappedBatchLoader
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.stereotype.Component
 import java.util.*
+import java.util.concurrent.CompletableFuture
+import java.util.concurrent.CompletionStage
 
 @Component
 class UserApi(
   private val userRepository: UserRepository,
   private val accountRepository: AccountRepository,
+  private val authorityRepository: GroupAuthorityRepository,
   private val syncUsersService: SyncKeycloakUsersService,
   private val idGeneratorService: IdGeneratorService,
   private val passwordEncoder: PasswordEncoder
 ) : GraphQLQueryResolver, GraphQLMutationResolver {
   companion object {
     val log = logger()
+  }
+
+  @Component
+  class UserLoader(private val userRepository: UserRepository): MappedBatchLoader<UUID, User>, LoaderFunctionMaker<UUID, User> {
+    override fun load(keys: Set<UUID>): CompletionStage<Map<UUID, User>> {
+      return CompletableFuture.completedFuture(userRepository.selectByIds(keys).associateBy { it.userId })
+    }
   }
 
   data class AddUserCommand (
@@ -53,17 +65,6 @@ class UserApi(
   data class ChangePasswordCommand (
     val oldPassword: String,
     val newPassword: String
-  )
-
-  data class GroupMemberCommand(
-    val groupId: UUID,
-    val userIds: List<UUID>,
-    val role: List<Role>
-  )
-
-  data class DeleteGroupMemberCommand(
-    val groupId: UUID,
-    val userIds: List<UUID>
   )
 
   fun currentUser(environment: DataFetchingEnvironment): User {
@@ -116,10 +117,7 @@ class UserApi(
       if (command.isGroupManager) {
         roles.add(Role.GROUP)
       }
-      if (roles.isEmpty()) {
-        roles.add(Role.NONE)
-      }
-      userRepository.insertAuthority(account.accountId!!, Authority(ENTIRE_GROUP_ID, roles))
+      authorityRepository.insertAuthority(account.accountId!!, Authority.forRootGroup(roles))
     } catch (ex: Exception) {
       log.error("ユーザの追加に失敗しました。", ex)
       return when(ex) {
@@ -146,13 +144,12 @@ class UserApi(
       command.password?.also { account.password  = passwordEncoder.encode(command.password) }
       accountRepository.update(account)
 
-      val authority = userRepository.selectAuthorityByUserIdAndGroupId(command.userId, ENTIRE_GROUP_ID)
-        ?: Authority(ENTIRE_GROUP_ID, listOf())
-      val newRoles = authority.roles.toMutableSet()
-      newRoles.remove(Role.NONE)
+      val authority = userRepository.selectAuthorityByUserIdAndGroupId(command.userId, ROOT_GROUP_ID)
+        ?: Authority.forRootGroup()
+      val newRoles = authority.roles?.toMutableSet() ?: mutableListOf()
       command.isAdmin
         ?.also { requestFlag ->
-          val isAdmin: Boolean = authority.roles.contains(Role.ADMIN)
+          val isAdmin: Boolean = newRoles.contains(Role.ADMIN)
           when {
             !isAdmin && requestFlag -> newRoles.add(Role.ADMIN)
             isAdmin && !requestFlag -> newRoles.remove(Role.ADMIN)
@@ -160,17 +157,14 @@ class UserApi(
         }
       command.isGroupManager
         ?.also { requestFlag ->
-          val isGroupManager: Boolean = authority.roles.contains(Role.GROUP)
+          val isGroupManager: Boolean = newRoles.contains(Role.GROUP)
           when {
             !isGroupManager && requestFlag -> newRoles.add(Role.GROUP)
             isGroupManager && !requestFlag -> newRoles.remove(Role.GROUP)
           }
         }
-      if (newRoles.isEmpty()) {
-        newRoles.add(Role.NONE)
-      }
-      if (newRoles != authority.roles.toSet()) {
-        userRepository.updateAuthority(command.userId, authority.copy(roles = newRoles))
+      if (newRoles != authority.roles?.toSet()) {
+        authorityRepository.updateAuthority(command.userId, authority.copy(roles = newRoles))
       }
     } catch (ex: Exception) {
       log.error("ユーザの追加に失敗しました。", ex)
@@ -207,46 +201,4 @@ class UserApi(
   fun deleteUser(userId: UUID): Boolean {
     return 1 == accountRepository.delete(userId)
   }
-
-  fun groupMembers(groupId: UUID, environment: DataFetchingEnvironment): List<User> {
-    return userRepository.selectMemberByGroupTransitionId(groupId)
-  }
-
-  fun groupAppendableMembers(groupId: UUID, environment: DataFetchingEnvironment): List<User> {
-    return userRepository.selectAppendableMemberByGroupTransitionId(groupId)
-  }
-
-  fun addGroupMember(command: GroupMemberCommand): Boolean {
-    command.userIds
-      .windowed(100, 100, true)
-      .forEach{ userIds ->
-        val entities = command.role.flatMap { role ->
-          userIds.map { AccountGroupAuthorityEntity(it, command.groupId, role) }
-        }
-        userRepository.insertAuthorities(entities)
-      }
-    return true
-  }
-
-  fun updateGroupMember(command: GroupMemberCommand): Boolean {
-    command.userIds
-      .windowed(100, 100, true)
-      .forEach{ userIds ->
-        val entities = command.role.flatMap { role ->
-          userIds.map { AccountGroupAuthorityEntity(it, command.groupId, role) }
-        }
-        userRepository.updateAuthorities(entities)
-      }
-    return true
-  }
-
-  fun deleteGroupMember(command: DeleteGroupMemberCommand): Boolean {
-    command.userIds
-      .windowed(100, 100, true)
-      .forEach{ userIds ->
-        userRepository.deleteAuthorities(command.groupId, userIds)
-      }
-    return true
-  }
-
 }

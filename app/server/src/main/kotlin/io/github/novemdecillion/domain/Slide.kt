@@ -16,7 +16,7 @@ const val SLIDE_CONFIG_FILE_NAME = "config.yml"
 )
 interface IChapter {
   val title: String
-  fun numberOfPages(): Int
+  val numberOfPages: Int
 }
 
 interface IPage {
@@ -43,7 +43,7 @@ data class ExplainChapter(
   override val title: String,
   val pages: List<ExplainPage>
 ) : IChapter {
-  override fun numberOfPages(): Int = pages.size
+  override val numberOfPages: Int = pages.size
 }
 
 /**
@@ -127,8 +127,8 @@ data class ExamQuestion(
 }
 
 data class ExamQuestionRecord(
-  val score: Int,
-  val scoring: Int
+  val scoring: Int,
+  val score: Int
 )
 
 interface IExamChapterRecord {
@@ -148,7 +148,7 @@ data class ExamChapter(
   override val textType: TextType?,
   val questions: List<ExamQuestion>
 ) : IChapter, IPage {
-  override fun numberOfPages(): Int = 2
+  override val numberOfPages: Int = 2
 
   /**
    * 得点
@@ -217,7 +217,7 @@ data class SurveyChapter(
   override val textType: TextType?,
   val questions: List<ISurveyQuestion>
 ) : IChapter, IPage {
-  override fun numberOfPages(): Int = 2
+  override val numberOfPages: Int = 2
 }
 
 enum class ScoringMethod {
@@ -238,7 +238,7 @@ data class SlideConfig(
   private val chapterPageRange = chapters
     .fold(mutableListOf<Pair<IntRange, IChapter>>()){ acc, chapter ->
       val prevLast: Int = acc.lastOrNull()?.first?.last ?: -1
-      acc.add(IntRange(prevLast + 1, prevLast + chapter.numberOfPages()) to chapter)
+      acc.add(IntRange(prevLast + 1, prevLast + chapter.numberOfPages) to chapter)
       acc
     }
   
@@ -247,7 +247,7 @@ data class SlideConfig(
    */
   fun numberOfPages(): Int {
     return chapters
-      .sumBy { it.numberOfPages() }
+      .sumBy { it.numberOfPages }
   }
 
   fun chapterAndPageIndex(pageIndex: Int): Pair<IndexedValue<IChapter>, Int>? {

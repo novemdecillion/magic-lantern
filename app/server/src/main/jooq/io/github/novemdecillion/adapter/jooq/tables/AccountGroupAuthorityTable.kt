@@ -7,9 +7,7 @@ package io.github.novemdecillion.adapter.jooq.tables
 import io.github.novemdecillion.adapter.jooq.DefaultSchema
 import io.github.novemdecillion.adapter.jooq.keys.ACCOUNT_GROUP_AUTHORITY_PKEY
 import io.github.novemdecillion.adapter.jooq.keys.ACCOUNT_GROUP_AUTHORITY__ACCOUNT_GROUP_AUTHORITY_ACCOUNT_ID_FKEY
-import io.github.novemdecillion.adapter.jooq.keys.ACCOUNT_GROUP_AUTHORITY__ACCOUNT_GROUP_AUTHORITY_GROUP_TRANSITION_ID_FKEY
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountGroupAuthorityRecord
-import io.github.novemdecillion.domain.Role
 
 import java.util.UUID
 
@@ -17,16 +15,16 @@ import kotlin.collections.List
 
 import org.jooq.Field
 import org.jooq.ForeignKey
+import org.jooq.JSONB
 import org.jooq.Name
 import org.jooq.Record
-import org.jooq.Row3
+import org.jooq.Row4
 import org.jooq.Schema
 import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.TableOptions
 import org.jooq.UniqueKey
 import org.jooq.impl.DSL
-import org.jooq.impl.EnumConverter
 import org.jooq.impl.Internal
 import org.jooq.impl.SQLDataType
 import org.jooq.impl.TableImpl
@@ -76,9 +74,14 @@ open class AccountGroupAuthorityTable(
     val GROUP_TRANSITION_ID: TableField<AccountGroupAuthorityRecord, UUID?> = createField(DSL.name("group_transition_id"), SQLDataType.UUID.nullable(false), this, "")
 
     /**
+     * The column <code>account_group_authority.group_generation_id</code>.
+     */
+    val GROUP_GENERATION_ID: TableField<AccountGroupAuthorityRecord, Int?> = createField(DSL.name("group_generation_id"), SQLDataType.INTEGER.nullable(false), this, "")
+
+    /**
      * The column <code>account_group_authority.role</code>.
      */
-    val ROLE: TableField<AccountGroupAuthorityRecord, Role?> = createField(DSL.name("role"), SQLDataType.VARCHAR(255).nullable(false), this, "", EnumConverter<String, Role>(String::class.java, Role::class.java))
+    val ROLE: TableField<AccountGroupAuthorityRecord, JSONB?> = createField(DSL.name("role"), SQLDataType.JSONB, this, "")
 
     private constructor(alias: Name, aliased: Table<AccountGroupAuthorityRecord>?): this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<AccountGroupAuthorityRecord>?, parameters: Array<Field<*>?>?): this(alias, null, null, aliased, parameters)
@@ -102,21 +105,14 @@ open class AccountGroupAuthorityTable(
     override fun getSchema(): Schema = DefaultSchema.DEFAULT_SCHEMA
     override fun getPrimaryKey(): UniqueKey<AccountGroupAuthorityRecord> = ACCOUNT_GROUP_AUTHORITY_PKEY
     override fun getKeys(): List<UniqueKey<AccountGroupAuthorityRecord>> = listOf(ACCOUNT_GROUP_AUTHORITY_PKEY)
-    override fun getReferences(): List<ForeignKey<AccountGroupAuthorityRecord, *>> = listOf(ACCOUNT_GROUP_AUTHORITY__ACCOUNT_GROUP_AUTHORITY_ACCOUNT_ID_FKEY, ACCOUNT_GROUP_AUTHORITY__ACCOUNT_GROUP_AUTHORITY_GROUP_TRANSITION_ID_FKEY)
+    override fun getReferences(): List<ForeignKey<AccountGroupAuthorityRecord, *>> = listOf(ACCOUNT_GROUP_AUTHORITY__ACCOUNT_GROUP_AUTHORITY_ACCOUNT_ID_FKEY)
 
     private lateinit var _account: AccountTable
-    private lateinit var _groupTransition: GroupTransitionTable
     fun account(): AccountTable {
         if (!this::_account.isInitialized)
             _account = AccountTable(this, ACCOUNT_GROUP_AUTHORITY__ACCOUNT_GROUP_AUTHORITY_ACCOUNT_ID_FKEY)
 
         return _account;
-    }
-    fun groupTransition(): GroupTransitionTable {
-        if (!this::_groupTransition.isInitialized)
-            _groupTransition = GroupTransitionTable(this, ACCOUNT_GROUP_AUTHORITY__ACCOUNT_GROUP_AUTHORITY_GROUP_TRANSITION_ID_FKEY)
-
-        return _groupTransition;
     }
     override fun `as`(alias: String): AccountGroupAuthorityTable = AccountGroupAuthorityTable(DSL.name(alias), this)
     override fun `as`(alias: Name): AccountGroupAuthorityTable = AccountGroupAuthorityTable(alias, this)
@@ -132,7 +128,7 @@ open class AccountGroupAuthorityTable(
     override fun rename(name: Name): AccountGroupAuthorityTable = AccountGroupAuthorityTable(name, null)
 
     // -------------------------------------------------------------------------
-    // Row3 type methods
+    // Row4 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row3<UUID?, UUID?, Role?> = super.fieldsRow() as Row3<UUID?, UUID?, Role?>
+    override fun fieldsRow(): Row4<UUID?, UUID?, Int?, JSONB?> = super.fieldsRow() as Row4<UUID?, UUID?, Int?, JSONB?>
 }

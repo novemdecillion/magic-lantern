@@ -5,6 +5,12 @@ scalar Upload
 
 type Query {
   currentUser: User!
+  authoritativeGroupsByUser(role: Role!): [Group!]!
+  effectiveGroupsByUser(role: Role!): [Group!]!
+  isTopManageableGroupByUser(groupId: ID!): Boolean!
+  studiesByUser: [Study!]!
+  notStartStudyByUser: [LessonByUser!]!
+
   users: [User!]!
   userCount: Int!
   realms: [Realm!]!
@@ -13,16 +19,24 @@ type Query {
   effectiveNotices: [Notice!]!
 
   slides: [Slide!]!
+  slide(slideId: ID!): Slide
+
   manageableLessons: [Lesson!]!
-  myStudies: [Study!]!
+  lesson(lessonId: ID!): Lesson
 
-  authoritativeGroups(role: Role!): [Group!]!
-  effectiveGroups(role: Role!): [Group!]!
+  group(groupId: ID!, groupGenerationId: Int): Group
+  nextGenerationGroups: [Group!]!
 
-  group(groupId: ID!): Group
-  isTopManageableGroup(groupId: ID!): Boolean!
-  groupMembers(groupId: ID!): [User!]!
-  groupAppendableMembers(groupId: ID): [User!]!
+  groupMembers(groupId: ID!, groupGenerationId: Int): [User!]!
+  groupAppendableMembers(groupId: ID!, groupGenerationId: Int): [User!]!
+
+  currentGroupGenerationId: Int!
+  currentAndNextGroupGenerations: [GroupGeneration!]
+  exportGroupGeneration(groupGenerationId: Int): String
+
+  study(studyId: ID!): Study
+  lessonStudies(lessonId: ID!): [Study!]!
+  notStartLessonStudies(lessonId: ID!): [User!]!
 }
 
 type Mutation {
@@ -39,11 +53,14 @@ type Mutation {
 
   addGroup(command: AddGroupCommand!): Boolean
   updateGroup(command: UpdateGroupCommand!): Boolean
-  deleteGroup(groupId: ID!): Boolean
+  deleteGroup(command: DeleteGroupCommand!): Boolean
 
   addGroupMember(command: GroupMemberCommand!): Boolean
   updateGroupMember(command: GroupMemberCommand!): Boolean
   deleteGroupMember(command: DeleteGroupMemberCommand!): Boolean
+
+  switchGroupGeneration(command: SwitchGroupGenerationCommand!): Boolean
+  importGroupGeneration(command: ImportGroupGenerationCommand!): Boolean
 
   addSlide(command: AddSlideCommand!): Boolean
   deleteSlide(slideId: ID!): Boolean
@@ -51,4 +68,6 @@ type Mutation {
 
   addLesson(command: AddLessonCommand!): Boolean
   deleteLesson(lessonId: ID!): Boolean
+
+  startStudy(slideId: ID!): ID!
 }

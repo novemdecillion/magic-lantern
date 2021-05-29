@@ -2,13 +2,15 @@ query forMemberList($groupId: ID!) {
   group(groupId: $groupId) {
     ...group
   }
-  isTopManageableGroup(groupId: $groupId)
+  currentGroupGenerationId
+  isTopManageableGroupByUser(groupId: $groupId)
   groupMembers(groupId: $groupId) {
     ...user
   }
 }
 
 query forEditMember($groupId: ID!) {
+  currentGroupGenerationId
   group(groupId: $groupId) {
     ...group
   }
@@ -18,10 +20,44 @@ query forEditMember($groupId: ID!) {
 }
 
 query forAddMember($groupId: ID!) {
+  currentGroupGenerationId
   group(groupId: $groupId) {
     ...group
   }
   groupAppendableMembers(groupId: $groupId) {
     ...user
+  }
+}
+
+query forStudyList {
+  studiesByUser {
+    ...study
+  }
+  notStartStudyByUser {
+    ...lessonByUser
+  }
+}
+
+query forLessonStudentList($lessonId: ID!) {
+  lesson(lessonId: $lessonId) {
+    ...lesson
+  }
+  lessonStudies(lessonId: $lessonId) {
+    ...study
+    user {
+      ...user
+    }
+  }
+  notStartLessonStudies(lessonId: $lessonId) {
+    ...user
+  }
+}
+
+query forLessonStudentStatus($studyId: ID!) {
+  study(studyId: $studyId) {
+    ...study
+    user {
+      ...user
+    }
   }
 }

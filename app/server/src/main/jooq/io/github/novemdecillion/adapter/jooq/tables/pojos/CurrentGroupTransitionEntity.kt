@@ -15,8 +15,7 @@ import java.util.UUID
 @Suppress("UNCHECKED_CAST")
 data class CurrentGroupTransitionEntity(
     override var groupTransitionId: UUID? = null, 
-    override var groupGenerationId: UUID? = null, 
-    override var groupOriginId: UUID? = null, 
+    override var groupGenerationId: Int? = null, 
     override var groupName: String? = null, 
     override var parentGroupTransitionId: UUID? = null, 
     override var layer: Int? = null, 
@@ -30,7 +29,6 @@ data class CurrentGroupTransitionEntity(
 
         sb.append(groupTransitionId)
         sb.append(", ").append(groupGenerationId)
-        sb.append(", ").append(groupOriginId)
         sb.append(", ").append(groupName)
         sb.append(", ").append(parentGroupTransitionId)
         sb.append(", ").append(layer)
@@ -48,7 +46,6 @@ data class CurrentGroupTransitionEntity(
     override fun from(from: ICurrentGroupTransition) {
         groupTransitionId = from.groupTransitionId
         groupGenerationId = from.groupGenerationId
-        groupOriginId = from.groupOriginId
         groupName = from.groupName
         parentGroupTransitionId = from.parentGroupTransitionId
         layer = from.layer

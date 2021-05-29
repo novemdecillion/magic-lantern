@@ -45,14 +45,14 @@ open class LessonDao(configuration: Configuration?) : DAOImpl<LessonRecord, Less
     fun fetchOneByLessonIdTable(value: UUID): LessonEntity? = fetchOne(LessonTable.LESSON.LESSON_ID, value)
 
     /**
-     * Fetch records that have <code>group_origin_id BETWEEN lowerInclusive AND upperInclusive</code>
+     * Fetch records that have <code>group_transition_id BETWEEN lowerInclusive AND upperInclusive</code>
      */
-    fun fetchRangeOfGroupOriginIdTable(lowerInclusive: UUID?, upperInclusive: UUID?): List<LessonEntity> = fetchRange(LessonTable.LESSON.GROUP_ORIGIN_ID, lowerInclusive, upperInclusive)
+    fun fetchRangeOfGroupTransitionIdTable(lowerInclusive: UUID?, upperInclusive: UUID?): List<LessonEntity> = fetchRange(LessonTable.LESSON.GROUP_TRANSITION_ID, lowerInclusive, upperInclusive)
 
     /**
-     * Fetch records that have <code>group_origin_id IN (values)</code>
+     * Fetch records that have <code>group_transition_id IN (values)</code>
      */
-    fun fetchByGroupOriginIdTable(vararg values: UUID): List<LessonEntity> = fetch(LessonTable.LESSON.GROUP_ORIGIN_ID, *values)
+    fun fetchByGroupTransitionIdTable(vararg values: UUID): List<LessonEntity> = fetch(LessonTable.LESSON.GROUP_TRANSITION_ID, *values)
 
     /**
      * Fetch records that have <code>slide_id BETWEEN lowerInclusive AND upperInclusive</code>

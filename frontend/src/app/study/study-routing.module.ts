@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { StudyListComponent } from './study-list/study-list.component';
 import { SlideshowComponent } from './slideshow/slideshow.component';
+import { StudyStatusComponent } from './study-status/study-status.component';
 
 const routes: Routes = [
   {
@@ -9,8 +10,12 @@ const routes: Routes = [
     component: StudyListComponent
   },
   {
-    path: 'slide/start/:slideId',
-    component: SlideshowComponent
+    path: 'status/slide/:slideId',
+    component: StudyStatusComponent
+  },
+  {
+    path: 'status/:studyId',
+    component: StudyStatusComponent
   },
   {
     path: 'slide/:studyId',

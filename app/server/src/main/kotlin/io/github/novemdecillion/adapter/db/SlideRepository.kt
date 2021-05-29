@@ -22,7 +22,7 @@ import java.util.stream.Collectors
 @Repository
 class SlideRepository(/*private val dslContext: DSLContext,*/ private val appSlideProperties: AppSlideProperties) {
   companion object {
-    val asciiDoctor = Asciidoctor.Factory.create()
+    val asciiDoctor: Asciidoctor = Asciidoctor.Factory.create()
     val yamlMapper: ObjectMapper = ObjectMapper(YAMLFactory()).findAndRegisterModules()
     const val TEMP_FOLDER_PREFIX = "temp-"
     const val TEMP_SLIDE_ZIP_FILENAME = "slide.zip"
@@ -93,6 +93,11 @@ class SlideRepository(/*private val dslContext: DSLContext,*/ private val appSli
   fun selectByIds(slideIds: Collection<String>): List<Slide> {
     return slideIds
       .mapNotNull { loadSlide(it) }
+  }
+
+  @Synchronized
+  fun selectById(slideId: String): Slide? {
+    return loadSlide(slideId)
   }
 
   @Synchronized

@@ -7,7 +7,6 @@ package io.github.novemdecillion.adapter.jooq.tables
 import io.github.novemdecillion.adapter.jooq.DefaultSchema
 import io.github.novemdecillion.adapter.jooq.keys.GROUP_TRANSITION_PKEY
 import io.github.novemdecillion.adapter.jooq.keys.GROUP_TRANSITION__GROUP_TRANSITION_GROUP_GENERATION_ID_FKEY
-import io.github.novemdecillion.adapter.jooq.keys.GROUP_TRANSITION__GROUP_TRANSITION_GROUP_ORIGIN_ID_FKEY
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupTransitionRecord
 
 import java.util.UUID
@@ -18,7 +17,7 @@ import org.jooq.Field
 import org.jooq.ForeignKey
 import org.jooq.Name
 import org.jooq.Record
-import org.jooq.Row5
+import org.jooq.Row4
 import org.jooq.Schema
 import org.jooq.Table
 import org.jooq.TableField
@@ -71,12 +70,7 @@ open class GroupTransitionTable(
     /**
      * The column <code>group_transition.group_generation_id</code>.
      */
-    val GROUP_GENERATION_ID: TableField<GroupTransitionRecord, UUID?> = createField(DSL.name("group_generation_id"), SQLDataType.UUID.nullable(false), this, "")
-
-    /**
-     * The column <code>group_transition.group_origin_id</code>.
-     */
-    val GROUP_ORIGIN_ID: TableField<GroupTransitionRecord, UUID?> = createField(DSL.name("group_origin_id"), SQLDataType.UUID.nullable(false), this, "")
+    val GROUP_GENERATION_ID: TableField<GroupTransitionRecord, Int?> = createField(DSL.name("group_generation_id"), SQLDataType.INTEGER.nullable(false), this, "")
 
     /**
      * The column <code>group_transition.group_name</code>.
@@ -110,21 +104,14 @@ open class GroupTransitionTable(
     override fun getSchema(): Schema = DefaultSchema.DEFAULT_SCHEMA
     override fun getPrimaryKey(): UniqueKey<GroupTransitionRecord> = GROUP_TRANSITION_PKEY
     override fun getKeys(): List<UniqueKey<GroupTransitionRecord>> = listOf(GROUP_TRANSITION_PKEY)
-    override fun getReferences(): List<ForeignKey<GroupTransitionRecord, *>> = listOf(GROUP_TRANSITION__GROUP_TRANSITION_GROUP_GENERATION_ID_FKEY, GROUP_TRANSITION__GROUP_TRANSITION_GROUP_ORIGIN_ID_FKEY)
+    override fun getReferences(): List<ForeignKey<GroupTransitionRecord, *>> = listOf(GROUP_TRANSITION__GROUP_TRANSITION_GROUP_GENERATION_ID_FKEY)
 
     private lateinit var _groupGeneration: GroupGenerationTable
-    private lateinit var _groupOrigin: GroupOriginTable
     fun groupGeneration(): GroupGenerationTable {
         if (!this::_groupGeneration.isInitialized)
             _groupGeneration = GroupGenerationTable(this, GROUP_TRANSITION__GROUP_TRANSITION_GROUP_GENERATION_ID_FKEY)
 
         return _groupGeneration;
-    }
-    fun groupOrigin(): GroupOriginTable {
-        if (!this::_groupOrigin.isInitialized)
-            _groupOrigin = GroupOriginTable(this, GROUP_TRANSITION__GROUP_TRANSITION_GROUP_ORIGIN_ID_FKEY)
-
-        return _groupOrigin;
     }
     override fun `as`(alias: String): GroupTransitionTable = GroupTransitionTable(DSL.name(alias), this)
     override fun `as`(alias: Name): GroupTransitionTable = GroupTransitionTable(alias, this)
@@ -140,7 +127,7 @@ open class GroupTransitionTable(
     override fun rename(name: Name): GroupTransitionTable = GroupTransitionTable(name, null)
 
     // -------------------------------------------------------------------------
-    // Row5 type methods
+    // Row4 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row5<UUID?, UUID?, UUID?, String?, UUID?> = super.fieldsRow() as Row5<UUID?, UUID?, UUID?, String?, UUID?>
+    override fun fieldsRow(): Row4<UUID?, Int?, String?, UUID?> = super.fieldsRow() as Row4<UUID?, Int?, String?, UUID?>
 }

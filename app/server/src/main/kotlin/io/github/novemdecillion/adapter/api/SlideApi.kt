@@ -32,6 +32,10 @@ class SlideApi(private val slideRepository: SlideRepository, private val appSlid
     return slideRepository.selectAll()
   }
 
+  fun slide(slideId: String): Slide? {
+    return slideRepository.selectById(slideId)
+  }
+
   fun addSlide(command: AddSlideCommand, environment: DataFetchingEnvironment): Boolean {
     val slideFile = (environment.variables["command"] as Map<String, Part>)["slideFile"] ?: return false
 

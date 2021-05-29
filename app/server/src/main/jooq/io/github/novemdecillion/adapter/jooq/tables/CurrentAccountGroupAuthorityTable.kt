@@ -6,12 +6,12 @@ package io.github.novemdecillion.adapter.jooq.tables
 
 import io.github.novemdecillion.adapter.jooq.DefaultSchema
 import io.github.novemdecillion.adapter.jooq.tables.records.CurrentAccountGroupAuthorityRecord
-import io.github.novemdecillion.domain.Role
 
 import java.util.UUID
 
 import org.jooq.Field
 import org.jooq.ForeignKey
+import org.jooq.JSONB
 import org.jooq.Name
 import org.jooq.Record
 import org.jooq.Row4
@@ -20,7 +20,6 @@ import org.jooq.Table
 import org.jooq.TableField
 import org.jooq.TableOptions
 import org.jooq.impl.DSL
-import org.jooq.impl.EnumConverter
 import org.jooq.impl.Internal
 import org.jooq.impl.SQLDataType
 import org.jooq.impl.TableImpl
@@ -70,14 +69,14 @@ open class CurrentAccountGroupAuthorityTable(
     val GROUP_TRANSITION_ID: TableField<CurrentAccountGroupAuthorityRecord, UUID?> = createField(DSL.name("group_transition_id"), SQLDataType.UUID, this, "")
 
     /**
-     * The column <code>current_account_group_authority.role</code>.
+     * The column <code>current_account_group_authority.group_generation_id</code>.
      */
-    val ROLE: TableField<CurrentAccountGroupAuthorityRecord, Role?> = createField(DSL.name("role"), SQLDataType.VARCHAR(255), this, "", EnumConverter<String, Role>(String::class.java, Role::class.java))
+    val GROUP_GENERATION_ID: TableField<CurrentAccountGroupAuthorityRecord, Int?> = createField(DSL.name("group_generation_id"), SQLDataType.INTEGER, this, "")
 
     /**
-     * The column <code>current_account_group_authority.group_origin_id</code>.
+     * The column <code>current_account_group_authority.role</code>.
      */
-    val GROUP_ORIGIN_ID: TableField<CurrentAccountGroupAuthorityRecord, UUID?> = createField(DSL.name("group_origin_id"), SQLDataType.UUID, this, "")
+    val ROLE: TableField<CurrentAccountGroupAuthorityRecord, JSONB?> = createField(DSL.name("role"), SQLDataType.JSONB, this, "")
 
     private constructor(alias: Name, aliased: Table<CurrentAccountGroupAuthorityRecord>?): this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<CurrentAccountGroupAuthorityRecord>?, parameters: Array<Field<*>?>?): this(alias, null, null, aliased, parameters)
@@ -115,5 +114,5 @@ open class CurrentAccountGroupAuthorityTable(
     // -------------------------------------------------------------------------
     // Row4 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row4<UUID?, UUID?, Role?, UUID?> = super.fieldsRow() as Row4<UUID?, UUID?, Role?, UUID?>
+    override fun fieldsRow(): Row4<UUID?, UUID?, Int?, JSONB?> = super.fieldsRow() as Row4<UUID?, UUID?, Int?, JSONB?>
 }

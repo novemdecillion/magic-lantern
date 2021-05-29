@@ -16,7 +16,7 @@
         th:with="pass=${page.passScore() <= totalScore}">
           <span th:if="${pass == true}" class="ms-3 fs-2 text-success">合格</span>
           <span th:if="${pass == false}" class="ms-3 fs-2 text-danger">不合格</span>
-          <span class="ms-auto fs-5" th:text="|(採点合計:${totalScore}点, 合格ライン:${page.passScore()}点)|"></span>
+          <span class="ms-auto fs-5" th:text="|(得点:${totalScore}点, 合格:${page.passScore()}点)|"></span>
         </th:block>
       </div>
     </div>
@@ -26,7 +26,7 @@
         <div>
           <span th:utext="${question.text}"></span>
           <span th:if="${confirm != true}" th:text="|(配点:${question.score}点)|"></span>
-          <span th:if="${confirm == true}" th:text="|(配点:${question.score}点, 採点:${scores[questionStat.index]}点)|"></span>
+          <span th:if="${confirm == true}" th:text="|(配点:${question.score}点, 得点:${scores[questionStat.index]}点)|"></span>
         </div>
 
         <!--/* 解説 */-->

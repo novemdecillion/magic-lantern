@@ -58,7 +58,7 @@ export class GroupTreeComponent implements OnInit {
     this.dataLoad = this.groupsGql.fetch({role: Role.Group})
       .pipe(
         map(res => {
-          let [_, rootNodes] = createGroupNodes(res.data.effectiveGroups)
+          let [_, rootNodes] = createGroupNodes(res.data.effectiveGroupsByUser)
           return rootNodes;
         }),
         share()

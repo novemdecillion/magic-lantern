@@ -1,0 +1,16 @@
+<form #form="ngForm">
+  <h1 mat-dialog-title>グループ・インポート</h1>
+  <div mat-dialog-content>
+    <div class="d-flex flex-column">
+      <label for="groupFile" class="form-label">グループ構成ファイル(.xlsx) *</label>
+      <div class="d-flex flex-row">
+        <input #groupFile id="groupFile" class="form-control mx-3" type="file" required>
+      </div>
+    </div>
+  </div>
+  <div mat-dialog-actions>
+    <button type="submit" mat-raised-button color="primary" (click)="onOK()" [disabled]="form.invalid">OK</button>
+    <button mat-stroked-button mat-dialog-close>キャンセル</button>
+  </div>
+</form>
+

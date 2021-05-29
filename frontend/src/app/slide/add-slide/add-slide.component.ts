@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { AddSlideGQL } from 'src/generated/graphql';
 
@@ -8,7 +8,7 @@ import { AddSlideGQL } from 'src/generated/graphql';
   styles: [
   ]
 })
-export class AddSlideComponent implements OnInit {
+export class AddSlideComponent {
 
   @ViewChild('slideFile', { static: true }) slideFileInput!: ElementRef<HTMLInputElement>;
 
@@ -17,9 +17,6 @@ export class AddSlideComponent implements OnInit {
   constructor(
     private dialogRef: MatDialogRef<AddSlideComponent>,
     private addSlideGql: AddSlideGQL) { }
-
-  ngOnInit(): void {
-  }
 
   onOK() {
     let file = this.slideFileInput.nativeElement.files?.item(0);

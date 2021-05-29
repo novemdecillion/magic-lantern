@@ -110,8 +110,8 @@ fragment study on Study {
   }
 }
 
-query myStudies {
-  myStudies {
+query study($studyId: ID!) {
+  study(studyId: $studyId) {
     ...study
   }
 }
@@ -130,4 +130,8 @@ mutation changePassword($command: ChangePasswordCommand!) {
 
 mutation deleteUser($userId: ID!) {
   deleteUser(userId: $userId)
+}
+
+mutation startStady($slideId: ID!) {
+  startStudy(slideId: $slideId)
 }

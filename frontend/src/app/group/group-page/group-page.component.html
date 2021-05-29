@@ -1,11 +1,16 @@
 <app-page [dataLoad]="dataLoad">
   <ng-template pageTitle>
     <span class="mdi mdi-file-tree-outline"></span>
-    グループ
+    {{ hasRootGroupAuthority(user$ | async) ? '現行グループ': 'グループ' }}
   </ng-template>
 
   <ng-template pageToolbar>
     <span class="ms-auto"></span>
+
+    <button (click)="onExportGeneration()">
+      <span class="mdi mdi-database-export-outline"></span>
+    </button>
+
     <mat-button-toggle-group class="mx-2" [value]="view" (change)="onChangeView($event)">
       <mat-button-toggle value="list">
         <span class="mdi mdi-view-headline"></span>

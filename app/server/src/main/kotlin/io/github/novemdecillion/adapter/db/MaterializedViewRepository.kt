@@ -21,10 +21,6 @@ import org.springframework.transaction.support.TransactionTemplate
 
 @Repository
 class MaterializedViewRepository(private val dslContext: DSLContext) {
-  fun refreshCurrentAccountGroupAuthorityTable() {
-    dslContext.execute("refresh materialized view ${CURRENT_ACCOUNT_GROUP_AUTHORITY.name}")
-  }
-
   fun refreshCurrentGroupTransitionTable() {
     dslContext.execute("refresh materialized view ${CURRENT_GROUP_TRANSITION.name}")
   }
@@ -34,7 +30,6 @@ class MaterializedViewRepository(private val dslContext: DSLContext) {
     event.applicationContext.getBean(TransactionTemplate::class.java)
       .execute {
         refreshCurrentGroupTransitionTable()
-        refreshCurrentAccountGroupAuthorityTable()
       }
   }
 

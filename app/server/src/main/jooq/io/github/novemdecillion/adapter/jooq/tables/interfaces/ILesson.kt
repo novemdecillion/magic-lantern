@@ -14,7 +14,7 @@ import java.util.UUID
 @Suppress("UNCHECKED_CAST")
 interface ILesson : Serializable {
     var lessonId: UUID?
-    var groupOriginId: UUID?
+    var groupTransitionId: UUID?
     var slideId: String?
 
     // -------------------------------------------------------------------------

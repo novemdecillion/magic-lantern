@@ -4,15 +4,18 @@
 package io.github.novemdecillion.adapter.jooq
 
 
+import io.github.novemdecillion.adapter.jooq.sequences.GROUP_GENERATION_ID_SEQ
 import io.github.novemdecillion.adapter.jooq.tables.AccountGroupAuthorityTable
+import io.github.novemdecillion.adapter.jooq.tables.AccountGroupAuthority_0Table
+import io.github.novemdecillion.adapter.jooq.tables.AccountGroupAuthority_1Table
 import io.github.novemdecillion.adapter.jooq.tables.AccountTable
 import io.github.novemdecillion.adapter.jooq.tables.CurrentAccountGroupAuthorityTable
 import io.github.novemdecillion.adapter.jooq.tables.CurrentGroupTransitionTable
 import io.github.novemdecillion.adapter.jooq.tables.FlywaySchemaHistoryTable
-import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationPeriodTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationTable
-import io.github.novemdecillion.adapter.jooq.tables.GroupOriginTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionTable
+import io.github.novemdecillion.adapter.jooq.tables.Group_0Table
+import io.github.novemdecillion.adapter.jooq.tables.Group_1Table
 import io.github.novemdecillion.adapter.jooq.tables.LessonTable
 import io.github.novemdecillion.adapter.jooq.tables.NoticeTable
 import io.github.novemdecillion.adapter.jooq.tables.RealmTable
@@ -22,6 +25,7 @@ import io.github.novemdecillion.adapter.jooq.tables.UserAggregateTable
 import kotlin.collections.List
 
 import org.jooq.Catalog
+import org.jooq.Sequence
 import org.jooq.Table
 import org.jooq.impl.SchemaImpl
 
@@ -50,6 +54,16 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
     val ACCOUNT_GROUP_AUTHORITY get() = AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY
 
     /**
+     * The table <code>account_group_authority_0</code>.
+     */
+    val ACCOUNT_GROUP_AUTHORITY_0 get() = AccountGroupAuthority_0Table.ACCOUNT_GROUP_AUTHORITY_0
+
+    /**
+     * The table <code>account_group_authority_1</code>.
+     */
+    val ACCOUNT_GROUP_AUTHORITY_1 get() = AccountGroupAuthority_1Table.ACCOUNT_GROUP_AUTHORITY_1
+
+    /**
      * The table <code>current_account_group_authority</code>.
      */
     val CURRENT_ACCOUNT_GROUP_AUTHORITY get() = CurrentAccountGroupAuthorityTable.CURRENT_ACCOUNT_GROUP_AUTHORITY
@@ -65,19 +79,19 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
     val FLYWAY_SCHEMA_HISTORY get() = FlywaySchemaHistoryTable.FLYWAY_SCHEMA_HISTORY
 
     /**
+     * The table <code>group_0</code>.
+     */
+    val GROUP_0 get() = Group_0Table.GROUP_0
+
+    /**
+     * The table <code>group_1</code>.
+     */
+    val GROUP_1 get() = Group_1Table.GROUP_1
+
+    /**
      * The table <code>group_generation</code>.
      */
     val GROUP_GENERATION get() = GroupGenerationTable.GROUP_GENERATION
-
-    /**
-     * The table <code>group_generation_period</code>.
-     */
-    val GROUP_GENERATION_PERIOD get() = GroupGenerationPeriodTable.GROUP_GENERATION_PERIOD
-
-    /**
-     * The table <code>group_origin</code>.
-     */
-    val GROUP_ORIGIN get() = GroupOriginTable.GROUP_ORIGIN
 
     /**
      * The table <code>group_transition</code>.
@@ -111,15 +125,21 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
 
     override fun getCatalog(): Catalog = DefaultCatalog.DEFAULT_CATALOG
 
+    override fun getSequences(): List<Sequence<*>> = listOf(
+        GROUP_GENERATION_ID_SEQ
+    )
+
     override fun getTables(): List<Table<*>> = listOf(
         AccountTable.ACCOUNT,
         AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY,
+        AccountGroupAuthority_0Table.ACCOUNT_GROUP_AUTHORITY_0,
+        AccountGroupAuthority_1Table.ACCOUNT_GROUP_AUTHORITY_1,
         CurrentAccountGroupAuthorityTable.CURRENT_ACCOUNT_GROUP_AUTHORITY,
         CurrentGroupTransitionTable.CURRENT_GROUP_TRANSITION,
         FlywaySchemaHistoryTable.FLYWAY_SCHEMA_HISTORY,
+        Group_0Table.GROUP_0,
+        Group_1Table.GROUP_1,
         GroupGenerationTable.GROUP_GENERATION,
-        GroupGenerationPeriodTable.GROUP_GENERATION_PERIOD,
-        GroupOriginTable.GROUP_ORIGIN,
         GroupTransitionTable.GROUP_TRANSITION,
         LessonTable.LESSON,
         NoticeTable.NOTICE,

@@ -2,6 +2,14 @@ fragment slideConfig on SlideConfig {
   title
   chapters {
     title
+    numberOfPages
+
+    ... on ExamChapter {
+      passScore
+      questions {
+        score
+      }
+    }
   }
 }
 
@@ -13,9 +21,14 @@ fragment slide on Slide {
   }
 }
 
-
 query slides {
   slides {
+    ...slide
+  }
+}
+
+query slide($slideId: ID!) {
+  slide(slideId: $slideId) {
     ...slide
   }
 }

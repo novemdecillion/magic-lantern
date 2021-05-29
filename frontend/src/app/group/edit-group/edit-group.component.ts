@@ -27,7 +27,6 @@ export class EditGroupComponent implements OnInit {
         this.title = '子グループ作成'
         this.groupNode = {
           groupId: '',
-          groupOriginId: '',
           groupName: '',
           groupGenerationId: command.groupGenerationId,
           parentGroupId: command.groupId,
@@ -55,6 +54,7 @@ export class EditGroupComponent implements OnInit {
         this.addGroupGql
           .mutate({
             command: {
+              currentGenerationId: this.groupNode.groupGenerationId,
               groupName: this.groupNode.groupName,
               parentGroupId: this.groupNode.parentGroupId!
             }
@@ -66,7 +66,9 @@ export class EditGroupComponent implements OnInit {
           .mutate({
             command: {
               groupId: this.groupNode.groupId,
-              groupName: this.groupNode.groupName
+              currentGenerationId: this.groupNode.groupGenerationId,
+              groupName: this.groupNode.groupName,
+              parentGroupId: this.groupNode.parentGroupId!
             }
           })
           .subscribe(_ => this.dialogRef.close(true));
@@ -74,7 +76,10 @@ export class EditGroupComponent implements OnInit {
       case 'delete':
         this.deleteGroupGql
           .mutate({
-            groupId: this.groupNode.groupId
+            command: {
+              groupId: this.groupNode.groupId,
+              currentGenerationId: this.groupNode.groupGenerationId
+            }
           })
           .subscribe(_ => this.dialogRef.close(true));
         break;

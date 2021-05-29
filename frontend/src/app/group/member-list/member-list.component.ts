@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, share } from 'rxjs/operators';
 import { ForMemberListGQL, UserFragment } from 'src/generated/graphql';
-import { AddMemberComponent } from '../add-member/add-member.component';
 import { EditMemberCommand, EditMemberComponent } from '../edit-member/edit-member.component';
 import { createGroupName, createRoleName } from '../../utilities';
 
@@ -46,7 +45,7 @@ export class MemberListComponent implements OnInit {
             // グループが存在しない。
             this.router.navigateByUrl('/group/list');
           }
-          this.isTopManageableGroup = res.data.isTopManageableGroup;
+          this.isTopManageableGroup = res.data.isTopManageableGroupByUser;
           return res.data.groupMembers.map((member: MemberRecord) => {
             member.roleName = createRoleName(member.authorities[0].roles);
             return member;
@@ -61,14 +60,10 @@ export class MemberListComponent implements OnInit {
   }
 
   onAddMember() {
-    // this.dialog.open(AddMemberComponent, { data: this.groupId })
-    // .afterClosed().subscribe(res => {
-    //   if (res) {
-    //     this.onLoadData();
-    //   }
-    // });
     this.dataLoad!.subscribe(members => {
-      this.dialog.open(EditMemberComponent, { data: { groupId: this.groupId,  type: 'add'} as EditMemberCommand})
+      this.dialog.open<EditMemberComponent, EditMemberCommand, boolean>(
+        EditMemberComponent,
+        { data: { groupId: this.groupId,  type: 'add'}})
       .afterClosed().subscribe(res => {
         if (res) {
           this.onLoadData();
@@ -79,7 +74,9 @@ export class MemberListComponent implements OnInit {
 
   onDeleteMember() {
     this.dataLoad!.subscribe(members => {
-      this.dialog.open(EditMemberComponent, { data: { groupId: this.groupId,  type: 'delete'} as EditMemberCommand})
+      this.dialog.open<EditMemberComponent, EditMemberCommand, boolean>(
+        EditMemberComponent,
+        { data: { groupId: this.groupId, type: 'delete' } })
       .afterClosed().subscribe(res => {
         if (res) {
           this.onLoadData();
@@ -90,7 +87,9 @@ export class MemberListComponent implements OnInit {
 
   onEditMember() {
     this.dataLoad!.subscribe(members => {
-      this.dialog.open(EditMemberComponent, { data: { groupId: this.groupId, type: 'update'} as EditMemberCommand })
+      this.dialog.open<EditMemberComponent, EditMemberCommand, boolean>(
+        EditMemberComponent,
+        { data: { groupId: this.groupId, type: 'update'} })
       .afterClosed().subscribe(res => {
         if (res) {
           this.onLoadData();

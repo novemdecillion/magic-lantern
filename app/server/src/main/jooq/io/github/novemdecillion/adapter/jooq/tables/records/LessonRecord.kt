@@ -26,7 +26,7 @@ open class LessonRecord() : UpdatableRecordImpl<LessonRecord>(LessonTable.LESSON
         set(value) = set(0, value)
         get() = get(0) as UUID?
 
-    override var groupOriginId: UUID?
+    override var groupTransitionId: UUID?
         set(value) = set(1, value)
         get() = get(1) as UUID?
 
@@ -47,13 +47,13 @@ open class LessonRecord() : UpdatableRecordImpl<LessonRecord>(LessonTable.LESSON
     override fun fieldsRow(): Row3<UUID?, UUID?, String?> = super.fieldsRow() as Row3<UUID?, UUID?, String?>
     override fun valuesRow(): Row3<UUID?, UUID?, String?> = super.valuesRow() as Row3<UUID?, UUID?, String?>
     override fun field1(): Field<UUID?> = LessonTable.LESSON.LESSON_ID
-    override fun field2(): Field<UUID?> = LessonTable.LESSON.GROUP_ORIGIN_ID
+    override fun field2(): Field<UUID?> = LessonTable.LESSON.GROUP_TRANSITION_ID
     override fun field3(): Field<String?> = LessonTable.LESSON.SLIDE_ID
     override fun component1(): UUID? = lessonId
-    override fun component2(): UUID? = groupOriginId
+    override fun component2(): UUID? = groupTransitionId
     override fun component3(): String? = slideId
     override fun value1(): UUID? = lessonId
-    override fun value2(): UUID? = groupOriginId
+    override fun value2(): UUID? = groupTransitionId
     override fun value3(): String? = slideId
 
     override fun value1(value: UUID?): LessonRecord {
@@ -62,7 +62,7 @@ open class LessonRecord() : UpdatableRecordImpl<LessonRecord>(LessonTable.LESSON
     }
 
     override fun value2(value: UUID?): LessonRecord {
-        this.groupOriginId = value
+        this.groupTransitionId = value
         return this
     }
 
@@ -84,7 +84,7 @@ open class LessonRecord() : UpdatableRecordImpl<LessonRecord>(LessonTable.LESSON
 
     override fun from(from: ILesson) {
         lessonId = from.lessonId
-        groupOriginId = from.groupOriginId
+        groupTransitionId = from.groupTransitionId
         slideId = from.slideId
     }
 
@@ -96,9 +96,9 @@ open class LessonRecord() : UpdatableRecordImpl<LessonRecord>(LessonTable.LESSON
     /**
      * Create a detached, initialised LessonRecord
      */
-    constructor(lessonId: UUID? = null, groupOriginId: UUID? = null, slideId: String? = null): this() {
+    constructor(lessonId: UUID? = null, groupTransitionId: UUID? = null, slideId: String? = null): this() {
         this.lessonId = lessonId
-        this.groupOriginId = groupOriginId
+        this.groupTransitionId = groupTransitionId
         this.slideId = slideId
     }
 }

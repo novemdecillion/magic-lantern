@@ -46,6 +46,9 @@ dependencies {
   implementation("com.fasterxml.uuid:java-uuid-generator:4.0.1")
   implementation("net.lingala.zip4j:zip4j:2.7.0")
 
+  implementation("org.apache.poi:poi:5.0.0")
+  implementation("org.apache.poi:poi-ooxml:5.0.0")
+
   testImplementation("org.springframework.boot:spring-boot-starter-test")
   testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
   testImplementation("com.nhaarman.mockitokotlin2:mockito-kotlin:2.2.0")
@@ -59,12 +62,12 @@ jooqGenerator {
   password = "password123"
   packageName ="io.github.novemdecillion.adapter.jooq"
   appendForcedTypes = listOf(
-    ForcedType()
-      .also {
-        it.isEnumConverter = true
-        it.includeExpression = """.*\.ROLE"""
-        it.userType = "io.github.novemdecillion.domain.Role"
-      },
+//    ForcedType()
+//      .also {
+//        it.isEnumConverter = true
+//        it.includeExpression = """.*\.ROLE"""
+//        it.userType = "io.github.novemdecillion.domain.Role[]"
+//      },
     ForcedType()
       .also {
         it.isEnumConverter = true

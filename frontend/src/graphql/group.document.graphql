@@ -5,13 +5,22 @@ fragment groupCore on GroupCore {
 
 fragment group on Group {
   groupId
-  groupOriginId
   groupGenerationId
   groupName
   parentGroupId
   path {
     ...groupCore
   }
+}
+
+fragment groupWithMemberCount on Group {
+  ...group
+  memberCount
+}
+
+fragment groupGeneration on GroupGeneration {
+  groupGenerationId
+  isCurrent
 }
 
 query group($groupId: ID!) {
@@ -21,15 +30,32 @@ query group($groupId: ID!) {
 }
 
 query authoritativeGroups($role: Role!) {
-  authoritativeGroups(role: $role) {
+  authoritativeGroupsByUser(role: $role) {
     ...group
   }
 }
 
 query effectiveGroups($role: Role!) {
-  effectiveGroups(role: $role) {
+  effectiveGroupsByUser(role: $role) {
+    ...groupWithMemberCount
+  }
+}
+
+query nextGenerationGroups {
+  currentAndNextGroupGenerations {
+    ...groupGeneration
+  }
+  nextGenerationGroups {
     ...group
   }
+}
+
+query exportGroupGeneration($groupGenerationId: Int) {
+  exportGroupGeneration(groupGenerationId: $groupGenerationId)
+}
+
+mutation importGroupGeneration($command: ImportGroupGenerationCommand!) {
+  importGroupGeneration(command: $command)
 }
 
 mutation addGroup($command: AddGroupCommand!) {
@@ -40,8 +66,8 @@ mutation updateGroup($command: UpdateGroupCommand!) {
   updateGroup(command: $command)
 }
 
-mutation deleteGroup($groupId: ID!) {
-  deleteGroup(groupId: $groupId)
+mutation deleteGroup($command: DeleteGroupCommand!) {
+  deleteGroup(command: $command)
 }
 
 mutation addGroupMember($command: GroupMemberCommand!) {
@@ -56,6 +82,24 @@ mutation deleteGroupMember($command: DeleteGroupMemberCommand!) {
   deleteGroupMember(command: $command)
 }
 
+query currentAndNextGeneration {
+  currentAndNextGroupGenerations {
+    ...groupGeneration
+  }
+}
+
+mutation switchGroupGeneration($commoand: SwitchGroupGenerationCommand!) {
+  switchGroupGeneration(command: $commoand)
+}
+
+fragment lessonByUser on LessonByUser {
+  lessonId
+  slideId
+  slide {
+    ...slide
+  }
+}
+
 fragment lesson on Lesson {
   lessonId
   groupId
@@ -68,9 +112,20 @@ fragment lesson on Lesson {
   }
 }
 
+fragment lessonWithStatistics on Lesson {
+  ...lesson
+  studentCount
+  statistics {
+    onGoingCount
+    passCount
+    failCount
+  }
+}
+
+
 query manageableLessons {
   manageableLessons {
-    ...lesson
+    ...lessonWithStatistics
   }
 }
 
@@ -80,7 +135,7 @@ query prepareAddLesson {
     groupId
     slideId
   }
-  authoritativeGroups(role: LESSON) {
+  authoritativeGroupsByUser(role: LESSON) {
     ...group
   }
   slides {
@@ -94,4 +149,16 @@ mutation addLesson($command: AddLessonCommand!) {
 
 mutation deleteLesson($lessonId: ID!) {
   deleteLesson(lessonId: $lessonId)
+}
+
+query lessonStudies($lessonId: ID!) {
+  lessonStudies(lessonId: $lessonId) {
+    ...study
+  }
+}
+
+query notStartLessonStudies($lessonId: ID!) {
+  notStartLessonStudies(lessonId: $lessonId) {
+    ...user
+  }
 }

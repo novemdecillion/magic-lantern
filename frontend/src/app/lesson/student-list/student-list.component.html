@@ -1,0 +1,18 @@
+<app-page [dataLoad]="dataLoad" (onLoadData)="onLoadData()">
+  <ng-template pageTitle>
+    <span class="mdi mdi-school"></span>
+    {{ group?.groupName }} グループ {{ slide?.config?.title }} 講座状況
+  </ng-template>
+
+  <app-list [dataLoad]="dataLoad">
+    <app-list-column name="userName" headerName="氏名">
+    </app-list-column>
+    <app-list-column name="status" headerName="状況">
+      <ng-template listCell let-row="row">
+        <a *ngIf="row.status!='未着手'" routerLink="/lesson/status/{{row.studyId}}">{{ row.status }}</a>
+        <span *ngIf="row.status=='未着手'">{{row.status}}</span>
+      </ng-template>
+    </app-list-column>
+  </app-list>
+
+</app-page>

@@ -4,10 +4,10 @@
 package io.github.novemdecillion.adapter.jooq.tables.interfaces
 
 
-import io.github.novemdecillion.domain.Role
-
 import java.io.Serializable
 import java.util.UUID
+
+import org.jooq.JSONB
 
 
 /**
@@ -17,8 +17,8 @@ import java.util.UUID
 interface ICurrentAccountGroupAuthority : Serializable {
     var accountId: UUID?
     var groupTransitionId: UUID?
-    var role: Role?
-    var groupOriginId: UUID?
+    var groupGenerationId: Int?
+    var role: JSONB?
 
     // -------------------------------------------------------------------------
     // FROM and INTO

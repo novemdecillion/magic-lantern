@@ -5,9 +5,10 @@ package io.github.novemdecillion.adapter.jooq.tables.pojos
 
 
 import io.github.novemdecillion.adapter.jooq.tables.interfaces.IAccountGroupAuthority
-import io.github.novemdecillion.domain.Role
 
 import java.util.UUID
+
+import org.jooq.JSONB
 
 
 /**
@@ -17,7 +18,8 @@ import java.util.UUID
 data class AccountGroupAuthorityEntity(
     override var accountId: UUID? = null, 
     override var groupTransitionId: UUID? = null, 
-    override var role: Role? = null
+    override var groupGenerationId: Int? = null, 
+    override var role: JSONB? = null
 ): IAccountGroupAuthority {
 
 
@@ -26,6 +28,7 @@ data class AccountGroupAuthorityEntity(
 
         sb.append(accountId)
         sb.append(", ").append(groupTransitionId)
+        sb.append(", ").append(groupGenerationId)
         sb.append(", ").append(role)
 
         sb.append(")")
@@ -39,6 +42,7 @@ data class AccountGroupAuthorityEntity(
     override fun from(from: IAccountGroupAuthority) {
         accountId = from.accountId
         groupTransitionId = from.groupTransitionId
+        groupGenerationId = from.groupGenerationId
         role = from.role
     }
 

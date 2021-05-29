@@ -3,13 +3,12 @@ enum Role {
   GROUP,
   SLIDE,
   LESSON,
-  STUDY,
-  NONE
+  STUDY
 }
 
 type Authority {
   groupId: ID!
-  roles: [Role!]!
+  roles: [Role!]
 }
 
 type User {
@@ -108,7 +107,7 @@ type StudyProgress {
 }
 
 type Study {
-  studyId: ID
+  studyId: ID!
   userId: ID!
   slideId: ID!
   status: StudyStatus!
@@ -120,6 +119,7 @@ type Study {
   startAt: DateTime
   endAt: DateTime
 
+  user: User!
   slide: Slide!
   lessons: [Lesson!]!
 }

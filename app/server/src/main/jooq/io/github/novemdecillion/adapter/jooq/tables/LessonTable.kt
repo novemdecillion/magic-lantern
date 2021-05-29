@@ -5,9 +5,8 @@ package io.github.novemdecillion.adapter.jooq.tables
 
 
 import io.github.novemdecillion.adapter.jooq.DefaultSchema
-import io.github.novemdecillion.adapter.jooq.keys.LESSON_GROUP_ORIGIN_ID_SLIDE_ID_KEY
+import io.github.novemdecillion.adapter.jooq.keys.LESSON_GROUP_TRANSITION_ID_SLIDE_ID_KEY
 import io.github.novemdecillion.adapter.jooq.keys.LESSON_PKEY
-import io.github.novemdecillion.adapter.jooq.keys.LESSON__LESSON_GROUP_ORIGIN_ID_FKEY
 import io.github.novemdecillion.adapter.jooq.tables.records.LessonRecord
 
 import java.util.UUID
@@ -69,9 +68,9 @@ open class LessonTable(
     val LESSON_ID: TableField<LessonRecord, UUID?> = createField(DSL.name("lesson_id"), SQLDataType.UUID.nullable(false), this, "")
 
     /**
-     * The column <code>lesson.group_origin_id</code>.
+     * The column <code>lesson.group_transition_id</code>.
      */
-    val GROUP_ORIGIN_ID: TableField<LessonRecord, UUID?> = createField(DSL.name("group_origin_id"), SQLDataType.UUID.nullable(false), this, "")
+    val GROUP_TRANSITION_ID: TableField<LessonRecord, UUID?> = createField(DSL.name("group_transition_id"), SQLDataType.UUID.nullable(false), this, "")
 
     /**
      * The column <code>lesson.slide_id</code>.
@@ -99,16 +98,7 @@ open class LessonTable(
     constructor(child: Table<out Record>, key: ForeignKey<out Record, LessonRecord>): this(Internal.createPathAlias(child, key), child, key, LESSON, null)
     override fun getSchema(): Schema = DefaultSchema.DEFAULT_SCHEMA
     override fun getPrimaryKey(): UniqueKey<LessonRecord> = LESSON_PKEY
-    override fun getKeys(): List<UniqueKey<LessonRecord>> = listOf(LESSON_PKEY, LESSON_GROUP_ORIGIN_ID_SLIDE_ID_KEY)
-    override fun getReferences(): List<ForeignKey<LessonRecord, *>> = listOf(LESSON__LESSON_GROUP_ORIGIN_ID_FKEY)
-
-    private lateinit var _groupOrigin: GroupOriginTable
-    fun groupOrigin(): GroupOriginTable {
-        if (!this::_groupOrigin.isInitialized)
-            _groupOrigin = GroupOriginTable(this, LESSON__LESSON_GROUP_ORIGIN_ID_FKEY)
-
-        return _groupOrigin;
-    }
+    override fun getKeys(): List<UniqueKey<LessonRecord>> = listOf(LESSON_PKEY, LESSON_GROUP_TRANSITION_ID_SLIDE_ID_KEY)
     override fun `as`(alias: String): LessonTable = LessonTable(DSL.name(alias), this)
     override fun `as`(alias: Name): LessonTable = LessonTable(alias, this)
 

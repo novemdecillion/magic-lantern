@@ -15,7 +15,7 @@ import java.util.UUID
 @Suppress("UNCHECKED_CAST")
 data class LessonEntity(
     override var lessonId: UUID? = null, 
-    override var groupOriginId: UUID? = null, 
+    override var groupTransitionId: UUID? = null, 
     override var slideId: String? = null
 ): ILesson {
 
@@ -24,7 +24,7 @@ data class LessonEntity(
         val sb = StringBuilder("LessonEntity (")
 
         sb.append(lessonId)
-        sb.append(", ").append(groupOriginId)
+        sb.append(", ").append(groupTransitionId)
         sb.append(", ").append(slideId)
 
         sb.append(")")
@@ -37,7 +37,7 @@ data class LessonEntity(
 
     override fun from(from: ILesson) {
         lessonId = from.lessonId
-        groupOriginId = from.groupOriginId
+        groupTransitionId = from.groupTransitionId
         slideId = from.slideId
     }
 

@@ -14,8 +14,7 @@ import java.util.UUID
 @Suppress("UNCHECKED_CAST")
 interface IGroupTransition : Serializable {
     var groupTransitionId: UUID?
-    var groupGenerationId: UUID?
-    var groupOriginId: UUID?
+    var groupGenerationId: Int?
     var groupName: String?
     var parentGroupTransitionId: UUID?
 

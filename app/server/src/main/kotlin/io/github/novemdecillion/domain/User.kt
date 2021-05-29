@@ -5,13 +5,24 @@ import java.time.OffsetDateTime
 import java.util.*
 import kotlin.math.ceil
 
-enum class Role {
-  ADMIN,
-  GROUP,
-  SLIDE,
-  LESSON,
-  STUDY,
-  NONE
+enum class Role(val roleName: String) {
+  ADMIN("システム"),
+  GROUP("グループ"),
+  SLIDE("教材"),
+  LESSON("講座"),
+  STUDY("受講");
+  companion object {
+    const val NO_ROLE_NAME = "なし"
+
+    fun fromRoleName(roleName: String): Pair<Role?, Boolean> {
+      if (roleName == NO_ROLE_NAME) {
+        return null to true
+      }
+      return values().firstOrNull { it.roleName == roleName }
+        ?.let { it to true }
+        ?: null to false
+    }
+  }
 }
 
 enum class StudyStatus {
@@ -22,7 +33,7 @@ enum class StudyStatus {
 }
 
 data class Study(
-  val studyId: UUID? = null,
+  val studyId: UUID,
   val userId: UUID,
   val slideId: String,
   val status: StudyStatus = StudyStatus.NOT_START,
@@ -86,7 +97,19 @@ data class Study(
 
 data class Authority(
   val groupId: UUID,
-  val roles: Collection<Role>)
+  val groupGenerationInt: Int,
+  val roles: Collection<Role>?
+) {
+  companion object {
+    fun forRootGroup(roles: Collection<Role>? = null): Authority {
+      return Authority(ROOT_GROUP_ID, ROOT_GROUP_GENERATION_ID, roles)
+    }
+  }
+
+  fun roleNames(): String {
+    return roles?.joinToString { it.roleName } ?: Role.NO_ROLE_NAME
+  }
+}
 
 @DomainModelRing
 data class User(
@@ -99,8 +122,9 @@ data class User(
   val authorities: Collection<Authority> = listOf()
 ) {
   val isSystemRealm: Boolean
-    get() = realmId.equals(SYSTEM_REALM_ID)
+    get() = realmId == SYSTEM_REALM_ID
+
   fun isAdmin(): Boolean {
-    return null != authorities.firstOrNull { it.groupId == ENTIRE_GROUP_ID }?.roles?.contains(Role.ADMIN)
+    return null != authorities.firstOrNull { it.groupId == ROOT_GROUP_ID }?.roles?.contains(Role.ADMIN)
   }
 }

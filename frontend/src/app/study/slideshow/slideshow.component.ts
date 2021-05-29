@@ -11,6 +11,7 @@ export class SlideshowComponent implements OnInit {
 
   studyId: string
   isLoading: boolean = false;
+  chapterIndex?: number;
 
   constructor(
     private router: Router,
@@ -18,17 +19,12 @@ export class SlideshowComponent implements OnInit {
     private hostElementRef: ElementRef<HTMLElement>
   ) {
     this.studyId = this.activatedRoute.snapshot.paramMap.get('studyId')!!;
+    this.chapterIndex = this.router.getCurrentNavigation()?.extras?.state?.chapter
   }
 
   ngOnInit(): void {
     this.isLoading = true;
-
-    if (this.studyId) {
-      this.viewer.nativeElement.src = `/slideshow/${this.studyId}/`;
-    } else {
-      let slideId = this.activatedRoute.snapshot.paramMap.get('slideId');
-      this.postFromViewer(`/slideshow/start/${slideId}`)
-    }
+    this.viewer.nativeElement.src = `/slideshow/${this.studyId}/` + (this.chapterIndex? `?chapter=${this.chapterIndex}`: '');
   }
 
   onPrev() {
@@ -65,7 +61,7 @@ export class SlideshowComponent implements OnInit {
         // 何もしない
       } else if (url.endsWith('/login')) {
         window.location.href = url
-      } else if (!url.endsWith(`/slideshow/${this.studyId}/`)) {
+      } else if (!url.includes(`/slideshow/${this.studyId}/`)) {
         this.router.navigateByUrl('/study/list')
       }
     }

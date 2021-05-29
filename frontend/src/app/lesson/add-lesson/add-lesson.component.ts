@@ -74,7 +74,7 @@ export class AddLessonComponent implements OnInit {
         res.data.slides.forEach(slide => this.slideAssignedStatus[slide.slideId] = []);
         res.data.manageableLessons.forEach(lesson => this.slideAssignedStatus[lesson.slideId].push(lesson.groupId) );
 
-        let slides = res.data.slides.filter(slide => this.slideAssignedStatus[slide.slideId].length != res.data.authoritativeGroups.length)
+        let slides = res.data.slides.filter(slide => this.slideAssignedStatus[slide.slideId].length != res.data.authoritativeGroupsByUser.length)
 
         if (0 == slides.length) {
           // 追加できる講座がない
@@ -83,7 +83,7 @@ export class AddLessonComponent implements OnInit {
         } else {
           this.slideDataLoad = of(slides)
 
-          this.groupNodes = createGroupNodes(res.data.authoritativeGroups)[1];
+          this.groupNodes = createGroupNodes(res.data.authoritativeGroupsByUser)[1];
         }
       });
   }

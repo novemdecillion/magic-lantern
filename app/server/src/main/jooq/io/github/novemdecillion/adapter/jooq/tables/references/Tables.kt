@@ -5,14 +5,16 @@ package io.github.novemdecillion.adapter.jooq.tables.references
 
 
 import io.github.novemdecillion.adapter.jooq.tables.AccountGroupAuthorityTable
+import io.github.novemdecillion.adapter.jooq.tables.AccountGroupAuthority_0Table
+import io.github.novemdecillion.adapter.jooq.tables.AccountGroupAuthority_1Table
 import io.github.novemdecillion.adapter.jooq.tables.AccountTable
 import io.github.novemdecillion.adapter.jooq.tables.CurrentAccountGroupAuthorityTable
 import io.github.novemdecillion.adapter.jooq.tables.CurrentGroupTransitionTable
 import io.github.novemdecillion.adapter.jooq.tables.FlywaySchemaHistoryTable
-import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationPeriodTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationTable
-import io.github.novemdecillion.adapter.jooq.tables.GroupOriginTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionTable
+import io.github.novemdecillion.adapter.jooq.tables.Group_0Table
+import io.github.novemdecillion.adapter.jooq.tables.Group_1Table
 import io.github.novemdecillion.adapter.jooq.tables.LessonTable
 import io.github.novemdecillion.adapter.jooq.tables.NoticeTable
 import io.github.novemdecillion.adapter.jooq.tables.RealmTable
@@ -32,6 +34,16 @@ val ACCOUNT = AccountTable.ACCOUNT
 val ACCOUNT_GROUP_AUTHORITY = AccountGroupAuthorityTable.ACCOUNT_GROUP_AUTHORITY
 
 /**
+ * The table <code>account_group_authority_0</code>.
+ */
+val ACCOUNT_GROUP_AUTHORITY_0 = AccountGroupAuthority_0Table.ACCOUNT_GROUP_AUTHORITY_0
+
+/**
+ * The table <code>account_group_authority_1</code>.
+ */
+val ACCOUNT_GROUP_AUTHORITY_1 = AccountGroupAuthority_1Table.ACCOUNT_GROUP_AUTHORITY_1
+
+/**
  * The table <code>current_account_group_authority</code>.
  */
 val CURRENT_ACCOUNT_GROUP_AUTHORITY = CurrentAccountGroupAuthorityTable.CURRENT_ACCOUNT_GROUP_AUTHORITY
@@ -47,19 +59,19 @@ val CURRENT_GROUP_TRANSITION = CurrentGroupTransitionTable.CURRENT_GROUP_TRANSIT
 val FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistoryTable.FLYWAY_SCHEMA_HISTORY
 
 /**
+ * The table <code>group_0</code>.
+ */
+val GROUP_0 = Group_0Table.GROUP_0
+
+/**
+ * The table <code>group_1</code>.
+ */
+val GROUP_1 = Group_1Table.GROUP_1
+
+/**
  * The table <code>group_generation</code>.
  */
 val GROUP_GENERATION = GroupGenerationTable.GROUP_GENERATION
-
-/**
- * The table <code>group_generation_period</code>.
- */
-val GROUP_GENERATION_PERIOD = GroupGenerationPeriodTable.GROUP_GENERATION_PERIOD
-
-/**
- * The table <code>group_origin</code>.
- */
-val GROUP_ORIGIN = GroupOriginTable.GROUP_ORIGIN
 
 /**
  * The table <code>group_transition</code>.

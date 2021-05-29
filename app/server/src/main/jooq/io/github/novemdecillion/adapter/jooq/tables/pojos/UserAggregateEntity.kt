@@ -5,9 +5,10 @@ package io.github.novemdecillion.adapter.jooq.tables.pojos
 
 
 import io.github.novemdecillion.adapter.jooq.tables.interfaces.IUserAggregate
-import io.github.novemdecillion.domain.Role
 
 import java.util.UUID
+
+import org.jooq.JSONB
 
 
 /**
@@ -23,8 +24,7 @@ data class UserAggregateEntity(
     override var locale: String? = null, 
     override var realmId: String? = null, 
     override var enabled: Boolean? = null, 
-    override var groupOriginId: UUID? = null, 
-    override var role: Role? = null
+    override var role: JSONB? = null
 ): IUserAggregate {
 
 
@@ -39,7 +39,6 @@ data class UserAggregateEntity(
         sb.append(", ").append(locale)
         sb.append(", ").append(realmId)
         sb.append(", ").append(enabled)
-        sb.append(", ").append(groupOriginId)
         sb.append(", ").append(role)
 
         sb.append(")")
@@ -59,7 +58,6 @@ data class UserAggregateEntity(
         locale = from.locale
         realmId = from.realmId
         enabled = from.enabled
-        groupOriginId = from.groupOriginId
         role = from.role
     }
 

@@ -1,1 +1,30 @@
-<p>next-generation works!</p>
+<app-page [dataLoad]="dataLoad" (onLoadData)="onLoadData()">
+  <ng-template pageTitle>
+    <span class="mdi mdi-page-next-outline"></span>
+    次世代グループ
+  </ng-template>
+
+  <ng-template pageToolbar>
+    <span class="ms-auto"></span>
+
+    <button class="mx-1" (click)="onImportGeneration()">
+      <span class="mdi mdi-database-import-outline"></span>
+    </button>
+
+    <button class="mx-1" (click)="onExportGeneration()" [disabled]="!nextGenerationId">
+      <span class="mdi mdi-database-export-outline"></span>
+    </button>
+
+    <button class="mx-1" (click)="onSwitchGeneration()" [disabled]="!nextGenerationId">
+      <span class="mdi mdi-arrow-up-bold-outline"></span>
+    </button>
+
+  </ng-template>
+
+  <app-list [dataLoad]="dataLoad">
+    <app-list-column name="groupName" headerName="グループ名"></app-list-column>
+    <app-list-column name="parentGroupName" headerName="所属グループ名"></app-list-column>
+  </app-list>
+</app-page>
+
+

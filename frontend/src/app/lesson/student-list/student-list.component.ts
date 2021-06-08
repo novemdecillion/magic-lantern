@@ -45,25 +45,22 @@ export class StudentListComponent implements OnInit {
             this.slide = res.data.lesson.slide;
           }
 
-          let records: StudentRecord[] = [];
-
+          let records: StudentRecord[] = []
           res.data.lessonStudies
             .forEach(study => {
-              records.push({
-                userName: study.user.userName,
-                status: studyStatus(study),
-                studyId: study.studyId
-              })
+              if (study.__typename == 'Study') {
+                records.push({
+                  userName: study.user.userName,
+                  status: studyStatus(study),
+                  studyId: study.studyId
+                })
+              } else {
+                records.push({
+                  userName: study.user.userName,
+                  status: '未着手'
+                })
+              }
             });
-
-          res.data.notStartLessonStudies
-            .forEach(user => {
-              records.push({
-                userName: user.userName,
-                status: '未着手'
-              })
-            });
-
           return records;
         })
       );

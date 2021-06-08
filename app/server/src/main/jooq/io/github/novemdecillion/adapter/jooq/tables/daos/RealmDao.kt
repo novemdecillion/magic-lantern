@@ -55,6 +55,11 @@ open class RealmDao(configuration: Configuration?) : DAOImpl<RealmRecord, RealmE
     fun fetchByRealmNameTable(vararg values: String): List<RealmEntity> = fetch(RealmTable.REALM.REALM_NAME, *values)
 
     /**
+     * Fetch a unique record that has <code>realm_name = value</code>
+     */
+    fun fetchOneByRealmNameTable(value: String): RealmEntity? = fetchOne(RealmTable.REALM.REALM_NAME, value)
+
+    /**
      * Fetch records that have <code>enabled BETWEEN lowerInclusive AND upperInclusive</code>
      */
     fun fetchRangeOfEnabledTable(lowerInclusive: Boolean?, upperInclusive: Boolean?): List<RealmEntity> = fetchRange(RealmTable.REALM.ENABLED, lowerInclusive, upperInclusive)

@@ -8,8 +8,7 @@ type Query {
   authoritativeGroupsByUser(role: Role!): [Group!]!
   effectiveGroupsByUser(role: Role!): [Group!]!
   isTopManageableGroupByUser(groupId: ID!): Boolean!
-  studiesByUser: [Study!]!
-  notStartStudyByUser: [LessonByUser!]!
+  studiesByUser: [INotStartStudy!]!
 
   users: [User!]!
   userCount: Int!
@@ -35,8 +34,7 @@ type Query {
   exportGroupGeneration(groupGenerationId: Int): String
 
   study(studyId: ID!): Study
-  lessonStudies(lessonId: ID!): [Study!]!
-  notStartLessonStudies(lessonId: ID!): [User!]!
+  lessonStudies(lessonId: ID!): [INotStartStudy!]!
 }
 
 type Mutation {

@@ -19,6 +19,9 @@ spring:
             - Path=/**
           filters:
             - PreserveHostHeader
+#  resources:
+#    static-locations: file:./dist/frontend/
+
 management:
   endpoints:
     web:

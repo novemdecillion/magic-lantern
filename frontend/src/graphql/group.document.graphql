@@ -92,14 +92,6 @@ mutation switchGroupGeneration($commoand: SwitchGroupGenerationCommand!) {
   switchGroupGeneration(command: $commoand)
 }
 
-fragment lessonByUser on LessonByUser {
-  lessonId
-  slideId
-  slide {
-    ...slide
-  }
-}
-
 fragment lesson on Lesson {
   lessonId
   groupId
@@ -154,11 +146,5 @@ mutation deleteLesson($lessonId: ID!) {
 query lessonStudies($lessonId: ID!) {
   lessonStudies(lessonId: $lessonId) {
     ...study
-  }
-}
-
-query notStartLessonStudies($lessonId: ID!) {
-  notStartLessonStudies(lessonId: $lessonId) {
-    ...user
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, share } from 'rxjs/operators';
@@ -26,9 +26,13 @@ export class StudyListComponent implements OnInit {
       .pipe(
         map(res => {
           let studies = res.data.studiesByUser
-          res.data.notStartStudyByUser.forEach(lesson => {
-            studies.push(<any>{ slide: lesson.slide, status: StudyStatus.NotStart})
-          });
+          .map(study => {
+            if (study.__typename == 'Study') {
+              return study as StudyFragment
+            } else {
+              return <any>{ slide: study.slide, status: StudyStatus.NotStart}
+            }
+          })
           return studies;
         }),
         share()

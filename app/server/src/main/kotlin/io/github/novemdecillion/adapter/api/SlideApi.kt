@@ -28,14 +28,17 @@ class SlideApi(private val slideRepository: SlideRepository, private val appSlid
     val slideFile: Part? = null)
 
 
+  @GraphQLApi
   fun slides(): List<Slide> {
     return slideRepository.selectAll()
   }
 
+  @GraphQLApi
   fun slide(slideId: String): Slide? {
     return slideRepository.selectById(slideId)
   }
 
+  @GraphQLApi
   fun addSlide(command: AddSlideCommand, environment: DataFetchingEnvironment): Boolean {
     val slideFile = (environment.variables["command"] as Map<String, Part>)["slideFile"] ?: return false
 
@@ -47,10 +50,12 @@ class SlideApi(private val slideRepository: SlideRepository, private val appSlid
     return true
   }
 
+  @GraphQLApi
   fun deleteSlide(slideId: String): Boolean {
     return slideRepository.delete(slideId)
   }
 
+  @GraphQLApi
   fun enableSlide(slideId: String, enable: Boolean): Boolean {
     slideRepository.updateEnable(slideId, enable)
     return true

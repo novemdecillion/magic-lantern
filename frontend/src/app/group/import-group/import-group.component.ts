@@ -13,7 +13,7 @@ export class ImportGroupComponent {
 
   constructor(
     private dialogRef: MatDialogRef<ImportGroupComponent>,
-    @Inject(MAT_DIALOG_DATA) public groupGenerationId: number,
+    @Inject(MAT_DIALOG_DATA) public groupGenerationId: number | null,
     private importGroupGql: ImportGroupGenerationGQL) { }
 
   onOK() {

@@ -2,12 +2,12 @@ package io.github.novemdecillion.adapter.oauth2
 
 import io.github.novemdecillion.adapter.db.AccountRepository
 import io.github.novemdecillion.adapter.db.GroupAuthorityRepository
+import io.github.novemdecillion.adapter.db.RealmRepository
 import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.adapter.jooq.tables.pojos.AccountEntity
 import io.github.novemdecillion.adapter.jooq.tables.pojos.RealmEntity
 import io.github.novemdecillion.adapter.scheduling.SPRING_SCHEDULING_ENABLED_KEY
 import io.github.novemdecillion.domain.Authority
-import io.github.novemdecillion.domain.Role
 import io.github.novemdecillion.util.OAuth2Utils
 import io.github.novemdecillion.utils.keycloak.client.KeycloakAdminCliClient
 import io.github.novemdecillion.utils.lang.logger
@@ -41,6 +41,7 @@ class SyncKeycloakUsersService(
   val syncUsersProperties: SyncUsersProperties,
   val idGeneratorService: IdGeneratorService,
   val accountRepository: AccountRepository,
+  val realmRepository: RealmRepository,
   val authorityRepository: GroupAuthorityRepository
 ) {
   companion object {
@@ -63,7 +64,6 @@ class SyncKeycloakUsersService(
   @Scheduled(cron = "\${app.sync-users.cron}")
   @Transactional(rollbackFor = [Throwable::class])
   fun sync() {
-    // TODO 認証サーバの設定が削除されたユーザを無効化する
     clientRegistrationRepository
       .forEach { registration ->
         syncRealm(registration)
@@ -129,10 +129,10 @@ class SyncKeycloakUsersService(
     storedAccountNames.windowed(100, 1, true)
       .forEach {
         // 認証サーバ側で削除された?
-        accountRepository.updateEnableByAccountNameAndRealm(it, realm, false)
+        accountRepository.updateEnableByAccountNameAndRealmId(it, realm, false)
       }
     val disabledCount = storedAccountNames.size
-    accountRepository.update(RealmEntity(realmId = registration.registrationId, syncAt = OffsetDateTime.now()))
+    realmRepository.update(RealmEntity(realmId = registration.registrationId, syncAt = OffsetDateTime.now()))
     log.info("Keycloakサーバ(${registration.clientName})とのユーザ情報の同期を終了します。新規${newComerCount}人, 更新${updateCount}人, 無効化${disabledCount}人")
   }
 

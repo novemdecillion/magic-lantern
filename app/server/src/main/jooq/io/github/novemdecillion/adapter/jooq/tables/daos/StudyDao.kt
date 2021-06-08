@@ -118,6 +118,16 @@ open class StudyDao(configuration: Configuration?) : DAOImpl<StudyRecord, StudyE
     fun fetchByScoreTable(vararg values: JSONB): List<StudyEntity> = fetch(StudyTable.STUDY.SCORE, *values)
 
     /**
+     * Fetch records that have <code>shuffled_question BETWEEN lowerInclusive AND upperInclusive</code>
+     */
+    fun fetchRangeOfShuffledQuestionTable(lowerInclusive: JSONB?, upperInclusive: JSONB?): List<StudyEntity> = fetchRange(StudyTable.STUDY.SHUFFLED_QUESTION, lowerInclusive, upperInclusive)
+
+    /**
+     * Fetch records that have <code>shuffled_question IN (values)</code>
+     */
+    fun fetchByShuffledQuestionTable(vararg values: JSONB): List<StudyEntity> = fetch(StudyTable.STUDY.SHUFFLED_QUESTION, *values)
+
+    /**
      * Fetch records that have <code>start_at BETWEEN lowerInclusive AND upperInclusive</code>
      */
     fun fetchRangeOfStartAtTable(lowerInclusive: OffsetDateTime?, upperInclusive: OffsetDateTime?): List<StudyEntity> = fetchRange(StudyTable.STUDY.START_AT, lowerInclusive, upperInclusive)

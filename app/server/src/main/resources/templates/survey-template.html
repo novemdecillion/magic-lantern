@@ -32,14 +32,14 @@
                      th:name="${questionStat.index}" th:value="${choiceStat.index}"
                      type="radio" class="form-check-input"
                      th:onclick="|return ${confirm != true};|"
-                     th:checked="${answer[questionStat.index]?.contains(choiceStat.index)}"
+                     th:checked="${answer[questionStat.index]?.contains(choiceStat.index.toString())}"
                      th:required="${question.required == true}">
 
               <input th:if="${question.type.name == 'Checkbox'}" th:id="${choiceId}"
                      th:name="${questionStat.index}" th:value="${choiceStat.index}"
                      type="checkbox" class="form-check-input"
                      th:onclick="|return ${confirm != true};|"
-                     th:checked="${answer[questionStat.index]?.contains(choiceStat.index)}">
+                     th:checked="${answer[questionStat.index]?.contains(choiceStat.index.toString())}">
 
               <label class="form-check-label" th:for="${choiceId}" th:utext="${choice}"></label>
             </div>

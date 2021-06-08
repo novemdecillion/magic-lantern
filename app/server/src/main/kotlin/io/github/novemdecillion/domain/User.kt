@@ -5,6 +5,8 @@ import java.time.OffsetDateTime
 import java.util.*
 import kotlin.math.ceil
 
+val BUILT_IN_ADMIN_USER_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
+
 enum class Role(val roleName: String) {
   ADMIN("システム"),
   GROUP("グループ"),
@@ -32,17 +34,32 @@ enum class StudyStatus {
   FAILED
 }
 
+interface INotStartStudy {
+  val userId: UUID
+  val slideId: String
+  val status: StudyStatus
+}
+
+data class NotStartStudy(
+  override val userId: UUID,
+  override val slideId: String,
+) : INotStartStudy {
+  override val status: StudyStatus
+    get() = StudyStatus.NOT_START
+}
+
 data class Study(
   val studyId: UUID,
-  val userId: UUID,
-  val slideId: String,
-  val status: StudyStatus = StudyStatus.NOT_START,
+  override val userId: UUID,
+  override val slideId: String,
+  override val status: StudyStatus = StudyStatus.NOT_START,
   val progress: Map<Int, Set<Int>> = mapOf(),
   val progressRate: Int = 0,
   val answer: Map<Int, Map<Int, List<String>>> = mapOf(),
   val score: Map<Int, ExamChapterRecord> = mapOf(),
+  val shuffledQuestion: Map<Int, List<Pair<Int, List<Int>>>> = mapOf(),
   val startAt: OffsetDateTime? = null,
-  val endAt: OffsetDateTime? = null) {
+  val endAt: OffsetDateTime? = null): INotStartStudy {
 
   companion object {
     fun convertForExamAnswer(answer: Map<Int, List<String>>): Map<Int, List<Int>> {
@@ -75,7 +92,7 @@ data class Study(
   fun isPass(): Boolean {
    return score.values
      .firstOrNull { chapterRecord ->
-       chapterRecord.questions.map { it.scoring }.sum() < chapterRecord.passScore
+       chapterRecord.questions.sumOf { it.scoring } < chapterRecord.passScore
      }
      ?.let { false }
      ?: true
@@ -91,7 +108,26 @@ data class Study(
   }
 
   fun answerForExam(chapterIndex: Int): Map<Int, List<Int>> {
-    return convertForExamAnswer(answer[chapterIndex]?: return mapOf())
+    val chapterAnswer = answer[chapterIndex] ?: return mapOf()
+    return chapterAnswer
+      .map { (questionIndex, questionAnswers) ->
+        questionIndex to questionAnswers.map { it.toInt() }
+      }
+      .toMap()
+  }
+
+  fun shuffledAnswer(chapterIndex: Int): Map<Int, List<String>>? {
+    val chapterAnswer = answer[chapterIndex] ?: return null
+    val shuffled = shuffledQuestion[chapterIndex] ?: return chapterAnswer
+    return chapterAnswer
+      .map { (answerQuestionIndex, answerChoiceIndexes) ->
+        val (questionIndex, choiceIndexes) = shuffled[answerQuestionIndex]
+        questionIndex to answerChoiceIndexes
+          .map { answerChoiceIndexes ->
+            choiceIndexes.withIndex().first { it.value == answerChoiceIndexes.toInt() }.index.toString()
+          }
+      }
+      .toMap()
   }
 }
 

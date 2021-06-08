@@ -10,17 +10,16 @@ import io.github.novemdecillion.adapter.jooq.tables.AccountGroupAuthority_0Table
 import io.github.novemdecillion.adapter.jooq.tables.AccountGroupAuthority_1Table
 import io.github.novemdecillion.adapter.jooq.tables.AccountTable
 import io.github.novemdecillion.adapter.jooq.tables.CurrentAccountGroupAuthorityTable
-import io.github.novemdecillion.adapter.jooq.tables.CurrentGroupTransitionTable
 import io.github.novemdecillion.adapter.jooq.tables.FlywaySchemaHistoryTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionTable
+import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionWithPathTable
 import io.github.novemdecillion.adapter.jooq.tables.Group_0Table
 import io.github.novemdecillion.adapter.jooq.tables.Group_1Table
 import io.github.novemdecillion.adapter.jooq.tables.LessonTable
 import io.github.novemdecillion.adapter.jooq.tables.NoticeTable
 import io.github.novemdecillion.adapter.jooq.tables.RealmTable
 import io.github.novemdecillion.adapter.jooq.tables.StudyTable
-import io.github.novemdecillion.adapter.jooq.tables.UserAggregateTable
 
 import kotlin.collections.List
 
@@ -69,11 +68,6 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
     val CURRENT_ACCOUNT_GROUP_AUTHORITY get() = CurrentAccountGroupAuthorityTable.CURRENT_ACCOUNT_GROUP_AUTHORITY
 
     /**
-     * The table <code>current_group_transition</code>.
-     */
-    val CURRENT_GROUP_TRANSITION get() = CurrentGroupTransitionTable.CURRENT_GROUP_TRANSITION
-
-    /**
      * The table <code>flyway_schema_history</code>.
      */
     val FLYWAY_SCHEMA_HISTORY get() = FlywaySchemaHistoryTable.FLYWAY_SCHEMA_HISTORY
@@ -99,6 +93,11 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
     val GROUP_TRANSITION get() = GroupTransitionTable.GROUP_TRANSITION
 
     /**
+     * The table <code>group_transition_with_path</code>.
+     */
+    val GROUP_TRANSITION_WITH_PATH get() = GroupTransitionWithPathTable.GROUP_TRANSITION_WITH_PATH
+
+    /**
      * The table <code>lesson</code>.
      */
     val LESSON get() = LessonTable.LESSON
@@ -118,11 +117,6 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
      */
     val STUDY get() = StudyTable.STUDY
 
-    /**
-     * The table <code>user_aggregate</code>.
-     */
-    val USER_AGGREGATE get() = UserAggregateTable.USER_AGGREGATE
-
     override fun getCatalog(): Catalog = DefaultCatalog.DEFAULT_CATALOG
 
     override fun getSequences(): List<Sequence<*>> = listOf(
@@ -135,16 +129,15 @@ open class DefaultSchema : SchemaImpl("", DefaultCatalog.DEFAULT_CATALOG) {
         AccountGroupAuthority_0Table.ACCOUNT_GROUP_AUTHORITY_0,
         AccountGroupAuthority_1Table.ACCOUNT_GROUP_AUTHORITY_1,
         CurrentAccountGroupAuthorityTable.CURRENT_ACCOUNT_GROUP_AUTHORITY,
-        CurrentGroupTransitionTable.CURRENT_GROUP_TRANSITION,
         FlywaySchemaHistoryTable.FLYWAY_SCHEMA_HISTORY,
         Group_0Table.GROUP_0,
         Group_1Table.GROUP_1,
         GroupGenerationTable.GROUP_GENERATION,
         GroupTransitionTable.GROUP_TRANSITION,
+        GroupTransitionWithPathTable.GROUP_TRANSITION_WITH_PATH,
         LessonTable.LESSON,
         NoticeTable.NOTICE,
         RealmTable.REALM,
-        StudyTable.STUDY,
-        UserAggregateTable.USER_AGGREGATE
+        StudyTable.STUDY
     )
 }

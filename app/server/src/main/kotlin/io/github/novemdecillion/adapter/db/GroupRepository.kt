@@ -1,10 +1,8 @@
 package io.github.novemdecillion.adapter.db
 
-import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.adapter.jooq.tables.pojos.GroupGenerationEntity
-import io.github.novemdecillion.adapter.jooq.tables.pojos.GroupTransitionEntity
-import io.github.novemdecillion.adapter.jooq.tables.records.CurrentGroupTransitionRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.GroupTransitionRecord
+import io.github.novemdecillion.adapter.jooq.tables.records.GroupTransitionWithPathRecord
 import io.github.novemdecillion.adapter.jooq.tables.references.*
 import io.github.novemdecillion.domain.*
 import org.jooq.DSLContext
@@ -17,8 +15,7 @@ import java.util.*
 @Repository
 class GroupRepository(
   private val dslContext: DSLContext,
-  private val materializedViewRepository: MaterializedViewRepository,
-  private val idGeneratorService: IdGeneratorService
+  private val materializedViewRepository: MaterializedViewRepository
 ) {
   fun selectCurrentGroupGenerationId(): Int? {
     return dslContext.fetchOne(GroupRepository.selectCurrentGroupGenerationId())?.value1()
@@ -37,7 +34,7 @@ class GroupRepository(
     return newGenerationId
   }
 
-  fun findCurrentAndAvailableGeneration(): List<GroupGenerationEntity> {
+  fun selectCurrentAndAvailableGeneration(): List<GroupGenerationEntity> {
     return dslContext
       .select(GROUP_GENERATION.asterisk())
       .from(GROUP_GENERATION.name)
@@ -66,29 +63,23 @@ class GroupRepository(
     materializedViewRepository.refreshCurrentGroupTransitionTable()
   }
 
-  fun insertGroup(
-    groupName: String,
-    parentGroupTransitionId: UUID,
-    groupGenerationId: Int
-  ): Group {
-    val groupId = idGeneratorService.generate()
-
-    val groupRecord = dslContext.insertInto(GROUP_TRANSITION)
-      .set(GROUP_TRANSITION.GROUP_TRANSITION_ID, groupId)
-      .set(GROUP_TRANSITION.GROUP_GENERATION_ID, groupGenerationId)
-      .set(GROUP_TRANSITION.GROUP_NAME, groupName)
-      .set(GROUP_TRANSITION.PARENT_GROUP_TRANSITION_ID, parentGroupTransitionId)
-      .returning().fetchOne()!!
+  fun insertGroup(group: IGroup): Int {
+    val result = dslContext.insertInto(GROUP_TRANSITION)
+      .set(GROUP_TRANSITION.GROUP_TRANSITION_ID, group.groupId)
+      .set(GROUP_TRANSITION.GROUP_GENERATION_ID, group.groupGenerationId)
+      .set(GROUP_TRANSITION.GROUP_NAME, group.groupName)
+      .set(GROUP_TRANSITION.PARENT_GROUP_TRANSITION_ID, group.parentGroupId)
+      .execute()
 
     materializedViewRepository.refreshCurrentGroupTransitionTable()
-    return recordMapper(groupRecord)
+    return result
   }
 
   fun updateGroup(groupTransitionId: UUID, groupName: String, groupGenerationId: Int) {
     dslContext.update(GROUP_TRANSITION)
       .set(GROUP_TRANSITION.GROUP_NAME, groupName)
       .where(GROUP_TRANSITION.GROUP_TRANSITION_ID.equal(groupTransitionId)
-        .and(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(groupGenerationId)))
+        .and(GROUP_TRANSITION.GROUP_GENERATION_ID.equal(groupGenerationId)))
       .execute()
 
     materializedViewRepository.refreshCurrentGroupTransitionTable()
@@ -97,18 +88,18 @@ class GroupRepository(
   fun deleteGroup(groupTransitionId: UUID, groupGenerationId: Int) {
     require(groupTransitionId != ROOT_GROUP_ID) { "この${groupTransitionId} グループは削除できません。" }
 
-    val targetGroup = CURRENT_GROUP_TRANSITION.`as`("target")
+    val targetGroup = GROUP_TRANSITION_WITH_PATH.`as`("target")
     val groups = dslContext
       .with(targetGroup.name)
-      .`as`(DSL.select(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID, DSL.concat(CURRENT_GROUP_TRANSITION.PATH, "%"))
-        .from(CURRENT_GROUP_TRANSITION)
-        .where(GROUP_TRANSITION.GROUP_TRANSITION_ID.equal(groupTransitionId)
-              .and(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(groupGenerationId))))
-      .select(CURRENT_GROUP_TRANSITION.GROUP_TRANSITION_ID, CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID)
-        .from(CURRENT_GROUP_TRANSITION)
+      .`as`(DSL.select(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID, DSL.concat(GROUP_TRANSITION_WITH_PATH.PATH, "%").`as`(targetGroup.PATH.name))
+        .from(GROUP_TRANSITION_WITH_PATH)
+        .where(GROUP_TRANSITION_WITH_PATH.GROUP_TRANSITION_ID.equal(groupTransitionId)
+              .and(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(groupGenerationId))))
+      .select(GROUP_TRANSITION_WITH_PATH.GROUP_TRANSITION_ID, GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID)
+        .from(GROUP_TRANSITION_WITH_PATH)
         .join(targetGroup.name)
-          .on(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(targetGroup.GROUP_GENERATION_ID)
-          .and(CURRENT_GROUP_TRANSITION.PATH.like(targetGroup.PATH)))
+          .on(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(targetGroup.GROUP_GENERATION_ID)
+          .and(GROUP_TRANSITION_WITH_PATH.PATH.like(targetGroup.PATH)))
       .fetch { record ->
         record.value1()!! to record.value2()!!
       }
@@ -130,7 +121,7 @@ class GroupRepository(
     materializedViewRepository.refreshCurrentGroupTransitionTable()
   }
 
-  fun deleteAndInsertGroups(groupGenerationId: Int, groups: Collection<GroupTransitionEntity>) {
+  fun deleteAndInsertGroups(groupGenerationId: Int, groups: Collection<IGroup>) {
     dslContext.deleteFrom(GROUP_TRANSITION)
       .where(GROUP_TRANSITION.GROUP_GENERATION_ID.equal(groupGenerationId)).execute()
     dslContext.deleteFrom(ACCOUNT_GROUP_AUTHORITY)
@@ -140,10 +131,10 @@ class GroupRepository(
       .map { group ->
         GroupTransitionRecord()
           .also { record ->
-            record.groupTransitionId = group.groupTransitionId ?: idGeneratorService.generate()
+            record.groupTransitionId = group.groupId
             record.groupGenerationId = group.groupGenerationId
             record.groupName = group.groupName
-            group.parentGroupTransitionId?.also { record.parentGroupTransitionId = it }
+            group.parentGroupId?.also { record.parentGroupTransitionId = it }
           }
       }
       .also {
@@ -153,30 +144,30 @@ class GroupRepository(
   }
 
   fun select(groupGenerationId: Int? = null): List<GroupWithPath> {
-    return dslContext.selectFrom(CURRENT_GROUP_TRANSITION)
+    return dslContext.selectFrom(GROUP_TRANSITION_WITH_PATH)
       .where(
         if (null == groupGenerationId) {
-          CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(GroupRepository.selectCurrentGroupGenerationId())
-            .or(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID))
+          GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(GroupRepository.selectCurrentGroupGenerationId())
+            .or(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID))
         } else {
-          CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(groupGenerationId)
-            .or(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID))
+          GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(groupGenerationId)
+            .or(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID))
         }
       )
       .fetch { record -> recordMapper(record) }
   }
 
   fun selectById(groupTransitionId: UUID, groupGenerationId: Int? = null): GroupWithPath? {
-    return dslContext.selectFrom(CURRENT_GROUP_TRANSITION)
-      .where(CURRENT_GROUP_TRANSITION.GROUP_TRANSITION_ID.equal(groupTransitionId)
+    return dslContext.selectFrom(GROUP_TRANSITION_WITH_PATH)
+      .where(GROUP_TRANSITION_WITH_PATH.GROUP_TRANSITION_ID.equal(groupTransitionId)
         .let { statement ->
           when {
             groupTransitionId == ROOT_GROUP_ID ->
-              statement.and(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID))
+              statement.and(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID))
             null == groupGenerationId ->
-              statement.and(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(GroupRepository.selectCurrentGroupGenerationId()))
+              statement.and(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(GroupRepository.selectCurrentGroupGenerationId()))
             else ->
-              statement.and(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(groupGenerationId))
+              statement.and(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(groupGenerationId))
           }
         })
       .fetchOne()
@@ -184,18 +175,18 @@ class GroupRepository(
   }
 
   fun selectByIds(groupTransitionIds: Collection<UUID>, groupGenerationId: Int? = null): List<GroupWithPath> {
-    return dslContext.selectFrom(CURRENT_GROUP_TRANSITION)
-      .where(CURRENT_GROUP_TRANSITION.GROUP_TRANSITION_ID.`in`(groupTransitionIds)
+    return dslContext.selectFrom(GROUP_TRANSITION_WITH_PATH)
+      .where(GROUP_TRANSITION_WITH_PATH.GROUP_TRANSITION_ID.`in`(groupTransitionIds)
         .let { statement ->
           if (null == groupGenerationId) {
             statement.and(
-              CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(GroupRepository.selectCurrentGroupGenerationId())
-                .or(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID))
+              GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(GroupRepository.selectCurrentGroupGenerationId())
+                .or(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID))
             )
           } else {
             statement.and(
-              CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(groupGenerationId)
-                .or(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID))
+              GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(groupGenerationId)
+                .or(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID))
             )
           }
         }
@@ -206,17 +197,17 @@ class GroupRepository(
 
   fun selectChildrenByIds(groupTransitionIds: Collection<UUID>, groupGenerationId: Int? = null): List<GroupWithPath> {
     val likeValues: List<String> = groupTransitionIds.map { "%$it%" }
-    return dslContext.selectFrom(CURRENT_GROUP_TRANSITION)
-      .where(CURRENT_GROUP_TRANSITION.PATH.like(DSL.any(*likeValues.toTypedArray()))
+    return dslContext.selectFrom(GROUP_TRANSITION_WITH_PATH)
+      .where(GROUP_TRANSITION_WITH_PATH.PATH.like(DSL.any(*likeValues.toTypedArray()))
         .let { statement ->
           if (null == groupGenerationId) {
             statement.and(
-              CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(GroupRepository.selectCurrentGroupGenerationId())
-                .or(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID))
+              GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(GroupRepository.selectCurrentGroupGenerationId())
+                .or(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID))
             )
           } else {
-            statement.and(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(groupGenerationId)
-              .or(CURRENT_GROUP_TRANSITION.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID)))
+            statement.and(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(groupGenerationId)
+              .or(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.equal(ROOT_GROUP_GENERATION_ID)))
           }
         }
       )
@@ -224,7 +215,7 @@ class GroupRepository(
       .map { record -> recordMapper(record) }
   }
 
-  fun recordMapper(group: Group): GroupTransitionRecord {
+  fun recordMapper(group: IGroup): GroupTransitionRecord {
     return GroupTransitionRecord()
       .also { record ->
         record.groupTransitionId = group.groupId
@@ -235,7 +226,7 @@ class GroupRepository(
   }
 
   companion object {
-    fun recordMapper(record: CurrentGroupTransitionRecord): GroupWithPath {
+    fun recordMapper(record: GroupTransitionWithPathRecord): GroupWithPath {
       return GroupWithPath(
         Group(
           record.groupTransitionId!!,

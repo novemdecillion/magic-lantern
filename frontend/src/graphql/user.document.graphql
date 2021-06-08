@@ -70,12 +70,27 @@ fragment studyProgress on StudyProgress {
   pageIndexes
 }
 
-fragment studyChapterAnswer on StudyChapterAnswer {
-  chapterIndex
-  questions {
-    questionIndex
-    answers
+#fragment studyChapterAnswer on StudyChapterAnswer {
+#  chapterIndex
+#  questions {
+#    questionIndex
+#    answers
+#  }
+#}
+
+fragment notStartStudy on NotStartStudy {
+  userId
+  status
+
+  slide {
+    ...slide
   }
+#  lessons {
+#    lessonId
+#    group {
+#      ...group
+#    }
+#  }
 }
 
 fragment study on Study {
@@ -88,10 +103,6 @@ fragment study on Study {
   }
   progressRate
 
-  answerDetails {
-    ...studyChapterAnswer
-  }
-
   scoreDetails {
     ...studyChapterRecord
   }
@@ -101,12 +112,6 @@ fragment study on Study {
 
   slide {
     ...slide
-  }
-  lessons {
-    lessonId
-    group {
-      ...group
-    }
   }
 }
 

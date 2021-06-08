@@ -3,10 +3,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
   idea
   java
-  kotlin("jvm") version "1.4.30" apply false
-  kotlin("plugin.spring") version "1.4.30" apply false
+  kotlin("jvm") version "1.5.10" apply false
+  kotlin("plugin.spring") version "1.5.10" apply false
 
-  id("org.springframework.boot") version "2.4.3" apply false
+  id("org.springframework.boot") version "2.5.0" apply false
   id("io.spring.dependency-management") version "1.0.11.RELEASE" apply false
 }
 
@@ -21,6 +21,7 @@ subprojects {
   group = "io.github.novemdecillion"
   version = "0.0.1-SNAPSHOT"
   java.sourceCompatibility = JavaVersion.VERSION_11
+  extra["testcontainersVersion"] = "1.15.3"
 
   repositories {
     mavenCentral()
@@ -47,6 +48,7 @@ subprojects {
   the<io.spring.gradle.dependencymanagement.dsl.DependencyManagementExtension>().apply {
     imports {
       mavenBom(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+      mavenBom("org.testcontainers:testcontainers-bom:${property("testcontainersVersion")}")
     }
   }
 }

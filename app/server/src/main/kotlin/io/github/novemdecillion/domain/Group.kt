@@ -50,22 +50,10 @@ class GroupWithPath(
   fun groupNamePath() = path.map { it.groupName }.plus(groupName).joinToString(GROUP_PATH_SEPARATOR)
 }
 
-/**
- * 世代
- */
-data class GroupGeneration(
-  val groupGenerationId: UUID,
-  /**
-   * 開始日
-   */
-  val startDate: LocalDate,
-
-  val groupIds: Set<UUID> = setOf()
-)
-
 interface ILesson {
   val lessonId: UUID
   val slideId: String
+  val groupId: UUID
 }
 
 /**
@@ -74,17 +62,7 @@ interface ILesson {
 data class Lesson(
   override val lessonId: UUID,
   override val slideId: String,
-
-//  /**
-//   * 講習開始日
-//   */
-//  val startDate: LocalDate?,
-//  /**
-//   * 講習終了日
-//   */
-//  val endDate: LocalDate?,
+  override val groupId: UUID
 ): ILesson
 
-class LessonWithGroup(lesson: Lesson, val groupId: UUID, val group: GroupWithPath) : ILesson by lesson
-
-//data class Study(val slideId: String, val lessons: List<LessonWithGroup>)
+class LessonWithGroup(lesson: Lesson, val group: GroupWithPath) : ILesson by lesson

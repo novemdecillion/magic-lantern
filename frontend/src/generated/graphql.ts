@@ -30,8 +30,7 @@ export type Query = {
   authoritativeGroupsByUser: Array<Group>;
   effectiveGroupsByUser: Array<Group>;
   isTopManageableGroupByUser: Scalars['Boolean'];
-  studiesByUser: Array<Study>;
-  notStartStudyByUser: Array<LessonByUser>;
+  studiesByUser: Array<INotStartStudy>;
   users: Array<User>;
   userCount: Scalars['Int'];
   realms: Array<Realm>;
@@ -49,8 +48,7 @@ export type Query = {
   currentAndNextGroupGenerations?: Maybe<Array<GroupGeneration>>;
   exportGroupGeneration?: Maybe<Scalars['String']>;
   study?: Maybe<Study>;
-  lessonStudies: Array<Study>;
-  notStartLessonStudies: Array<User>;
+  lessonStudies: Array<INotStartStudy>;
 };
 
 
@@ -108,11 +106,6 @@ export type QueryStudyArgs = {
 
 
 export type QueryLessonStudiesArgs = {
-  lessonId: Scalars['ID'];
-};
-
-
-export type QueryNotStartLessonStudiesArgs = {
   lessonId: Scalars['ID'];
 };
 
@@ -322,7 +315,7 @@ export type SwitchGroupGenerationCommand = {
 };
 
 export type ImportGroupGenerationCommand = {
-  groupGenerationId: Scalars['Int'];
+  groupGenerationId?: Maybe<Scalars['Int']>;
   generationFile: Scalars['Upload'];
 };
 
@@ -339,20 +332,7 @@ export type LessonStatistics = {
   failCount: Scalars['Int'];
 };
 
-export type ILessonCore = {
-  lessonId: Scalars['ID'];
-  slideId: Scalars['ID'];
-  slide: Slide;
-};
-
-export type LessonByUser = ILessonCore & {
-  __typename?: 'LessonByUser';
-  lessonId: Scalars['ID'];
-  slideId: Scalars['ID'];
-  slide: Slide;
-};
-
-export type Lesson = ILessonCore & {
+export type Lesson = {
   __typename?: 'Lesson';
   lessonId: Scalars['ID'];
   groupId: Scalars['ID'];
@@ -539,7 +519,7 @@ export type StudyChapterRecord = {
 export type StudyQuestionAnswer = {
   __typename?: 'StudyQuestionAnswer';
   questionIndex: Scalars['Int'];
-  answers: Array<Scalars['Int']>;
+  answers: Array<Scalars['String']>;
 };
 
 export type StudyChapterAnswer = {
@@ -554,7 +534,24 @@ export type StudyProgress = {
   pageIndexes: Array<Scalars['Int']>;
 };
 
-export type Study = {
+export type INotStartStudy = {
+  userId: Scalars['ID'];
+  slideId: Scalars['ID'];
+  status: StudyStatus;
+  user: User;
+  slide: Slide;
+};
+
+export type NotStartStudy = INotStartStudy & {
+  __typename?: 'NotStartStudy';
+  userId: Scalars['ID'];
+  slideId: Scalars['ID'];
+  status: StudyStatus;
+  user: User;
+  slide: Slide;
+};
+
+export type Study = INotStartStudy & {
   __typename?: 'Study';
   studyId: Scalars['ID'];
   userId: Scalars['ID'];
@@ -562,13 +559,12 @@ export type Study = {
   status: StudyStatus;
   progressDetails: Array<StudyProgress>;
   progressRate?: Maybe<Scalars['Int']>;
-  answerDetails: Array<StudyChapterAnswer>;
   scoreDetails: Array<StudyChapterRecord>;
+  answerDetails: Array<StudyChapterAnswer>;
   startAt?: Maybe<Scalars['DateTime']>;
   endAt?: Maybe<Scalars['DateTime']>;
   user: User;
   slide: Slide;
-  lessons: Array<Lesson>;
 };
 
 export type ForMemberListQueryVariables = Exact<{
@@ -628,11 +624,11 @@ export type ForStudyListQueryVariables = Exact<{ [key: string]: never; }>;
 export type ForStudyListQuery = (
   { __typename?: 'Query' }
   & { studiesByUser: Array<(
+    { __typename?: 'NotStartStudy' }
+    & NotStartStudyFragment
+  ) | (
     { __typename?: 'Study' }
     & StudyFragment
-  )>, notStartStudyByUser: Array<(
-    { __typename?: 'LessonByUser' }
-    & LessonByUserFragment
   )> }
 );
 
@@ -647,15 +643,19 @@ export type ForLessonStudentListQuery = (
     { __typename?: 'Lesson' }
     & LessonFragment
   )>, lessonStudies: Array<(
+    { __typename?: 'NotStartStudy' }
+    & { user: (
+      { __typename?: 'User' }
+      & UserFragment
+    ) }
+    & NotStartStudyFragment
+  ) | (
     { __typename?: 'Study' }
     & { user: (
       { __typename?: 'User' }
       & UserFragment
     ) }
     & StudyFragment
-  )>, notStartLessonStudies: Array<(
-    { __typename?: 'User' }
-    & UserFragment
   )> }
 );
 
@@ -855,15 +855,6 @@ export type SwitchGroupGenerationMutation = (
   & Pick<Mutation, 'switchGroupGeneration'>
 );
 
-export type LessonByUserFragment = (
-  { __typename?: 'LessonByUser' }
-  & Pick<LessonByUser, 'lessonId' | 'slideId'>
-  & { slide: (
-    { __typename?: 'Slide' }
-    & SlideFragment
-  ) }
-);
-
 export type LessonFragment = (
   { __typename?: 'Lesson' }
   & Pick<Lesson, 'lessonId' | 'groupId' | 'slideId'>
@@ -941,22 +932,9 @@ export type LessonStudiesQueryVariables = Exact<{
 
 export type LessonStudiesQuery = (
   { __typename?: 'Query' }
-  & { lessonStudies: Array<(
+  & { lessonStudies: Array<{ __typename?: 'NotStartStudy' } | (
     { __typename?: 'Study' }
     & StudyFragment
-  )> }
-);
-
-export type NotStartLessonStudiesQueryVariables = Exact<{
-  lessonId: Scalars['ID'];
-}>;
-
-
-export type NotStartLessonStudiesQuery = (
-  { __typename?: 'Query' }
-  & { notStartLessonStudies: Array<(
-    { __typename?: 'User' }
-    & UserFragment
   )> }
 );
 
@@ -1182,13 +1160,13 @@ export type StudyProgressFragment = (
   & Pick<StudyProgress, 'chapterIndex' | 'pageIndexes'>
 );
 
-export type StudyChapterAnswerFragment = (
-  { __typename?: 'StudyChapterAnswer' }
-  & Pick<StudyChapterAnswer, 'chapterIndex'>
-  & { questions: Array<(
-    { __typename?: 'StudyQuestionAnswer' }
-    & Pick<StudyQuestionAnswer, 'questionIndex' | 'answers'>
-  )> }
+export type NotStartStudyFragment = (
+  { __typename?: 'NotStartStudy' }
+  & Pick<NotStartStudy, 'userId' | 'status'>
+  & { slide: (
+    { __typename?: 'Slide' }
+    & SlideFragment
+  ) }
 );
 
 export type StudyFragment = (
@@ -1197,23 +1175,13 @@ export type StudyFragment = (
   & { progressDetails: Array<(
     { __typename?: 'StudyProgress' }
     & StudyProgressFragment
-  )>, answerDetails: Array<(
-    { __typename?: 'StudyChapterAnswer' }
-    & StudyChapterAnswerFragment
   )>, scoreDetails: Array<(
     { __typename?: 'StudyChapterRecord' }
     & StudyChapterRecordFragment
   )>, slide: (
     { __typename?: 'Slide' }
     & SlideFragment
-  ), lessons: Array<(
-    { __typename?: 'Lesson' }
-    & Pick<Lesson, 'lessonId'>
-    & { group: (
-      { __typename?: 'Group' }
-      & GroupFragment
-    ) }
-  )> }
+  ) }
 );
 
 export type StudyQueryVariables = Exact<{
@@ -1332,15 +1300,6 @@ export const SlideFragmentDoc = gql`
   }
 }
     ${SlideConfigFragmentDoc}`;
-export const LessonByUserFragmentDoc = gql`
-    fragment lessonByUser on LessonByUser {
-  lessonId
-  slideId
-  slide {
-    ...slide
-  }
-}
-    ${SlideFragmentDoc}`;
 export const LessonFragmentDoc = gql`
     fragment lesson on Lesson {
   lessonId
@@ -1403,19 +1362,19 @@ export const RealmFragmentDoc = gql`
   syncAt
 }
     `;
+export const NotStartStudyFragmentDoc = gql`
+    fragment notStartStudy on NotStartStudy {
+  userId
+  status
+  slide {
+    ...slide
+  }
+}
+    ${SlideFragmentDoc}`;
 export const StudyProgressFragmentDoc = gql`
     fragment studyProgress on StudyProgress {
   chapterIndex
   pageIndexes
-}
-    `;
-export const StudyChapterAnswerFragmentDoc = gql`
-    fragment studyChapterAnswer on StudyChapterAnswer {
-  chapterIndex
-  questions {
-    questionIndex
-    answers
-  }
 }
     `;
 export const StudyChapterRecordFragmentDoc = gql`
@@ -1437,9 +1396,6 @@ export const StudyFragmentDoc = gql`
     ...studyProgress
   }
   progressRate
-  answerDetails {
-    ...studyChapterAnswer
-  }
   scoreDetails {
     ...studyChapterRecord
   }
@@ -1448,18 +1404,10 @@ export const StudyFragmentDoc = gql`
   slide {
     ...slide
   }
-  lessons {
-    lessonId
-    group {
-      ...group
-    }
-  }
 }
     ${StudyProgressFragmentDoc}
-${StudyChapterAnswerFragmentDoc}
 ${StudyChapterRecordFragmentDoc}
-${SlideFragmentDoc}
-${GroupFragmentDoc}`;
+${SlideFragmentDoc}`;
 export const ForMemberListDocument = gql`
     query forMemberList($groupId: ID!) {
   group(groupId: $groupId) {
@@ -1533,14 +1481,16 @@ ${UserFragmentDoc}`;
 export const ForStudyListDocument = gql`
     query forStudyList {
   studiesByUser {
-    ...study
-  }
-  notStartStudyByUser {
-    ...lessonByUser
+    ... on Study {
+      ...study
+    }
+    ... on NotStartStudy {
+      ...notStartStudy
+    }
   }
 }
     ${StudyFragmentDoc}
-${LessonByUserFragmentDoc}`;
+${NotStartStudyFragmentDoc}`;
 
   @Injectable({
     providedIn: 'root'
@@ -1558,18 +1508,21 @@ export const ForLessonStudentListDocument = gql`
     ...lesson
   }
   lessonStudies(lessonId: $lessonId) {
-    ...study
     user {
       ...user
     }
-  }
-  notStartLessonStudies(lessonId: $lessonId) {
-    ...user
+    ... on Study {
+      ...study
+    }
+    ... on NotStartStudy {
+      ...notStartStudy
+    }
   }
 }
     ${LessonFragmentDoc}
+${UserFragmentDoc}
 ${StudyFragmentDoc}
-${UserFragmentDoc}`;
+${NotStartStudyFragmentDoc}`;
 
   @Injectable({
     providedIn: 'root'
@@ -1931,24 +1884,6 @@ export const LessonStudiesDocument = gql`
   })
   export class LessonStudiesGQL extends Apollo.Query<LessonStudiesQuery, LessonStudiesQueryVariables> {
     document = LessonStudiesDocument;
-    
-    constructor(apollo: Apollo.Apollo) {
-      super(apollo);
-    }
-  }
-export const NotStartLessonStudiesDocument = gql`
-    query notStartLessonStudies($lessonId: ID!) {
-  notStartLessonStudies(lessonId: $lessonId) {
-    ...user
-  }
-}
-    ${UserFragmentDoc}`;
-
-  @Injectable({
-    providedIn: 'root'
-  })
-  export class NotStartLessonStudiesGQL extends Apollo.Query<NotStartLessonStudiesQuery, NotStartLessonStudiesQueryVariables> {
-    document = NotStartLessonStudiesDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

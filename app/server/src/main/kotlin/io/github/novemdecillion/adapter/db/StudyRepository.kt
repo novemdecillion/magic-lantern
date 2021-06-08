@@ -3,16 +3,12 @@ package io.github.novemdecillion.adapter.db
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.novemdecillion.adapter.jooq.tables.records.StudyRecord
-import io.github.novemdecillion.adapter.jooq.tables.references.ACCOUNT_GROUP_AUTHORITY
 import io.github.novemdecillion.adapter.jooq.tables.references.CURRENT_ACCOUNT_GROUP_AUTHORITY
 import io.github.novemdecillion.adapter.jooq.tables.references.LESSON
 import io.github.novemdecillion.adapter.jooq.tables.references.STUDY
-import io.github.novemdecillion.domain.ROOT_GROUP_GENERATION_ID
-import io.github.novemdecillion.domain.ROOT_GROUP_ID
-import io.github.novemdecillion.domain.Role
-import io.github.novemdecillion.domain.Study
+import io.github.novemdecillion.domain.*
+import io.github.novemdecillion.usecase.IStudyRepository
 import org.jooq.DSLContext
-import org.jooq.JSONB
 import org.jooq.impl.DSL
 import org.springframework.stereotype.Repository
 import java.util.*
@@ -21,7 +17,7 @@ import java.util.*
 class StudyRepository(
   private val dslContext: DSLContext,
   private val objectMapper: ObjectMapper
-) {
+): IStudyRepository {
   fun recordMapper(study: StudyRecord): Study {
     return Study(
       studyId = study.studyId!!,
@@ -30,10 +26,10 @@ class StudyRepository(
       status = study.status!!,
 
       progress = study.progress?.let { objectMapper.readValue(it.data()) } ?: mapOf(),
-      progressRate = study.progressRate!!,
-
+      progressRate = study.progressRate ?: 0,
       answer = study.answer?.let { objectMapper.readValue(it.data()) } ?: mapOf(),
       score = study.score?.let { objectMapper.readValue(it.data()) } ?: mapOf(),
+      shuffledQuestion = study.shuffledQuestion?.let { objectMapper.readValue(it.data()) } ?: mapOf(),
 
       startAt = study.startAt,
       endAt = study.endAt
@@ -45,10 +41,11 @@ class StudyRepository(
     record.studyId = study.studyId
     record.accountId = study.userId
     record.slideId = study.slideId
-    record.progress = JSONB.jsonb(objectMapper.writeValueAsString(study.progress))
+    record.progress = objectMapper.writeValueAsJsonb(study.progress.ifEmpty { null })
     record.progressRate = study.progressRate
-    record.answer = JSONB.jsonb(objectMapper.writeValueAsString(study.answer))
-    record.score = JSONB.jsonb(objectMapper.writeValueAsString(study.score))
+    record.answer = objectMapper.writeValueAsJsonb(study.answer.ifEmpty { null })
+    record.score = objectMapper.writeValueAsJsonb(study.score.ifEmpty { null })
+    record.shuffledQuestion = objectMapper.writeValueAsJsonb(study.shuffledQuestion.ifEmpty { null })
     record.status = study.status
     study.startAt?.also { record.startAt = it }
     study.endAt?.also { record.endAt = it }
@@ -59,7 +56,7 @@ class StudyRepository(
     dslContext.executeInsert(recordMapper(study))
   }
 
-  fun update(study: Study) {
+  override fun update(study: Study) {
     dslContext.executeUpdate(recordMapper(study))
   }
 
@@ -67,9 +64,9 @@ class StudyRepository(
     return dslContext.deleteFrom(STUDY).where(STUDY.STUDY_ID.equal(studyId)).execute()
   }
 
-  fun selectById(studyId: UUID, userId: UUID): Study? {
+  fun selectById(studyId: UUID): Study? {
     return dslContext.selectFrom(STUDY)
-      .where(STUDY.STUDY_ID.equal(studyId).and(STUDY.ACCOUNT_ID.equal(userId)))
+      .where(STUDY.STUDY_ID.equal(studyId))
       .fetchOne(::recordMapper)
   }
 
@@ -107,6 +104,37 @@ class StudyRepository(
       .fetchInto(StudyRecord::class.java)
       .map {
         recordMapper(it)
+      }
+  }
+
+  fun selectNotStartStudyByUserId(userId: UUID): List<NotStartStudy> {
+    return dslContext.select(LESSON.SLIDE_ID)
+      .from(LESSON)
+      .innerJoin(CURRENT_ACCOUNT_GROUP_AUTHORITY)
+      .on(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(LESSON.GROUP_TRANSITION_ID)
+        .and(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID.equal(userId))
+        .and(DSL.jsonbExists(CURRENT_ACCOUNT_GROUP_AUTHORITY.ROLE,"""$ ? (@ == "${Role.STUDY.name}")"""))
+      )
+      .where(LESSON.SLIDE_ID.notIn(DSL.select(STUDY.SLIDE_ID).from(STUDY).where(STUDY.ACCOUNT_ID.equal(userId))))
+      .fetch { record ->
+        NotStartStudy(
+          userId = userId,
+          slideId = record.getValue(LESSON.SLIDE_ID)!!)
+      }
+  }
+
+  fun selectNotStartStudyByLessonId(lessonId: UUID): List<NotStartStudy> {
+    return dslContext.select(LESSON.SLIDE_ID, CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID)
+      .from(LESSON)
+      .innerJoin(CURRENT_ACCOUNT_GROUP_AUTHORITY)
+        .on(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(LESSON.GROUP_TRANSITION_ID)
+          .and(LESSON.LESSON_ID.equal(lessonId))
+          .and(DSL.jsonbExists(CURRENT_ACCOUNT_GROUP_AUTHORITY.ROLE,"""$ ? (@ == "${Role.STUDY.name}")""")))
+      .where(LESSON.SLIDE_ID.notIn(DSL.select(STUDY.SLIDE_ID).from(STUDY).where(STUDY.ACCOUNT_ID.equal(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID))))
+      .fetch { record ->
+        NotStartStudy(
+          userId = record.getValue(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID)!!,
+          slideId = record.getValue(LESSON.SLIDE_ID)!!)
       }
   }
 }

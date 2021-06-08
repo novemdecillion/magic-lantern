@@ -179,6 +179,28 @@ data class ExamChapter(
     return passScore
       ?: questions.map { it.score }.sum()
   }
+
+  fun shuffled(): Pair<ExamChapter, List<Pair<Int, List<Int>>>> {
+    val shuffledIndexes: MutableList<Pair<Int, List<Int>>> = mutableListOf()
+
+    val shuffledQuestions = questions.withIndex().shuffled()
+      .map { (index, question) ->
+        val shuffledChoices = question.choices.withIndex().shuffled()
+        shuffledIndexes.add(index to shuffledChoices.map { it.index })
+        question.copy(choices = shuffledChoices.map { it.value })
+      }
+    return this.copy(questions = shuffledQuestions) to shuffledIndexes
+  }
+
+  fun shuffled(shuffledIndexes: List<Pair<Int, List<Int>>>): ExamChapter {
+    val shuffledQuestions = shuffledIndexes
+      .map { (chapterIndex, choiceIndexes) ->
+        val question = this.questions[chapterIndex]
+        val shuffledChoices = choiceIndexes.map { question.choices[it] }
+        question.copy(choices = shuffledChoices)
+      }
+    return this.copy(questions = shuffledQuestions)
+  }
 }
 
 /**

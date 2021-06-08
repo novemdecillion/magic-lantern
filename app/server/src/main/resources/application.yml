@@ -26,10 +26,6 @@ spring:
     username: admin
     password: password123
 
-#  devtools:
-#    restart:
-#      exclude: META-INF/maven/**,META-INF/resources/**,**/*Test.class,**/*Tests.class,git.properties,META-INF/build-info.properties
-
   flyway:
     clean-on-validation-error: true
 
@@ -54,10 +50,6 @@ spring:
             client-id: test-for-java
             client-name: Test for Java
             scope: openid
-
-#      resourceserver:
-#        jwt:
-#          issuer-uri: http://localhost:50010/auth/realms/example
 
   servlet:
     multipart:

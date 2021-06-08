@@ -43,7 +43,7 @@ open class CurrentAccountGroupAuthorityTable(
     aliased,
     parameters,
     DSL.comment(""),
-    TableOptions.materializedView()
+    TableOptions.view("create view \"current_account_group_authority\" as  SELECT account_group_authority.account_id,\n    account_group_authority.group_transition_id,\n    account_group_authority.group_generation_id,\n    account_group_authority.role\n   FROM (account_group_authority\n     JOIN group_generation ON (((group_generation.is_current = true) AND (account_group_authority.group_generation_id = group_generation.group_generation_id))));")
 ) {
     companion object {
 

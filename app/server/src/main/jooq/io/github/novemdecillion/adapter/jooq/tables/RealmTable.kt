@@ -6,6 +6,7 @@ package io.github.novemdecillion.adapter.jooq.tables
 
 import io.github.novemdecillion.adapter.jooq.DefaultSchema
 import io.github.novemdecillion.adapter.jooq.keys.REALM_PKEY
+import io.github.novemdecillion.adapter.jooq.keys.REALM_REALM_NAME_KEY
 import io.github.novemdecillion.adapter.jooq.tables.records.RealmRecord
 
 import java.time.OffsetDateTime
@@ -102,7 +103,7 @@ open class RealmTable(
     constructor(child: Table<out Record>, key: ForeignKey<out Record, RealmRecord>): this(Internal.createPathAlias(child, key), child, key, REALM, null)
     override fun getSchema(): Schema = DefaultSchema.DEFAULT_SCHEMA
     override fun getPrimaryKey(): UniqueKey<RealmRecord> = REALM_PKEY
-    override fun getKeys(): List<UniqueKey<RealmRecord>> = listOf(REALM_PKEY)
+    override fun getKeys(): List<UniqueKey<RealmRecord>> = listOf(REALM_PKEY, REALM_REALM_NAME_KEY)
     override fun `as`(alias: String): RealmTable = RealmTable(DSL.name(alias), this)
     override fun `as`(alias: Name): RealmTable = RealmTable(alias, this)
 

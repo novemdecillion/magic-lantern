@@ -26,6 +26,7 @@ data class StudyEntity(
     override var progressRate: Int? = null, 
     override var answer: JSONB? = null, 
     override var score: JSONB? = null, 
+    override var shuffledQuestion: JSONB? = null, 
     override var startAt: OffsetDateTime? = null, 
     override var endAt: OffsetDateTime? = null
 ): IStudy {
@@ -42,6 +43,7 @@ data class StudyEntity(
         sb.append(", ").append(progressRate)
         sb.append(", ").append(answer)
         sb.append(", ").append(score)
+        sb.append(", ").append(shuffledQuestion)
         sb.append(", ").append(startAt)
         sb.append(", ").append(endAt)
 
@@ -62,6 +64,7 @@ data class StudyEntity(
         progressRate = from.progressRate
         answer = from.answer
         score = from.score
+        shuffledQuestion = from.shuffledQuestion
         startAt = from.startAt
         endAt = from.endAt
     }

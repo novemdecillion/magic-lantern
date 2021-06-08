@@ -5,7 +5,6 @@ import { map, share } from 'rxjs/operators';
 import { ConfirmDialogComponent } from 'src/app/share/confirm-dialog/confirm-dialog.component';
 import { createGroupNodes, GroupNode } from 'src/app/utilities';
 import { ExportGroupGenerationGQL, NextGenerationGroupsGQL, SwitchGroupGenerationGQL } from 'src/generated/graphql';
-import { EditMemberComponent } from '../edit-member/edit-member.component';
 import { ImportGroupComponent } from '../import-group/import-group.component';
 import { downloadGroupGeneration } from '../utilities';
 
@@ -36,7 +35,9 @@ export class NextGenerationComponent implements OnInit {
     this.dataLoad = this.groupsGql.fetch()
       .pipe(
         map(res => {
-          if (2 == res.data.currentAndNextGroupGenerations?.length) {
+          if (1 == res.data.currentAndNextGroupGenerations?.length) {
+            this.currentGenerationId = res.data.currentAndNextGroupGenerations[0].groupGenerationId;
+          } else if (2 == res.data.currentAndNextGroupGenerations?.length) {
             this.currentGenerationId = res.data.currentAndNextGroupGenerations[0].groupGenerationId;
             this.nextGenerationId = res.data.currentAndNextGroupGenerations[1].groupGenerationId;
           }

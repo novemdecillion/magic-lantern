@@ -26,6 +26,7 @@ interface IStudy : Serializable {
     var progressRate: Int?
     var answer: JSONB?
     var score: JSONB?
+    var shuffledQuestion: JSONB?
     var startAt: OffsetDateTime?
     var endAt: OffsetDateTime?
 

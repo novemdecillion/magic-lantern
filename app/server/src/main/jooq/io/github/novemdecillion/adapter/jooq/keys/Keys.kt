@@ -56,6 +56,7 @@ val LESSON_GROUP_TRANSITION_ID_SLIDE_ID_KEY: UniqueKey<LessonRecord> = Internal.
 val LESSON_PKEY: UniqueKey<LessonRecord> = Internal.createUniqueKey(LessonTable.LESSON, DSL.name("lesson_pkey"), arrayOf(LessonTable.LESSON.LESSON_ID), true)
 val NOTICE_PKEY: UniqueKey<NoticeRecord> = Internal.createUniqueKey(NoticeTable.NOTICE, DSL.name("notice_pkey"), arrayOf(NoticeTable.NOTICE.NOTICE_ID), true)
 val REALM_PKEY: UniqueKey<RealmRecord> = Internal.createUniqueKey(RealmTable.REALM, DSL.name("realm_pkey"), arrayOf(RealmTable.REALM.REALM_ID), true)
+val REALM_REALM_NAME_KEY: UniqueKey<RealmRecord> = Internal.createUniqueKey(RealmTable.REALM, DSL.name("realm_realm_name_key"), arrayOf(RealmTable.REALM.REALM_NAME), true)
 val STUDY_ACCOUNT_ID_SLIDE_ID_KEY: UniqueKey<StudyRecord> = Internal.createUniqueKey(StudyTable.STUDY, DSL.name("study_account_id_slide_id_key"), arrayOf(StudyTable.STUDY.ACCOUNT_ID, StudyTable.STUDY.SLIDE_ID), true)
 val STUDY_PKEY: UniqueKey<StudyRecord> = Internal.createUniqueKey(StudyTable.STUDY, DSL.name("study_pkey"), arrayOf(StudyTable.STUDY.STUDY_ID), true)
 

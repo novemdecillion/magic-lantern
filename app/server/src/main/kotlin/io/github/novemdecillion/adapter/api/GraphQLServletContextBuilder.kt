@@ -4,21 +4,15 @@ import graphql.kickstart.servlet.context.DefaultGraphQLServletContext
 import graphql.kickstart.servlet.context.DefaultGraphQLServletContextBuilder
 import graphql.kickstart.servlet.context.GraphQLServletContext
 import graphql.schema.DataFetchingEnvironment
+import io.github.novemdecillion.adapter.db.AccountRepository
 import io.github.novemdecillion.adapter.db.GroupRepository
-import io.github.novemdecillion.adapter.db.UserRepository
 import io.github.novemdecillion.adapter.security.currentAccount
-import io.github.novemdecillion.domain.Group
-import io.github.novemdecillion.domain.GroupPath
-import io.github.novemdecillion.domain.GroupWithPath
 import io.github.novemdecillion.domain.User
 import org.dataloader.*
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
 import java.time.OffsetDateTime
-import java.util.*
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 import kotlin.reflect.KClass
@@ -34,7 +28,7 @@ interface LoaderFunctionMaker<K, V>
 
 @Component
 class GraphQLServletContextBuilder(
-  private val userRepository: UserRepository,
+  private val userRepository: AccountRepository,
   private val groupRepository: GroupRepository,
   @Autowired(required = false) private val loaderFunctions: Collection<LoaderFunctionMaker<*, *>>?) : DefaultGraphQLServletContextBuilder() {
 
@@ -58,7 +52,7 @@ class GraphQLServletContextBuilder(
   @Transactional(rollbackFor = [Throwable::class])
   override fun build(request: HttpServletRequest, response: HttpServletResponse): GraphQLContext {
     val (accountName, realmId) = currentAccount()
-    val user = userRepository.findByAccountNameAndRealmWithAuthority(accountName, realmId)!!
+    val user = userRepository.selectByAccountNameAndRealmWithAuthority(accountName, realmId)!!
     val currentGroupGenerationId = groupRepository.selectCurrentGroupGenerationId()!!
     val servletContext = DefaultGraphQLServletContext.createServletContext().with(dataLoaderRegistry).with(request).with(response).build()
     return GraphQLContext(servletContext, OffsetDateTime.now(), user, currentGroupGenerationId)

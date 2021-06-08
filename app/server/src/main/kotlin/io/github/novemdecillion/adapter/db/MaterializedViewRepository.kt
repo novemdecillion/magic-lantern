@@ -4,7 +4,7 @@ import io.github.novemdecillion.adapter.jooq.tables.pojos.AccountEntity
 import io.github.novemdecillion.adapter.jooq.tables.pojos.CurrentAccountGroupAuthorityEntity
 import io.github.novemdecillion.adapter.jooq.tables.references.ACCOUNT
 import io.github.novemdecillion.adapter.jooq.tables.references.CURRENT_ACCOUNT_GROUP_AUTHORITY
-import io.github.novemdecillion.adapter.jooq.tables.references.CURRENT_GROUP_TRANSITION
+import io.github.novemdecillion.adapter.jooq.tables.references.GROUP_TRANSITION_WITH_PATH
 import io.github.novemdecillion.domain.Authority
 import io.github.novemdecillion.domain.User
 import org.jetbrains.annotations.Nullable
@@ -22,7 +22,7 @@ import org.springframework.transaction.support.TransactionTemplate
 @Repository
 class MaterializedViewRepository(private val dslContext: DSLContext) {
   fun refreshCurrentGroupTransitionTable() {
-    dslContext.execute("refresh materialized view ${CURRENT_GROUP_TRANSITION.name}")
+    dslContext.execute("refresh materialized view ${GROUP_TRANSITION_WITH_PATH.name}")
   }
 
   @EventListener(ContextRefreshedEvent::class)

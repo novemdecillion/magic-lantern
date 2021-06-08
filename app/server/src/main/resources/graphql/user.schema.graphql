@@ -27,9 +27,9 @@ input AddUserCommand {
   userName: String!
   password: String!
   email: String
-  enabled: Boolean!
-  isAdmin: Boolean!
-  isGroupManager: Boolean!
+  enabled: Boolean
+  isAdmin: Boolean
+  isGroupManager: Boolean
 }
 
 enum AddUserResult {
@@ -45,8 +45,8 @@ input UpdateUserCommand {
   password: String
   email: String
   enabled: Boolean
-  isAdmin: Boolean!
-  isGroupManager: Boolean!
+  isAdmin: Boolean
+  isGroupManager: Boolean
 }
 
 enum UpdateUserResult {
@@ -93,7 +93,7 @@ type StudyChapterRecord {
 
 type StudyQuestionAnswer {
   questionIndex: Int!
-  answers: [Int!]!
+  answers: [String!]!
 }
 
 type StudyChapterAnswer {
@@ -106,7 +106,26 @@ type StudyProgress {
   pageIndexes: [Int!]!
 }
 
-type Study {
+
+interface INotStartStudy {
+  userId: ID!
+  slideId: ID!
+  status: StudyStatus!
+
+  user: User!
+  slide: Slide!
+}
+
+type NotStartStudy implements INotStartStudy {
+  userId: ID!
+  slideId: ID!
+  status: StudyStatus!
+
+  user: User!
+  slide: Slide!
+}
+
+type Study implements INotStartStudy {
   studyId: ID!
   userId: ID!
   slideId: ID!
@@ -114,12 +133,11 @@ type Study {
 
   progressDetails: [StudyProgress!]!
   progressRate: Int
-  answerDetails: [StudyChapterAnswer!]!
   scoreDetails: [StudyChapterRecord!]!
+  answerDetails: [StudyChapterAnswer!]!
   startAt: DateTime
   endAt: DateTime
 
   user: User!
   slide: Slide!
-  lessons: [Lesson!]!
 }

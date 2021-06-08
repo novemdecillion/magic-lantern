@@ -5,8 +5,7 @@ import graphql.kickstart.tools.GraphQLQueryResolver
 import graphql.schema.DataFetchingEnvironment
 import io.github.novemdecillion.adapter.db.AccountRepository
 import io.github.novemdecillion.adapter.db.GroupAuthorityRepository
-import io.github.novemdecillion.adapter.db.SlideRepository
-import io.github.novemdecillion.adapter.db.UserRepository
+import io.github.novemdecillion.adapter.db.RealmRepository
 import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.adapter.jooq.tables.pojos.AccountEntity
 import io.github.novemdecillion.adapter.jooq.tables.pojos.RealmEntity
@@ -23,8 +22,9 @@ import java.util.concurrent.CompletionStage
 
 @Component
 class UserApi(
-  private val userRepository: UserRepository,
+  private val userRepository: AccountRepository,
   private val accountRepository: AccountRepository,
+  private val realmRepository: RealmRepository,
   private val authorityRepository: GroupAuthorityRepository,
   private val syncUsersService: SyncKeycloakUsersService,
   private val idGeneratorService: IdGeneratorService,
@@ -35,7 +35,7 @@ class UserApi(
   }
 
   @Component
-  class UserLoader(private val userRepository: UserRepository): MappedBatchLoader<UUID, User>, LoaderFunctionMaker<UUID, User> {
+  class UserLoader(private val userRepository: AccountRepository): MappedBatchLoader<UUID, User>, LoaderFunctionMaker<UUID, User> {
     override fun load(keys: Set<UUID>): CompletionStage<Map<UUID, User>> {
       return CompletableFuture.completedFuture(userRepository.selectByIds(keys).associateBy { it.userId })
     }
@@ -46,9 +46,9 @@ class UserApi(
     val accountName: String,
     val password: String,
     val email: String?,
-    val enabled: Boolean,
-    val isAdmin: Boolean,
-    val isGroupManager: Boolean
+    val enabled: Boolean?,
+    val isAdmin: Boolean?,
+    val isGroupManager: Boolean?
   )
 
   data class UpdateUserCommand (
@@ -67,22 +67,27 @@ class UserApi(
     val newPassword: String
   )
 
+  @GraphQLApi
   fun currentUser(environment: DataFetchingEnvironment): User {
     return environment.currentUser()
   }
 
+  @GraphQLApi
   fun users(): List<User> {
-    return userRepository.findAllWithAuthority()
+    return userRepository.selectAllWithAuthority()
   }
 
+  @GraphQLApi
   fun userCount(): Int {
-    return userRepository.count()
+    return userRepository.selectCount()
   }
 
+  @GraphQLApi
   fun realms(): List<RealmEntity> {
-    return accountRepository.selectRealm()
+    return realmRepository.selectAll()
   }
 
+  @GraphQLApi
   fun syncRealm(realmId: String?): Boolean {
     realmId
       ?.also {
@@ -97,6 +102,7 @@ class UserApi(
     DuplicateAccountName,
     UnknownError
   }
+  @GraphQLApi
   fun addUser(command: AddUserCommand): AddUserResult {
     try {
       val account = AccountEntity(
@@ -106,15 +112,15 @@ class UserApi(
         realmId = SYSTEM_REALM_ID,
         password = passwordEncoder.encode(command.password),
         email = command.email,
-        enabled = command.enabled
+        enabled = (command.enabled ?: false)
       )
       accountRepository.insert(account)
 
       val roles = mutableListOf<Role>()
-      if (command.isAdmin) {
+      if (command.isAdmin == true) {
         roles.add(Role.ADMIN)
       }
-      if (command.isGroupManager) {
+      if (command.isGroupManager == true) {
         roles.add(Role.GROUP)
       }
       authorityRepository.insertAuthority(account.accountId!!, Authority.forRootGroup(roles))
@@ -132,6 +138,7 @@ class UserApi(
     Success,
     UnknownError
   }
+  @GraphQLApi
   fun updateUser(command: UpdateUserCommand): UpdateUserResult {
     try {
       val account = AccountEntity(
@@ -144,7 +151,7 @@ class UserApi(
       command.password?.also { account.password  = passwordEncoder.encode(command.password) }
       accountRepository.update(account)
 
-      val authority = userRepository.selectAuthorityByUserIdAndGroupId(command.userId, ROOT_GROUP_ID)
+      val authority = authorityRepository.selectAuthorityByUserIdAndGroupId(command.userId, ROOT_GROUP_ID)
         ?: Authority.forRootGroup()
       val newRoles = authority.roles?.toMutableSet() ?: mutableListOf()
       command.isAdmin
@@ -179,6 +186,7 @@ class UserApi(
     PasswordNotMatch,
     UnknownError
   }
+  @GraphQLApi
   fun changePassword(command: ChangePasswordCommand, environment: DataFetchingEnvironment): ChangePasswordResult {
     try {
       val user = environment.currentUser()
@@ -198,6 +206,7 @@ class UserApi(
     return ChangePasswordResult.Success
   }
 
+  @GraphQLApi
   fun deleteUser(userId: UUID): Boolean {
     return 1 == accountRepository.delete(userId)
   }

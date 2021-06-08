@@ -64,7 +64,7 @@ input SwitchGroupGenerationCommand {
 }
 
 input ImportGroupGenerationCommand {
-  groupGenerationId: Int!
+  groupGenerationId: Int
   generationFile: Upload!
 }
 
@@ -79,19 +79,7 @@ type LessonStatistics {
   failCount: Int!
 }
 
-interface ILessonCore {
-  lessonId: ID!
-  slideId: ID!
-  slide: Slide!
-}
-
-type LessonByUser implements ILessonCore {
-  lessonId: ID!
-  slideId: ID!
-  slide: Slide!
-}
-
-type Lesson implements ILessonCore {
+type Lesson {
   lessonId: ID!
   groupId: ID!
   slideId: ID!

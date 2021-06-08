@@ -9,17 +9,16 @@ import io.github.novemdecillion.adapter.jooq.tables.AccountGroupAuthority_0Table
 import io.github.novemdecillion.adapter.jooq.tables.AccountGroupAuthority_1Table
 import io.github.novemdecillion.adapter.jooq.tables.AccountTable
 import io.github.novemdecillion.adapter.jooq.tables.CurrentAccountGroupAuthorityTable
-import io.github.novemdecillion.adapter.jooq.tables.CurrentGroupTransitionTable
 import io.github.novemdecillion.adapter.jooq.tables.FlywaySchemaHistoryTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupGenerationTable
 import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionTable
+import io.github.novemdecillion.adapter.jooq.tables.GroupTransitionWithPathTable
 import io.github.novemdecillion.adapter.jooq.tables.Group_0Table
 import io.github.novemdecillion.adapter.jooq.tables.Group_1Table
 import io.github.novemdecillion.adapter.jooq.tables.LessonTable
 import io.github.novemdecillion.adapter.jooq.tables.NoticeTable
 import io.github.novemdecillion.adapter.jooq.tables.RealmTable
 import io.github.novemdecillion.adapter.jooq.tables.StudyTable
-import io.github.novemdecillion.adapter.jooq.tables.UserAggregateTable
 
 
 
@@ -49,11 +48,6 @@ val ACCOUNT_GROUP_AUTHORITY_1 = AccountGroupAuthority_1Table.ACCOUNT_GROUP_AUTHO
 val CURRENT_ACCOUNT_GROUP_AUTHORITY = CurrentAccountGroupAuthorityTable.CURRENT_ACCOUNT_GROUP_AUTHORITY
 
 /**
- * The table <code>current_group_transition</code>.
- */
-val CURRENT_GROUP_TRANSITION = CurrentGroupTransitionTable.CURRENT_GROUP_TRANSITION
-
-/**
  * The table <code>flyway_schema_history</code>.
  */
 val FLYWAY_SCHEMA_HISTORY = FlywaySchemaHistoryTable.FLYWAY_SCHEMA_HISTORY
@@ -79,6 +73,11 @@ val GROUP_GENERATION = GroupGenerationTable.GROUP_GENERATION
 val GROUP_TRANSITION = GroupTransitionTable.GROUP_TRANSITION
 
 /**
+ * The table <code>group_transition_with_path</code>.
+ */
+val GROUP_TRANSITION_WITH_PATH = GroupTransitionWithPathTable.GROUP_TRANSITION_WITH_PATH
+
+/**
  * The table <code>lesson</code>.
  */
 val LESSON = LessonTable.LESSON
@@ -97,8 +96,3 @@ val REALM = RealmTable.REALM
  * The table <code>study</code>.
  */
 val STUDY = StudyTable.STUDY
-
-/**
- * The table <code>user_aggregate</code>.
- */
-val USER_AGGREGATE = UserAggregateTable.USER_AGGREGATE

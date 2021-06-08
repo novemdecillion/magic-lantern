@@ -1,15 +1,13 @@
 package io.github.novemdecillion.adapter.api
 
 import com.fasterxml.jackson.annotation.JsonIgnore
-import com.fasterxml.jackson.databind.ObjectMapper
 import graphql.kickstart.tools.GraphQLMutationResolver
 import graphql.kickstart.tools.GraphQLQueryResolver
 import graphql.kickstart.tools.GraphQLResolver
 import graphql.schema.DataFetchingEnvironment
 import io.github.novemdecillion.adapter.db.*
-import io.github.novemdecillion.adapter.jooq.tables.pojos.AccountGroupAuthorityEntity
+import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.adapter.jooq.tables.pojos.GroupGenerationEntity
-import io.github.novemdecillion.adapter.jooq.tables.pojos.GroupTransitionEntity
 import io.github.novemdecillion.domain.*
 import io.github.novemdecillion.usecase.GroupUseCase
 import org.apache.poi.ss.usermodel.WorkbookFactory
@@ -23,9 +21,10 @@ import javax.servlet.http.Part
 
 @Component
 class GroupApi(private val groupRepository: GroupRepository,
-               private val accountRepository: AccountRepository,
-               private val userRepository: UserRepository,
+               private val realmRepository: RealmRepository,
+               private val userRepository: AccountRepository,
                private val authorityRepository: GroupAuthorityRepository,
+               private val idGeneratorService: IdGeneratorService,
                private val groupUseCase: GroupUseCase): GraphQLQueryResolver, GraphQLMutationResolver {
   @Component
   class GroupMemberCountLoader(private val authorityRepository: GroupAuthorityRepository): MappedBatchLoader<IGroup, Int>, LoaderFunctionMaker<IGroup, Int> {
@@ -33,12 +32,19 @@ class GroupApi(private val groupRepository: GroupRepository,
       val groupToCountMap = keys
         .groupBy { it.groupGenerationId }
         .flatMap { (groupGenerationId, groups) ->
+          // TODO 一回ですませるようにする
           authorityRepository.selectCount(groups.map{ it.groupId }, groupGenerationId)
             .map { (groupId, count) ->
               groups.first { it.groupId == groupId } to count
             }
         }
         .toMap()
+        .toMutableMap()
+
+      keys
+        .forEach { key ->
+          groupToCountMap.computeIfAbsent(key) { 0 }
+        }
       return CompletableFuture.completedFuture(groupToCountMap)
     }
   }
@@ -100,19 +106,21 @@ class GroupApi(private val groupRepository: GroupRepository,
   )
 
   data class ImportGroupGenerationCommand(
-    val groupGenerationId: Int,
+    val groupGenerationId: Int?,
     @field:JsonIgnore
     val generationFile: Part? = null)
 
-
+  @GraphQLApi
   fun currentGroupGenerationId(environment: DataFetchingEnvironment): Int {
     return environment.currentGroupGenerationId()
   }
 
+  @GraphQLApi
   fun currentAndNextGroupGenerations(): List<GroupGenerationEntity> {
-    return groupRepository.findCurrentAndAvailableGeneration()
+    return groupRepository.selectCurrentAndAvailableGeneration()
   }
 
+  @GraphQLApi
   fun switchGroupGeneration(command: SwitchGroupGenerationCommand, environment: DataFetchingEnvironment): Boolean {
     if (command.nextGenerationId == environment.currentGroupGenerationId()) {
       return true
@@ -123,6 +131,7 @@ class GroupApi(private val groupRepository: GroupRepository,
     return true
   }
 
+  @GraphQLApi
   fun authoritativeGroupsByUser(role: Role, environment: DataFetchingEnvironment): List<GroupWithPath> {
     return environment.currentUser().authorities
       .filter { it.roles?.contains(role) == true }
@@ -132,6 +141,7 @@ class GroupApi(private val groupRepository: GroupRepository,
       }
   }
 
+  @GraphQLApi
   fun effectiveGroupsByUser(role: Role, environment: DataFetchingEnvironment): List<GroupWithPath> {
     return environment.currentUser().authorities
       .filter { it.roles?.contains(role) == true }
@@ -141,21 +151,22 @@ class GroupApi(private val groupRepository: GroupRepository,
       }
   }
 
+  @GraphQLApi
   fun nextGenerationGroups(): List<GroupWithPath> {
-    val generations = groupRepository.findCurrentAndAvailableGeneration()
+    val generations = groupRepository.selectCurrentAndAvailableGeneration()
     if (generations.size != 2) {
       return listOf()
     }
     return groupRepository.select(generations.last().groupGenerationId)
   }
 
+  @GraphQLApi
   fun exportGroupGeneration(groupGenerationId: Int?, environment: DataFetchingEnvironment): String {
     // TODO 現行グループIDチェック
     val resolvedGenerationId = groupGenerationId ?: environment.currentGroupGenerationId()
 
     val groups = groupRepository.select(resolvedGenerationId)
-    val realmIdToNameMap = accountRepository.selectRealm().associate { it.realmId!! to it.realmName!! }
-    val workbook = groupUseCase.exportGroupGeneration(groups, realmIdToNameMap) { groupId, _ ->
+    val workbook = groupUseCase.exportGroupGeneration(groups) { groupId, _ ->
       userRepository.selectMemberByGroupTransitionId(groupId, resolvedGenerationId)
     }
 
@@ -167,6 +178,7 @@ class GroupApi(private val groupRepository: GroupRepository,
     return Base64.getEncoder().encodeToString(workbookBinary)
   }
 
+  @GraphQLApi
   fun importGroupGeneration(command: ImportGroupGenerationCommand, environment: DataFetchingEnvironment): Boolean {
     val generationFile = (environment.variables["command"] as Map<String, Part>)["generationFile"] ?: return false
 
@@ -174,12 +186,27 @@ class GroupApi(private val groupRepository: GroupRepository,
       return false
     }
     val workbook = WorkbookFactory.create(generationFile.inputStream)
-    val realmNameToIdMap = accountRepository.selectRealm().associate { it.realmName!! to it.realmId!! }
 
-    groupUseCase.importGroupGeneration(command.groupGenerationId, workbook, realmNameToIdMap,
+    val generations = groupRepository.selectCurrentAndAvailableGeneration()
+    val resolvedGenerationId: Int = when {
+      // 世代IDの不一致
+      (generations.size == 2) ->
+        if ((command.groupGenerationId == null)
+          || (generations.last().groupGenerationId != command.groupGenerationId)) {
+          return false
+        } else {
+          command.groupGenerationId
+        }
+      (generations.size == 1) ->
+        if (command.groupGenerationId == null) {
+          groupRepository.createNewGeneration()
+        } else return false
+      else -> return false
+    }
+
+    groupUseCase.importGroupGeneration(resolvedGenerationId, workbook,
       { groups, groupGenerationId ->
-        groupRepository.deleteAndInsertGroups(groupGenerationId,
-          groups.map { GroupTransitionEntity(it.groupId, it.groupGenerationId, it.groupName, it.parentGroupId) })
+        groupRepository.deleteAndInsertGroups(groupGenerationId, groups)
       }, { userId, authorities ->
         authorityRepository.insertAuthorities(userId, authorities)
       }, { warningMessage ->
@@ -189,6 +216,7 @@ class GroupApi(private val groupRepository: GroupRepository,
     return true
   }
 
+  @GraphQLApi
   fun isTopManageableGroupByUser(groupId: UUID, environment: DataFetchingEnvironment): Boolean {
     val manageableGroupIds = environment.currentUser().authorities
       .filter { it.roles?.contains(Role.GROUP) == true }
@@ -212,17 +240,25 @@ class GroupApi(private val groupRepository: GroupRepository,
       .contains(groupId)
   }
 
+  @GraphQLApi
   fun group(groupId: UUID, groupGenerationId: Int?, environment: DataFetchingEnvironment): GroupWithPath? {
     return groupRepository.selectById(groupId, groupGenerationId)
   }
 
+  @GraphQLApi
   fun addGroup(command: AddGroupCommand, environment: DataFetchingEnvironment): Boolean {
     // TODO 現行グループIDチェック
     val resolvedGenerationId = command.targetGenerationId ?: environment.currentGroupGenerationId()
-    groupRepository.insertGroup(command.groupName, command.parentGroupId, resolvedGenerationId)
+    val newGroup = Group(groupId = idGeneratorService.generate(),
+      groupGenerationId = resolvedGenerationId,
+      groupName = command.groupName,
+      parentGroupId = command.parentGroupId)
+
+    groupRepository.insertGroup(newGroup)
     return true
   }
 
+  @GraphQLApi
   fun updateGroup(command: UpdateGroupCommand, environment: DataFetchingEnvironment): Boolean {
     // TODO 現行グループIDチェック
     val resolvedGenerationId = command.targetGenerationId ?: environment.currentGroupGenerationId()
@@ -230,6 +266,7 @@ class GroupApi(private val groupRepository: GroupRepository,
     return true
   }
 
+  @GraphQLApi
   fun deleteGroup(command: DeleteGroupCommand, environment: DataFetchingEnvironment): Boolean {
     // TODO 現行グループIDチェック
     val resolvedGenerationId = command.targetGenerationId ?: environment.currentGroupGenerationId()
@@ -237,14 +274,17 @@ class GroupApi(private val groupRepository: GroupRepository,
     return true
   }
 
+  @GraphQLApi
   fun groupMembers(groupId: UUID, groupGenerationId: Int?, environment: DataFetchingEnvironment): List<User> {
     return userRepository.selectMemberByGroupTransitionId(groupId, groupGenerationId)
   }
 
+  @GraphQLApi
   fun groupAppendableMembers(groupId: UUID, groupGenerationId: Int?, environment: DataFetchingEnvironment): List<User> {
     return userRepository.selectAppendableMemberByGroupTransitionId(groupId, groupGenerationId)
   }
 
+  @GraphQLApi
   fun addGroupMember(command: GroupMemberCommand, environment: DataFetchingEnvironment): Boolean {
     // TODO 現行グループIDチェック
 
@@ -261,6 +301,7 @@ class GroupApi(private val groupRepository: GroupRepository,
     return true
   }
 
+  @GraphQLApi
   fun updateGroupMember(command: GroupMemberCommand, environment: DataFetchingEnvironment): Boolean {
     // TODO 現行グループIDチェック
 
@@ -277,6 +318,7 @@ class GroupApi(private val groupRepository: GroupRepository,
     return true
   }
 
+  @GraphQLApi
   fun deleteGroupMember(command: DeleteGroupMemberCommand, environment: DataFetchingEnvironment): Boolean {
     // TODO 現行グループIDチェック
 
@@ -291,7 +333,7 @@ class GroupApi(private val groupRepository: GroupRepository,
 }
 
 @Component
-class GroupWithPathResolver(val authorityRepository: GroupAuthorityRepository) : GraphQLResolver<GroupWithPath> {
+class GroupWithPathResolver : GraphQLResolver<GroupWithPath> {
   fun memberCount(group: GroupWithPath, environment: DataFetchingEnvironment): CompletableFuture<Int> {
     val loader = environment.dataLoader(GroupApi.GroupMemberCountLoader::class)
     return loader.load(group)

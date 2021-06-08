@@ -31,10 +31,12 @@ query forAddMember($groupId: ID!) {
 
 query forStudyList {
   studiesByUser {
-    ...study
-  }
-  notStartStudyByUser {
-    ...lessonByUser
+    ... on Study {
+      ...study
+    }
+    ... on NotStartStudy {
+      ...notStartStudy
+    }
   }
 }
 
@@ -43,13 +45,15 @@ query forLessonStudentList($lessonId: ID!) {
     ...lesson
   }
   lessonStudies(lessonId: $lessonId) {
-    ...study
     user {
       ...user
     }
-  }
-  notStartLessonStudies(lessonId: $lessonId) {
-    ...user
+    ... on Study {
+      ...study
+    }
+    ... on NotStartStudy {
+      ...notStartStudy
+    }
   }
 }
 

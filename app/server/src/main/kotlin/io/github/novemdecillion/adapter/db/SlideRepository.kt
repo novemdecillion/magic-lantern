@@ -3,10 +3,10 @@ package io.github.novemdecillion.adapter.db
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import io.github.novemdecillion.adapter.web.AppSlideProperties
-import io.github.novemdecillion.adapter.web.SlideShowController
 import io.github.novemdecillion.domain.*
 import net.lingala.zip4j.ZipFile
 import org.asciidoctor.Asciidoctor
+import org.asciidoctor.Options
 import org.springframework.dao.DuplicateKeyException
 import org.springframework.dao.NonTransientDataAccessResourceException
 import org.springframework.stereotype.Repository
@@ -20,7 +20,7 @@ import java.nio.file.Paths
 import java.util.stream.Collectors
 
 @Repository
-class SlideRepository(/*private val dslContext: DSLContext,*/ private val appSlideProperties: AppSlideProperties) {
+class SlideRepository(private val appSlideProperties: AppSlideProperties) {
   companion object {
     val asciiDoctor: Asciidoctor = Asciidoctor.Factory.create()
     val yamlMapper: ObjectMapper = ObjectMapper(YAMLFactory()).findAndRegisterModules()
@@ -162,7 +162,7 @@ class SlideRepository(/*private val dslContext: DSLContext,*/ private val appSli
 
   fun convertText(text: String, textType: TextType?): String {
     return when (textType) {
-      TextType.AsciiDoc -> asciiDoctor.convert(text, mapOf())
+      TextType.AsciiDoc -> asciiDoctor.convert(text, Options.builder().build())
       else -> text
     }
   }
@@ -172,7 +172,7 @@ class SlideRepository(/*private val dslContext: DSLContext,*/ private val appSli
       return text
     }
     return when (textType) {
-      TextType.AsciiDoc -> asciiDoctor.convert(text, mapOf())
+      TextType.AsciiDoc -> asciiDoctor.convert(text, Options.builder().build())
       else -> text
     }
   }

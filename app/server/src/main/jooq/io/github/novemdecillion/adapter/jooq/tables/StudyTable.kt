@@ -21,7 +21,7 @@ import org.jooq.ForeignKey
 import org.jooq.JSONB
 import org.jooq.Name
 import org.jooq.Record
-import org.jooq.Row10
+import org.jooq.Row11
 import org.jooq.Schema
 import org.jooq.Table
 import org.jooq.TableField
@@ -108,6 +108,11 @@ open class StudyTable(
     val SCORE: TableField<StudyRecord, JSONB?> = createField(DSL.name("score"), SQLDataType.JSONB, this, "")
 
     /**
+     * The column <code>study.shuffled_question</code>.
+     */
+    val SHUFFLED_QUESTION: TableField<StudyRecord, JSONB?> = createField(DSL.name("shuffled_question"), SQLDataType.JSONB, this, "")
+
+    /**
      * The column <code>study.start_at</code>.
      */
     val START_AT: TableField<StudyRecord, OffsetDateTime?> = createField(DSL.name("start_at"), SQLDataType.TIMESTAMPWITHTIMEZONE(6), this, "")
@@ -162,7 +167,7 @@ open class StudyTable(
     override fun rename(name: Name): StudyTable = StudyTable(name, null)
 
     // -------------------------------------------------------------------------
-    // Row10 type methods
+    // Row11 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row10<UUID?, UUID?, String?, StudyStatus?, JSONB?, Int?, JSONB?, JSONB?, OffsetDateTime?, OffsetDateTime?> = super.fieldsRow() as Row10<UUID?, UUID?, String?, StudyStatus?, JSONB?, Int?, JSONB?, JSONB?, OffsetDateTime?, OffsetDateTime?>
+    override fun fieldsRow(): Row11<UUID?, UUID?, String?, StudyStatus?, JSONB?, Int?, JSONB?, JSONB?, JSONB?, OffsetDateTime?, OffsetDateTime?> = super.fieldsRow() as Row11<UUID?, UUID?, String?, StudyStatus?, JSONB?, Int?, JSONB?, JSONB?, JSONB?, OffsetDateTime?, OffsetDateTime?>
 }

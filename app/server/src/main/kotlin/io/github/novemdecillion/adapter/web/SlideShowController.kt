@@ -135,16 +135,18 @@ class SlideShowController(
 
     val slide = slideRepository.loadSlide(study.slideId) ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
 
+    if ((slideProgress.studyId != studyId) || (slideProgress.slideId != slide.slideId)) {
+      slideProgress.update(studyId, study.slideId, 0)
+    }
+
     val (chapter, pageIndexInChapter) = if (requestChapterIndex == null) {
       slide.config.chapterAndPageIndex(slideProgress.pageIndex)
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     } else {
+      slideProgress.pageIndex = slide.config.chapterStartPageIndex(requestChapterIndex)
       IndexedValue(requestChapterIndex, slide.config.chapters[requestChapterIndex]) to 0
     }
 
-    if ((slideProgress.studyId != studyId) || (slideProgress.slideId != slide.slideId)) {
-      slideProgress.update(studyId, study.slideId, 0)
-    }
     return callback(study, slide, chapter.value, chapter.index, pageIndexInChapter)
   }
 }

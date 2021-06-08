@@ -28,7 +28,7 @@ export class SlideshowComponent implements OnInit {
   }
 
   onPrev() {
-    this.postFromViewer(`${this.viewer.nativeElement.contentWindow?.location.href}?action=PREV`)
+    this.postFromViewer(`${this.currentLocation()}?action=PREV`)
   }
 
   onNext() {
@@ -36,8 +36,12 @@ export class SlideshowComponent implements OnInit {
     if (submitElement) {
       submitElement.click();
     } else {
-      this.postFromViewer(`${this.viewer.nativeElement.contentWindow?.location.href}?action=NEXT`);
+      this.postFromViewer(`${this.currentLocation()}?action=NEXT`);
     }
+  }
+
+  currentLocation() {
+    return this.viewer.nativeElement.contentWindow?.location.href.split('?')[0]
   }
 
   postFromViewer(url: string) {
@@ -55,7 +59,7 @@ export class SlideshowComponent implements OnInit {
   onLoaded() {
     this.isLoading = false;
 
-    let url = this.viewer.nativeElement.contentWindow?.location.href;
+    let url = this.currentLocation();
     if (url) {
       if (url == 'about:blank') {
         // 何もしない

@@ -276,7 +276,7 @@ data class SlideConfig(
    */
   fun numberOfPages(): Int {
     return chapters
-      .sumBy { it.numberOfPages }
+      .sumOf{ it.numberOfPages }
   }
 
   fun chapterAndPageIndex(pageIndex: Int): Pair<IndexedValue<IChapter>, Int>? {
@@ -288,13 +288,17 @@ data class SlideConfig(
       }
   }
 
+  fun chapterStartPageIndex(chapterIndex: Int): Int {
+    return chapterPageRange[chapterIndex].first.first
+  }
+
   /**
    * 満点
    */
   fun perfectScore(): Int {
     return chapters
       .filterIsInstance(ExamChapter::class.java)
-      .sumBy { examChapter ->
+      .sumOf { examChapter ->
         examChapter.questions.sumBy { it.score }
       }
   }

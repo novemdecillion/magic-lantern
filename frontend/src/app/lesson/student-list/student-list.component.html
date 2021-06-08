@@ -5,8 +5,8 @@
   </ng-template>
 
   <app-list [dataLoad]="dataLoad">
-    <app-list-column name="userName" headerName="氏名">
-    </app-list-column>
+    <app-list-column name="userName" headerName="氏名"></app-list-column>
+    <app-list-column name="email" headerName="メールアドレス"></app-list-column>
     <app-list-column name="status" headerName="状況">
       <ng-template listCell let-row="row">
         <a *ngIf="row.status!='未着手'" routerLink="/lesson/status/{{row.studyId}}">{{ row.status }}</a>

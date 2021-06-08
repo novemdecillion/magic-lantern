@@ -17,52 +17,19 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
 
     const val USER_ID_COL = 0
     const val USER_NAME_COL = 1
-    const val USER_REALM_COL = 2
+    const val USER_EMAIL_COL = 2
     const val GROUP_START_COL = 3
 
     const val GROUP_HIERARCHY_HEADER = "グループ階層"
     const val GROUP_ID_HEADER = "グループID"
     const val USER_ID_HEADER = "ユーザID"
     const val USER_NAME_HEADER = "ユーザ名"
-    const val USER_REALM_HEADER = "認証サーバ"
-  }
-  fun listGroups() {
-    TODO()
-  }
-
-  fun addGroups() {
-    TODO()
-  }
-
-  fun updateGroups() {
-    TODO()
-  }
-
-  fun deleteGroups() {
-    TODO()
-  }
-
-
-
-  fun listGroupMembers() {
-    TODO()
-  }
-
-  fun addGroupMembers() {
-    TODO()
-  }
-
-  fun updateGroupMembers() {
-    TODO()
-  }
-
-  fun deleteGroupMembers() {
-    TODO()
+    const val USER_EMAIL_HEADER = "メールアドレス"
   }
 
   class GroupNode(group: IGroup, var layer: Int = 0, val children: MutableList<GroupNode> = mutableListOf()): IGroup by group
 
-  fun exportGroupGeneration(groups: Collection<IGroup>, realmIdToNameMap: Map<String, String>, memberSupplier: (groupId: UUID, groupGenerationId: Int)->Collection<User>): Workbook {
+  fun exportGroupGeneration(groups: Collection<IGroup>, memberSupplier: (groupId: UUID, groupGenerationId: Int)->Collection<User>): Workbook {
     require(groups.isNotEmpty()) { "グループは1件以上存在する筈" }
 
     val workbook = WorkbookFactory.create(true)
@@ -118,14 +85,14 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
       }
     userHeaderRow.createCell(USER_ID_COL).styleAndValue(USER_ID_HEADER, userHeaderStyle)
     userHeaderRow.createCell(USER_NAME_COL).styleAndValue(USER_NAME_HEADER, userHeaderStyle)
-    userHeaderRow.createCell(USER_REALM_COL).styleAndValue(USER_REALM_HEADER, userHeaderStyle)
+    userHeaderRow.createCell(USER_EMAIL_COL).styleAndValue(USER_EMAIL_HEADER, userHeaderStyle)
 
     val userIdToRowMap = memberSupplier(ROOT_GROUP_ID, ROOT_GROUP_GENERATION_ID)
       .mapIndexed { index, user ->
         val userRow = sheet.createRow(userStartRowNum + index)
         userRow.createCell(USER_ID_COL).setCellValue(user.userId.toString())
         userRow.createCell(USER_NAME_COL).setCellValue(user.userName)
-        userRow.createCell(USER_REALM_COL).setCellValue(realmIdToNameMap[user.realmId])
+        userRow.createCell(USER_EMAIL_COL).setCellValue(user.email)
 
         // ルートグループの権限出力
         val roleNames = user.authorities.firstOrNull { it.groupId == ROOT_GROUP_ID }?.roleNames()
@@ -170,7 +137,7 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
 
   class ImportGroup(group: Group, var layer: Int = 0): IGroup by group
 
-  fun importGroupGeneration(groupGenerationId: Int, workbook: Workbook, realmNameToIdMap: Map<String, String>,
+  fun importGroupGeneration(groupGenerationId: Int, workbook: Workbook,
                             groupConsumer: (groups: Collection<IGroup>, groupGenerationId: Int)->Unit,
                             userAuthoritiesConsumer: (userId: UUID, authorities: Collection<Authority>)->Unit,
                             warningConsumer: (message: String)->Unit,

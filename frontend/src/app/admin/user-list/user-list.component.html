@@ -17,6 +17,7 @@
         <a style="cursor: pointer;" (click)="onEditUser(row)">{{ row.userName }}</a>
       </ng-template>
     </app-list-column>
+    <app-list-column name="email" headerName="メールアドレス"></app-list-column>
     <app-list-column name="realmName" headerName="認証サーバ"></app-list-column>
     <app-list-column name="isAdmin" headerName="システム権限"></app-list-column>
     <app-list-column name="isGroupManager" headerName="グループ権限"></app-list-column>

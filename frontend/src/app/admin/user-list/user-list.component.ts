@@ -90,7 +90,7 @@ export class UserListComponent implements OnInit {
   }
 
   onAddUser() {
-    this.dialog.open(EditUserComponent)
+    this.dialog.open(EditUserComponent, { width: '500px'})
       .afterClosed()
       .subscribe(res => {
         if (res) {
@@ -100,7 +100,7 @@ export class UserListComponent implements OnInit {
   }
 
   onEditUser(row: UserRecord) {
-    this.dialog.open(EditUserComponent, { data: row})
+    this.dialog.open(EditUserComponent, { data: row , width: '500px'})
       .afterClosed().subscribe(res => {
         if (res) {
           this.onLoadData();

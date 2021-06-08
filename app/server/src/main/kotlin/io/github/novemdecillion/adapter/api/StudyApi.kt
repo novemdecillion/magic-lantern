@@ -37,7 +37,6 @@ class StudyApi(private val studyRepository: StudyRepository, private val idGener
       studyId = idGeneratorService.generate(),
       slideId = slideId,
       userId = userId,
-      startAt = OffsetDateTime.now(),
       status = StudyStatus.ON_GOING
     )
     studyRepository.insert(startStudy)

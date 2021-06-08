@@ -99,12 +99,31 @@ data class Study(
   }
 
   fun updateStatus(): Study {
-    val updatedStatus = when {
-      (startAt != null) -> StudyStatus.ON_GOING
-      (endAt != null) || (progressRate == 100) -> if (isPass()) StudyStatus.PASS else StudyStatus.FAILED
-      else -> status
+    var updatedStartAt: OffsetDateTime? = startAt
+    var updatedEndAt: OffsetDateTime? = endAt
+
+    val updatedStatus = when(status) {
+      StudyStatus.NOT_START -> if (0 < progressRate) {
+        if ( updatedStartAt == null ) {
+          updatedStartAt = OffsetDateTime.now()
+        }
+        StudyStatus.ON_GOING
+      } else status
+
+      StudyStatus.ON_GOING ->if (progressRate == 100) {
+        updatedEndAt = OffsetDateTime.now()
+        if (isPass()) StudyStatus.PASS else StudyStatus.FAILED
+      } else status
+
+      else -> {
+        val recheckedStatus = if (isPass()) StudyStatus.PASS else StudyStatus.FAILED
+        if (recheckedStatus != status) {
+          updatedEndAt = OffsetDateTime.now()
+        }
+        recheckedStatus
+      }
     }
-    return this.copy(status = updatedStatus)
+    return this.copy(status = updatedStatus, startAt = updatedStartAt, endAt = updatedEndAt)
   }
 
   fun answerForExam(chapterIndex: Int): Map<Int, List<Int>> {

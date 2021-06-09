@@ -68,4 +68,5 @@ type Mutation {
   deleteLesson(lessonId: ID!): Boolean
 
   startStudy(slideId: ID!): ID!
+  changeStudyStatus(command: ChangeStudyStatus!): Boolean
 }

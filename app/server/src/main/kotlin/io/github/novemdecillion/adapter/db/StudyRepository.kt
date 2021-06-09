@@ -41,11 +41,11 @@ class StudyRepository(
     record.studyId = study.studyId
     record.accountId = study.userId
     record.slideId = study.slideId
-    record.progress = objectMapper.writeValueAsJsonb(study.progress.ifEmpty { null })
+    objectMapper.writeValueAsJsonb(study.progress.ifEmpty { null })?.also { record.progress = it }
     record.progressRate = study.progressRate
-    record.answer = objectMapper.writeValueAsJsonb(study.answer.ifEmpty { null })
-    record.score = objectMapper.writeValueAsJsonb(study.score.ifEmpty { null })
-    record.shuffledQuestion = objectMapper.writeValueAsJsonb(study.shuffledQuestion.ifEmpty { null })
+    objectMapper.writeValueAsJsonb(study.answer.ifEmpty { null })?.also { record.answer = it }
+    objectMapper.writeValueAsJsonb(study.score.ifEmpty { null })?.also { record.score = it }
+    objectMapper.writeValueAsJsonb(study.shuffledQuestion.ifEmpty { null })?.also { record.shuffledQuestion = it }
     record.status = study.status
     study.startAt?.also { record.startAt = it }
     study.endAt?.also { record.endAt = it }
@@ -60,8 +60,31 @@ class StudyRepository(
     dslContext.executeUpdate(recordMapper(study))
   }
 
+  fun updateStatus(studyId: UUID, userId: UUID, status: StudyStatus): Int {
+    return dslContext.update(STUDY)
+      .set(STUDY.STATUS, status)
+      .where(STUDY.STUDY_ID.equal(studyId).and(STUDY.ACCOUNT_ID.equal(userId)))
+      .execute()
+  }
+
+  fun saveStatus(study: Study): Int {
+    val record = recordMapper(study)
+    return dslContext.insertInto(STUDY).set(record)
+      .onConflict(STUDY.SLIDE_ID, STUDY.ACCOUNT_ID)
+      .doUpdate().set(STUDY.STATUS, study.status)
+      .execute()
+  }
+
   fun delete(studyId: UUID): Int {
     return dslContext.deleteFrom(STUDY).where(STUDY.STUDY_ID.equal(studyId)).execute()
+  }
+
+  fun deleteBySlideIdAndUserId(slideId: String, userId: UUID): Int {
+    return dslContext
+      .deleteFrom(STUDY)
+      .where(STUDY.SLIDE_ID.equal(slideId)
+        .and(STUDY.ACCOUNT_ID.equal(userId)))
+      .execute()
   }
 
   fun selectById(studyId: UUID): Study? {
@@ -70,9 +93,14 @@ class StudyRepository(
       .fetchOne(::recordMapper)
   }
 
-  fun selectByUserId(userId: UUID): List<Study> {
+  fun selectByUserIdAndExcludeStatus(userId: UUID, excludeStatus: StudyStatus? = null): List<Study> {
     return dslContext.selectFrom(STUDY)
-      .where(STUDY.ACCOUNT_ID.equal(userId))
+      .where(STUDY.ACCOUNT_ID.equal(userId)
+        .let {
+          if (excludeStatus != null) {
+            it.and(STUDY.STATUS.notEqual(excludeStatus))
+          } else it
+        })
       .fetch(::recordMapper)
   }
 
@@ -87,6 +115,16 @@ class StudyRepository(
           )
       .fetchInto(StudyRecord::class.java)
       .map {
+        recordMapper(it)
+      }
+  }
+
+  fun selectBySlideIdAndUserId(slideId: String, userId: UUID): Study? {
+    return dslContext
+      .selectFrom(STUDY)
+      .where(STUDY.SLIDE_ID.equal(slideId)
+        .and(STUDY.ACCOUNT_ID.equal(userId)))
+      .fetchOne {
         recordMapper(it)
       }
   }

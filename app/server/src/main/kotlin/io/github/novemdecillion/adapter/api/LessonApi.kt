@@ -67,7 +67,7 @@ class LessonApi(private val lessonRepository: LessonRepository,
   }
 }
 
-data class LessonStatistics(val onGoingCount: Int, val passCount: Int, val failCount: Int)
+data class LessonStatistics(val onGoingCount: Int, val passCount: Int, val failCount: Int, val excludedCount: Int)
 
 
 @Component
@@ -88,16 +88,18 @@ class LessonWithGroupResolver(val studyRepository: StudyRepository) : GraphQLRes
         var onGoingCount = 0
         var passCount = 0
         var failCount = 0
+        var excludedCount = 0
         studies
           .forEach {
             when(it.status) {
               ON_GOING -> onGoingCount++
               PASS -> passCount++
               FAILED -> failCount++
+              EXCLUDED -> excludedCount++
               NOT_START -> { /* 何もしない */ }
             }
           }
-        LessonStatistics(onGoingCount, passCount, failCount)
+        LessonStatistics(onGoingCount, passCount, failCount, excludedCount)
       }
     return CompletableFuture.completedFuture(lessonStatistics)
   }

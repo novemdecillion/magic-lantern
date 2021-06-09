@@ -133,6 +133,7 @@ export type Mutation = {
   addLesson?: Maybe<Scalars['Boolean']>;
   deleteLesson?: Maybe<Scalars['Boolean']>;
   startStudy: Scalars['ID'];
+  changeStudyStatus?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -246,6 +247,11 @@ export type MutationStartStudyArgs = {
   slideId: Scalars['ID'];
 };
 
+
+export type MutationChangeStudyStatusArgs = {
+  command: ChangeStudyStatus;
+};
+
 export type Member = {
   __typename?: 'Member';
   userId: Scalars['ID'];
@@ -336,6 +342,7 @@ export type LessonStatistics = {
   onGoingCount: Scalars['Int'];
   passCount: Scalars['Int'];
   failCount: Scalars['Int'];
+  excludedCount: Scalars['Int'];
 };
 
 export type Lesson = {
@@ -502,7 +509,8 @@ export enum StudyStatus {
   NotStart = 'NOT_START',
   OnGoing = 'ON_GOING',
   Pass = 'PASS',
-  Failed = 'FAILED'
+  Failed = 'FAILED',
+  Excluded = 'EXCLUDED'
 }
 
 export type StudyQuestionRecord = {
@@ -567,6 +575,13 @@ export type Study = INotStartStudy & {
   endAt?: Maybe<Scalars['DateTime']>;
   user: User;
   slide: Slide;
+};
+
+export type ChangeStudyStatus = {
+  userId: Scalars['ID'];
+  slideId: Scalars['ID'];
+  studyId?: Maybe<Scalars['ID']>;
+  status: StudyStatus;
 };
 
 export type ForMemberListQueryVariables = Exact<{
@@ -874,7 +889,7 @@ export type LessonWithStatisticsFragment = (
   & Pick<Lesson, 'studentCount'>
   & { statistics: (
     { __typename?: 'LessonStatistics' }
-    & Pick<LessonStatistics, 'onGoingCount' | 'passCount' | 'failCount'>
+    & Pick<LessonStatistics, 'onGoingCount' | 'passCount' | 'failCount' | 'excludedCount'>
   ) }
   & LessonFragment
 );
@@ -1249,6 +1264,16 @@ export type StartStadyMutation = (
   & Pick<Mutation, 'startStudy'>
 );
 
+export type ChangeStudyStatusMutationVariables = Exact<{
+  command: ChangeStudyStatus;
+}>;
+
+
+export type ChangeStudyStatusMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'changeStudyStatus'>
+);
+
 export const GroupCoreFragmentDoc = gql`
     fragment groupCore on GroupCore {
   groupId
@@ -1324,6 +1349,7 @@ export const LessonWithStatisticsFragmentDoc = gql`
     onGoingCount
     passCount
     failCount
+    excludedCount
   }
 }
     ${LessonFragmentDoc}`;
@@ -2229,6 +2255,22 @@ export const StartStadyDocument = gql`
   })
   export class StartStadyGQL extends Apollo.Mutation<StartStadyMutation, StartStadyMutationVariables> {
     document = StartStadyDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const ChangeStudyStatusDocument = gql`
+    mutation changeStudyStatus($command: ChangeStudyStatus!) {
+  changeStudyStatus(command: $command)
+}
+    `;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class ChangeStudyStatusGQL extends Apollo.Mutation<ChangeStudyStatusMutation, ChangeStudyStatusMutationVariables> {
+    document = ChangeStudyStatusDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

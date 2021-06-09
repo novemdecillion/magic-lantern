@@ -9,12 +9,18 @@ import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.domain.*
 import io.github.novemdecillion.domain.Slide
 import org.springframework.stereotype.Component
-import java.time.OffsetDateTime
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
 @Component
 class StudyApi(private val studyRepository: StudyRepository, private val idGeneratorService: IdGeneratorService): GraphQLQueryResolver, GraphQLMutationResolver {
+  data class ChangeStudyStatus (
+    val userId: UUID,
+    val slideId: String,
+    val studyId: UUID?,
+    val status: StudyStatus
+  )
+
   @GraphQLApi
   fun study(studyId: UUID, environment: DataFetchingEnvironment): Study? {
     // TODO API権限チェック
@@ -25,7 +31,7 @@ class StudyApi(private val studyRepository: StudyRepository, private val idGener
   fun studiesByUser(environment: DataFetchingEnvironment): List<INotStartStudy> {
     val userId = environment.currentUser().userId
     val list = mutableListOf<INotStartStudy>()
-    list.addAll(studyRepository.selectByUserId(userId))
+    list.addAll(studyRepository.selectByUserIdAndExcludeStatus(userId, StudyStatus.EXCLUDED))
     list.addAll(studyRepository.selectNotStartStudyByUserId(userId))
     return list
   }
@@ -41,6 +47,28 @@ class StudyApi(private val studyRepository: StudyRepository, private val idGener
     )
     studyRepository.insert(startStudy)
     return startStudy.studyId
+  }
+
+  @GraphQLApi
+  fun changeStudyStatus(command: ChangeStudyStatus, environment: DataFetchingEnvironment): Boolean {
+    require((command.status == StudyStatus.NOT_START) || (command.status == StudyStatus.EXCLUDED))
+
+    when (command.status) {
+      StudyStatus.NOT_START -> studyRepository.deleteBySlideIdAndUserId(command.slideId, command.userId)
+      StudyStatus.EXCLUDED ->
+        if (command.studyId == null) {
+          val startStudy = Study(
+            studyId = idGeneratorService.generate(),
+            slideId = command.slideId,
+            userId = command.userId,
+            status = command.status
+          )
+          studyRepository.saveStatus(startStudy)
+        } else {
+          studyRepository.updateStatus(command.studyId, command.userId, command.status)
+        }
+    }
+    return true
   }
 }
 

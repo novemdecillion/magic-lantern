@@ -9,10 +9,23 @@
     <app-list-column name="email" headerName="メールアドレス"></app-list-column>
     <app-list-column name="status" headerName="状況">
       <ng-template listCell let-row="row">
-        <a *ngIf="row.status!='未着手'" routerLink="/lesson/status/{{row.studyId}}">{{ row.status }}</a>
-        <span *ngIf="row.status=='未着手'">{{row.status}}</span>
+        <a *ngIf="isShowStudentStatusLink(row)" routerLink="/lesson/status/{{row.studyId}}">{{ row.status }}</a>
+        <span *ngIf="!isShowStudentStatusLink(row)">{{row.status}}</span>
       </ng-template>
     </app-list-column>
+
+    <app-list-column name="operation" [sort]="false">
+      <ng-template listCell let-row="row">
+        <button mat-icon-button [matMenuTriggerFor]="menu">
+          <span class="mdi mdi-dots-vertical"></span>
+        </button>
+        <mat-menu #menu="matMenu">
+          <button *ngIf="canChangeNotStart(row)" mat-menu-item (click)="onChangeNotStart(row)">未着手にする</button>
+          <button *ngIf="canChangeExcluded(row)" mat-menu-item (click)="onChangeExcluded(row)">対象外にする</button>
+        </mat-menu>
+      </ng-template>
+    </app-list-column>
+
   </app-list>
 
 </app-page>

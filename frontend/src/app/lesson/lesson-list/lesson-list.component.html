@@ -30,7 +30,7 @@
     </app-list-column>
     <app-list-column name="notStartCount" headerName="未着手数">
       <ng-template listCell let-row="row">
-        {{row.studentCount - row.statistics.onGoingCount - row.statistics.passCount - row.statistics.failCount}}
+        {{row.studentCount - row.statistics.onGoingCount - row.statistics.passCount - row.statistics.failCount - row.statistics.excludedCount}}
       </ng-template>
     </app-list-column>
     <app-list-column name="onGoingCount" headerName="実施中数">
@@ -38,14 +38,20 @@
         {{row.statistics.onGoingCount}}
       </ng-template>
     </app-list-column>
-    <app-list-column name="passCount" headerName="合格者数">
+    <app-list-column name="passCount" headerName="合格数">
       <ng-template listCell let-row="row">
         {{row.statistics.passCount}}
       </ng-template>
     </app-list-column>
-    <app-list-column name="failCount" headerName="不合格者数">
+    <app-list-column name="failCount" headerName="不合格数">
       <ng-template listCell let-row="row">
         {{row.statistics.failCount}}
+      </ng-template>
+    </app-list-column>
+
+    <app-list-column name="excludedCount" headerName="対象外数">
+      <ng-template listCell let-row="row">
+        {{row.statistics.excludedCount}}
       </ng-template>
     </app-list-column>
 

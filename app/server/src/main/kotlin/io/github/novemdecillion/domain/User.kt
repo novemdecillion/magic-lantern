@@ -31,7 +31,8 @@ enum class StudyStatus {
   NOT_START,
   ON_GOING,
   PASS,
-  FAILED
+  FAILED,
+  EXCLUDED
 }
 
 interface INotStartStudy {

@@ -83,6 +83,7 @@ type LessonStatistics {
   onGoingCount: Int!
   passCount: Int!
   failCount: Int!
+  excludedCount: Int!
 }
 
 type Lesson {

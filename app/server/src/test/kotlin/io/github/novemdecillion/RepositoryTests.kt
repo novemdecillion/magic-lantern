@@ -138,7 +138,7 @@ class RepositoryTests(
   @Test
   fun `StudyRepository正常系`() {
 
-    studyRepository.selectByUserId(STUDENT_A_USER_ID)
+    studyRepository.selectByUserIdAndExcludeStatus(STUDENT_A_USER_ID)
       .also {
         Assertions.assertThat(it).hasSize(1)
       }
@@ -147,7 +147,7 @@ class RepositoryTests(
         Assertions.assertThat(it).hasSize(0)
       }
 
-    studyRepository.selectByUserId(STUDENT_B_USER_ID)
+    studyRepository.selectByUserIdAndExcludeStatus(STUDENT_B_USER_ID)
       .also {
         Assertions.assertThat(it).hasSize(0)
       }

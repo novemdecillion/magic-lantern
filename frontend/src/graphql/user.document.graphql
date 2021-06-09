@@ -140,3 +140,7 @@ mutation deleteUser($userId: ID!) {
 mutation startStady($slideId: ID!) {
   startStudy(slideId: $slideId)
 }
+
+mutation changeStudyStatus($command: ChangeStudyStatus!) {
+  changeStudyStatus(command: $command)
+}

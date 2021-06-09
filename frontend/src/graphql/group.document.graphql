@@ -111,6 +111,7 @@ fragment lessonWithStatistics on Lesson {
     onGoingCount
     passCount
     failCount
+    excludedCount
   }
 }
 

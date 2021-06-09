@@ -158,6 +158,8 @@ export function studyStatus(study: StudyFragment): string {
     case StudyStatus.Failed:
       let sumFailed = studyScore(study)
       return `不合格(得点:${sumFailed[0]}点 / 合格:${sumFailed[1]}点)`;
+    case StudyStatus.Excluded:
+      return '対象外';
   }
 }
 

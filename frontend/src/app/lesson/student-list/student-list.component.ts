@@ -7,6 +7,7 @@ import { studyStatus } from 'src/app/utilities';
 
 interface StudentRecord {
   userName: string;
+  email?: string;
   status: string;
   studyId?: string;
 }
@@ -51,12 +52,14 @@ export class StudentListComponent implements OnInit {
               if (study.__typename == 'Study') {
                 records.push({
                   userName: study.user.userName,
+                  email: study.user.email ?? undefined,
                   status: studyStatus(study),
                   studyId: study.studyId
                 })
               } else {
                 records.push({
                   userName: study.user.userName,
+                  email: study.user.email ?? undefined,
                   status: '未着手'
                 })
               }

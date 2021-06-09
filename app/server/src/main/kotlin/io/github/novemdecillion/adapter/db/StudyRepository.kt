@@ -82,7 +82,8 @@ class StudyRepository(
         .innerJoin(LESSON).on(LESSON.LESSON_ID.equal(lessonId).and(LESSON.SLIDE_ID.equal(STUDY.SLIDE_ID)))
         .innerJoin(CURRENT_ACCOUNT_GROUP_AUTHORITY)
           .on(LESSON.GROUP_TRANSITION_ID.equal(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID)
-              .and(DSL.jsonbExists(CURRENT_ACCOUNT_GROUP_AUTHORITY.ROLE,"""$ ? (@ == "${Role.STUDY.name}")"""))
+            .and(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID.equal(STUDY.ACCOUNT_ID))
+            .and(DSL.jsonbExists(CURRENT_ACCOUNT_GROUP_AUTHORITY.ROLE,"""$ ? (@ == "${Role.STUDY.name}")"""))
           )
       .fetchInto(StudyRecord::class.java)
       .map {

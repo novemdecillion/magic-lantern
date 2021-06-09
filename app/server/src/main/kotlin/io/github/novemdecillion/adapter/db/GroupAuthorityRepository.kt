@@ -111,20 +111,34 @@ class GroupAuthorityRepository(
       }).execute()
   }
 
-  fun updateAuthorities(authorities: Collection<Pair<UUID, Collection<Authority>>>) {
-    dslContext.batchUpdate(authorities
-      .flatMap { userIdToAuthority ->
-        userIdToAuthority.second.map { authority ->
-          AccountGroupAuthorityRecord(
-            userIdToAuthority.first,
-            authority.groupId,
-            authority.groupGenerationInt,
-            rolesToJsonb(authority.roles)
-          )
-
-        }
-      }).execute()
+  fun updateAuthorities(userIds: Collection<UUID>, groupTransitionId: UUID, groupGenerationId: Int, setRoles: Collection<Role>) {
+    dslContext.update(ACCOUNT_GROUP_AUTHORITY)
+      .set(ACCOUNT_GROUP_AUTHORITY.ROLE, rolesToJsonb(setRoles))
+      .where(ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID.`in`(userIds)
+        .and(ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(groupTransitionId))
+        .and(ACCOUNT_GROUP_AUTHORITY.GROUP_GENERATION_ID.equal(groupGenerationId)))
+      .execute()
   }
+
+  fun updateAuthorities(userIds: Collection<UUID>, groupTransitionId: UUID, groupGenerationId: Int, removeRoles: Collection<Role>, addRoles: Collection<Role>) {
+    var updateFieldStatement = ACCOUNT_GROUP_AUTHORITY.ROLE.name
+    removeRoles
+      .forEach {
+        updateFieldStatement += "- '$it'"
+
+      }
+    if (addRoles.isNotEmpty()) {
+      updateFieldStatement += addRoles.map { """ "$it" """ }.joinToString(prefix = " || '[", postfix = "]'")
+    }
+
+    dslContext.update(ACCOUNT_GROUP_AUTHORITY)
+      .set(ACCOUNT_GROUP_AUTHORITY.ROLE, DSL.field(updateFieldStatement, JSONB::class.java))
+      .where(ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID.`in`(userIds)
+        .and(ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(groupTransitionId))
+        .and(ACCOUNT_GROUP_AUTHORITY.GROUP_GENERATION_ID.equal(groupGenerationId)))
+      .execute()
+  }
+
 
   fun updateAuthority(userId: UUID, authority: Authority) {
     dslContext.update(ACCOUNT_GROUP_AUTHORITY)

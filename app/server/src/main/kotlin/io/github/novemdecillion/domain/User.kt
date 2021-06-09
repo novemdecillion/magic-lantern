@@ -53,11 +53,11 @@ data class Study(
   override val userId: UUID,
   override val slideId: String,
   override val status: StudyStatus = StudyStatus.NOT_START,
-  val progress: Map<Int, Set<Int>> = mapOf(),
+  val progress: Map<Int, Set<Int>> = emptyMap(),
   val progressRate: Int = 0,
-  val answer: Map<Int, Map<Int, List<String>>> = mapOf(),
-  val score: Map<Int, ExamChapterRecord> = mapOf(),
-  val shuffledQuestion: Map<Int, List<Pair<Int, List<Int>>>> = mapOf(),
+  val answer: Map<Int, Map<Int, List<String>>> = emptyMap(),
+  val score: Map<Int, ExamChapterRecord> = emptyMap(),
+  val shuffledQuestion: Map<Int, List<Pair<Int, List<Int>>>> = emptyMap(),
   val startAt: OffsetDateTime? = null,
   val endAt: OffsetDateTime? = null): INotStartStudy {
 
@@ -127,7 +127,7 @@ data class Study(
   }
 
   fun answerForExam(chapterIndex: Int): Map<Int, List<Int>> {
-    val chapterAnswer = answer[chapterIndex] ?: return mapOf()
+    val chapterAnswer = answer[chapterIndex] ?: return emptyMap()
     return chapterAnswer
       .map { (questionIndex, questionAnswers) ->
         questionIndex to questionAnswers.map { it.toInt() }

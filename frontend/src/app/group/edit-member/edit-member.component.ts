@@ -1,12 +1,14 @@
 import { Component, Inject, OnInit, ViewChild } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { Observable, of } from 'rxjs';
-import { map, share, tap } from 'rxjs/operators';
+import { map, share, tap, withLatestFrom } from 'rxjs/operators';
 import { DEFAULT_GROUP_ID } from 'src/app/constants';
 import { ListComponent } from 'src/app/share/list/list.component';
 import { RoleMap, createGroupName, createRoleName } from 'src/app/utilities';
 import { AddGroupMemberGQL, UpdateGroupMemberGQL, DeleteGroupMemberGQL, ForAddMemberGQL, ForEditMemberGQL, GroupFragment, Role } from 'src/generated/graphql';
 import { MemberRecord } from '../member-list/member-list.component';
+import { select, Store } from '@ngrx/store';
+import { State, AppActions, getUser } from 'src/app/root/store';
 
 type EditMemberRecord = MemberRecord & {
   selected?: boolean
@@ -30,6 +32,7 @@ export class EditMemberComponent implements OnInit {
   currentGenerationId!: number
 
   dataLoad: Observable<EditMemberRecord[]> | null = null;
+  currentUserId$ = this.store.pipe(select(getUser), map(user => user?.userId));
 
   roles: RoleMap<boolean> = {
     ADMIN: false,
@@ -41,6 +44,7 @@ export class EditMemberComponent implements OnInit {
   constructor(
     private dialogRef: MatDialogRef<EditMemberComponent>,
     @Inject(MAT_DIALOG_DATA) public command: EditMemberCommand,
+    private store: Store<State>,
     private forAddMemberGql: ForAddMemberGQL,
     private forEditMemberGql: ForEditMemberGQL,
     private addGroupMemberGql: AddGroupMemberGQL,
@@ -115,7 +119,13 @@ export class EditMemberComponent implements OnInit {
           groupId: this.command.groupId,
           userIds: selectedMemberIds,
           roles: memberRoles }})
-        .subscribe(_ => this.dialogRef.close(true))
+        .pipe(withLatestFrom(this.currentUserId$))
+        .subscribe(([res, currentUserId]) => {
+          if (selectedMemberIds.includes(currentUserId!!)) {
+            this.store.dispatch(AppActions.loadCurrentUser());
+          }
+          this.dialogRef.close(true);
+        });
         break;
       case 'delete':
         this.deleteGroupMemberGql.mutate({command: {

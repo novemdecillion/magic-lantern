@@ -112,7 +112,7 @@ export type QueryLessonStudiesArgs = {
 export type Mutation = {
   __typename?: 'Mutation';
   syncRealm?: Maybe<Scalars['Boolean']>;
-  addUser?: Maybe<AddUserResult>;
+  addUser?: Maybe<Scalars['Boolean']>;
   updateUser?: Maybe<UpdateUserResult>;
   changePassword?: Maybe<ChangePasswordResult>;
   deleteUser?: Maybe<Scalars['Boolean']>;
@@ -125,7 +125,7 @@ export type Mutation = {
   addGroupMember?: Maybe<Scalars['Boolean']>;
   updateGroupMember?: Maybe<Scalars['Boolean']>;
   deleteGroupMember?: Maybe<Scalars['Boolean']>;
-  switchGroupGeneration?: Maybe<Scalars['Boolean']>;
+  switchGroupGeneration?: Maybe<SwitchGroupGenerationResult>;
   importGroupGeneration?: Maybe<Scalars['Boolean']>;
   addSlide?: Maybe<Scalars['Boolean']>;
   deleteSlide?: Maybe<Scalars['Boolean']>;
@@ -314,6 +314,12 @@ export type SwitchGroupGenerationCommand = {
   nextGenerationId: Scalars['Int'];
 };
 
+export enum SwitchGroupGenerationResult {
+  Success = 'Success',
+  UnrecognizedGenerationChanged = 'UnrecognizedGenerationChanged',
+  UnknownError = 'UnknownError'
+}
+
 export type ImportGroupGenerationCommand = {
   groupGenerationId?: Maybe<Scalars['Int']>;
   generationFile: Scalars['Upload'];
@@ -449,16 +455,11 @@ export type AddUserCommand = {
   userName: Scalars['String'];
   password: Scalars['String'];
   email?: Maybe<Scalars['String']>;
-  enabled: Scalars['Boolean'];
-  isAdmin: Scalars['Boolean'];
-  isGroupManager: Scalars['Boolean'];
+  enabled?: Maybe<Scalars['Boolean']>;
+  isAdmin?: Maybe<Scalars['Boolean']>;
+  isGroup?: Maybe<Scalars['Boolean']>;
+  isSlide?: Maybe<Scalars['Boolean']>;
 };
-
-export enum AddUserResult {
-  Success = 'Success',
-  DuplicateAccountName = 'DuplicateAccountName',
-  UnknownError = 'UnknownError'
-}
 
 export type UpdateUserCommand = {
   userId: Scalars['ID'];
@@ -467,8 +468,9 @@ export type UpdateUserCommand = {
   password?: Maybe<Scalars['String']>;
   email?: Maybe<Scalars['String']>;
   enabled?: Maybe<Scalars['Boolean']>;
-  isAdmin: Scalars['Boolean'];
-  isGroupManager: Scalars['Boolean'];
+  isAdmin?: Maybe<Scalars['Boolean']>;
+  isGroup?: Maybe<Scalars['Boolean']>;
+  isSlide?: Maybe<Scalars['Boolean']>;
 };
 
 export enum UpdateUserResult {

@@ -1,9 +1,12 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { UserRecord } from '../user-list/user-list.component';
-import { AddUserGQL, UpdateUserGQL, AddUserResult, UpdateUserResult, AddUserCommand, UpdateUserCommand } from 'src/generated/graphql';
+import { AddUserGQL, UpdateUserGQL, AddUserCommand, UpdateUserCommand } from 'src/generated/graphql';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SYSTAEM_REALM_NAME } from 'src/app/constants';
+import { SYSTAEM_REALM_NAME, BUILT_IN_ADMIN_USER } from 'src/app/constants';
+import { errorMessageIfNeed } from 'src/app/utilities';
+import { Store } from '@ngrx/store';
+import { State, AppActions } from 'src/app/root/store';
 
 @Component({
   selector: 'app-edit-user',
@@ -24,6 +27,7 @@ export class EditUserComponent {
 
   constructor(private dialogRef: MatDialogRef<EditUserComponent>,
     @Inject(MAT_DIALOG_DATA) user: UserRecord,
+    private store: Store<State>,
     private snackBar: MatSnackBar,
     private addUserGql: AddUserGQL, private updateUserGql: UpdateUserGQL) {
 
@@ -47,6 +51,10 @@ export class EditUserComponent {
     }
   }
 
+  isBuiltInAdminUser(): boolean {
+    return this.user.userId == BUILT_IN_ADMIN_USER;
+  }
+
   copyToCommand(command: AddUserCommand | UpdateUserCommand) {
     command.accountName = this.user.accountName
     command.userName = this.user.userName
@@ -54,7 +62,8 @@ export class EditUserComponent {
     command.email = this.user.email
     command.enabled = this.user.enabled
     command.isAdmin = this.user.isAdmin
-    command.isGroupManager = this.user.isGroupManager
+    command.isGroup = this.user.isGroup
+    command.isSlide = this.user.isSlide
   }
 
   onOK(): void {
@@ -65,13 +74,12 @@ export class EditUserComponent {
       this.updateUserGql
         .mutate({ command })
         .subscribe(res =>  {
-          switch (res.data?.updateUser) {
-            case UpdateUserResult.Success:
-              this.dialogRef.close(true)
-              break;
-            default:
-              this.snackBar.open('ユーザの更新に失敗しました。', 'OK')
-              break;
+          if (!errorMessageIfNeed(res, this.snackBar, !res.data?.updateUser)) {
+            if (this.user.isCurrentUser) {
+              this.store.dispatch(AppActions.loadCurrentUser());
+            }
+
+            this.dialogRef.close(true);
           }
         })
     } else {
@@ -80,16 +88,8 @@ export class EditUserComponent {
       this.addUserGql
         .mutate({ command })
         .subscribe(res => {
-          switch (res.data?.addUser) {
-            case AddUserResult.Success:
-              this.dialogRef.close(true)
-              break;
-            case AddUserResult.DuplicateAccountName:
-              this.snackBar.open('指定のアカウント名は既に存在しています。', 'OK')
-              break;
-            default:
-              this.snackBar.open('ユーザの追加に失敗しました。', 'OK')
-              break;
+          if (!errorMessageIfNeed(res, this.snackBar, !res.data?.addUser)) {
+            this.dialogRef.close(true);
           }
         });
     }

@@ -11,7 +11,8 @@ import { State, getUser } from 'src/app/root/store';
 
 export interface UserRecord extends UserFragment {
   isAdmin: boolean;
-  isGroupManager: boolean;
+  isGroup: boolean;
+  isSlide: boolean;
   isCurrentUser: boolean;
   realmName: string;
 }
@@ -56,7 +57,8 @@ export class UserListComponent implements OnInit {
               let defaultGroupRoles = user.authorities.find(auth => auth.groupId == DEFAULT_GROUP_ID)?.roles ?? [];
               return Object.assign(user, {
                 isAdmin: defaultGroupRoles?.includes(Role.Admin),
-                isGroupManager: defaultGroupRoles?.includes(Role.Group),
+                isGroup: defaultGroupRoles?.includes(Role.Group),
+                isSlide: defaultGroupRoles?.includes(Role.Slide),
                 isCurrentUser: user.userId === currentUserId,
                 realmName: realmToName[user.realmId]
               });

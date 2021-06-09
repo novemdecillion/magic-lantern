@@ -63,6 +63,12 @@ input SwitchGroupGenerationCommand {
   nextGenerationId: Int!
 }
 
+enum SwitchGroupGenerationResult {
+  Success,
+  UnrecognizedGenerationChanged,
+  UnknownError
+}
+
 input ImportGroupGenerationCommand {
   groupGenerationId: Int
   generationFile: Upload!

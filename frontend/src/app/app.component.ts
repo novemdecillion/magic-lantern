@@ -3,8 +3,7 @@ import { ChangeDetectorRef, Component, OnDestroy, OnInit, ViewChild } from '@ang
 import { Observable } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 import { Role, UserFragment } from 'src/generated/graphql';
-import { State, getUser, getServiceAvailable } from './root/store/index';
-import * as AppActions from './root/store/actions/app.action'
+import { State, getUser, getServiceAvailable, AppActions } from './root/store';
 import { tap, map } from 'rxjs/operators';
 import { FlatTreeControl } from '@angular/cdk/tree';
 import { MatTreeFlatDataSource, MatTreeFlattener } from '@angular/material/tree';

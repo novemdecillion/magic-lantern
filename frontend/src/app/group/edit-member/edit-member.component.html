@@ -21,7 +21,6 @@
       <ng-container *ngIf="command.type != 'delete'">
         <label>権限:</label>
         <mat-checkbox *ngIf="!isDefaultGroup()" class="mb-2" color="warn" [(ngModel)]="roles['GROUP']">グループ</mat-checkbox>
-        <mat-checkbox class="mb-2" color="warn" [(ngModel)]="roles['SLIDE']">教材</mat-checkbox>
         <mat-checkbox class="mb-2" color="warn" [(ngModel)]="roles['LESSON']">講座</mat-checkbox>
         <mat-checkbox class="mb-2" color="warn" [(ngModel)]="roles['STUDY']">受講</mat-checkbox>
       </ng-container>

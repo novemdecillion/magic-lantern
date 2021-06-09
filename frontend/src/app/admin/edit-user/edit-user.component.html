@@ -1,7 +1,7 @@
 <form #form="ngForm">
   <h1 mat-dialog-title>{{ isEdit? 'ユーザ編集' : 'ユーザ追加' }}</h1>
   <div mat-dialog-content>
-    <mat-grid-list cols="2" rowHeight="5:2">
+    <mat-grid-list cols="2" rowHeight="9:4">
       <mat-grid-tile>
         <mat-form-field appearance="standard" class="mb-2">
           <mat-label>認証サーバ</mat-label>
@@ -57,7 +57,7 @@
 
       <mat-grid-tile>
         <section class="my-2">
-          <mat-checkbox color="warn" [(ngModel)]="user.enabled" name="enable">アカウント有効</mat-checkbox>
+          <mat-checkbox color="warn" [(ngModel)]="user.enabled" name="enable" [disabled]="user.isCurrentUser">アカウント有効</mat-checkbox>
         </section>
       </mat-grid-tile>
 
@@ -65,8 +65,9 @@
 
         <fieldset>
           <legend>権限</legend>
-          <mat-checkbox class="me-5" color="warn" [(ngModel)]="user.isAdmin" name="isAdmin">システム</mat-checkbox>
-          <mat-checkbox color="warn" [(ngModel)]="user.isGroupManager" name="isGroupManager">グループ</mat-checkbox>
+          <mat-checkbox class="me-2" color="warn" [(ngModel)]="user.isAdmin" name="isAdmin" [disabled]="isBuiltInAdminUser()">システム</mat-checkbox>
+          <mat-checkbox class="me-2" color="warn" [(ngModel)]="user.isGroup" name="isGroup">グループ</mat-checkbox>
+          <mat-checkbox class="me-2" color="warn" [(ngModel)]="user.isSlide" name="isSlide">教材</mat-checkbox>
         </fieldset>
 
       </mat-grid-tile>

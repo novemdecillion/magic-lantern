@@ -1,14 +1,14 @@
 import {
-  ActionReducer,
   ActionReducerMap,
-  createFeatureSelector,
   createSelector,
   MetaReducer
 } from '@ngrx/store';
 import { environment } from '../../../environments/environment';
 import { AppState } from './state/app.state';
 import { appReducer } from './reducers/app.reducer';
-import { Role } from 'src/generated/graphql';
+import * as _AppActions from './actions/app.action'
+
+export { _AppActions as AppActions }
 
 export interface State {
   app: AppState;

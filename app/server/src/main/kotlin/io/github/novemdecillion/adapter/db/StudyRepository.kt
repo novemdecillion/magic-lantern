@@ -25,11 +25,11 @@ class StudyRepository(
       slideId = study.slideId!!,
       status = study.status!!,
 
-      progress = study.progress?.let { objectMapper.readValue(it.data()) } ?: mapOf(),
+      progress = study.progress?.let { objectMapper.readValue(it.data()) } ?: emptyMap(),
       progressRate = study.progressRate ?: 0,
-      answer = study.answer?.let { objectMapper.readValue(it.data()) } ?: mapOf(),
-      score = study.score?.let { objectMapper.readValue(it.data()) } ?: mapOf(),
-      shuffledQuestion = study.shuffledQuestion?.let { objectMapper.readValue(it.data()) } ?: mapOf(),
+      answer = study.answer?.let { objectMapper.readValue(it.data()) } ?: emptyMap(),
+      score = study.score?.let { objectMapper.readValue(it.data()) } ?: emptyMap(),
+      shuffledQuestion = study.shuffledQuestion?.let { objectMapper.readValue(it.data()) } ?: emptyMap(),
 
       startAt = study.startAt,
       endAt = study.endAt

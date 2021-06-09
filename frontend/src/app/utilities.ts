@@ -1,6 +1,8 @@
 import parseISO from 'date-fns/parseISO';
 import { AuthorityFragment, GroupCore, GroupFragment, NoticeFragment, Role, SlideFragment, StudyFragment, StudyStatus } from 'src/generated/graphql';
 import { DEFAULT_GROUP_ID } from './constants';
+import { ExecutionResult } from 'graphql';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export function logout() {
   location.href = '/login';
@@ -224,4 +226,21 @@ export function convertToStudyStatus(slide: SlideFragment, study?: StudyFragment
       }
     });
   return records;
+}
+
+export function errorMessageIfNeed(result: ExecutionResult, snackBar: MatSnackBar, force?: boolean): boolean {
+  let errorMessage = result
+    .errors
+    ?.filter(error => error.extensions?.type == 'ApiException')
+    ?.map(error => error.message)
+    ?.join('\n')
+
+  if (errorMessage || force) {
+    if (!errorMessage) {
+      errorMessage = '処理に失敗しました。';
+    }
+    snackBar.open(errorMessage, '確認');
+    return true;
+  }
+  return false
 }

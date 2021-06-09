@@ -48,7 +48,8 @@ class UserApi(
     val email: String?,
     val enabled: Boolean?,
     val isAdmin: Boolean?,
-    val isGroupManager: Boolean?
+    val isGroup: Boolean?,
+    val isSlide: Boolean?
   )
 
   data class UpdateUserCommand (
@@ -59,7 +60,8 @@ class UserApi(
     val email: String?,
     val enabled: Boolean?,
     val isAdmin: Boolean?,
-    val isGroupManager: Boolean?
+    val isGroup: Boolean?,
+    val isSlide: Boolean?
   )
 
   data class ChangePasswordCommand (
@@ -97,13 +99,8 @@ class UserApi(
     return true
   }
 
-  enum class AddUserResult {
-    Success,
-    DuplicateAccountName,
-    UnknownError
-  }
   @GraphQLApi
-  fun addUser(command: AddUserCommand): AddUserResult {
+  fun addUser(command: AddUserCommand): Boolean {
     try {
       val account = AccountEntity(
         accountId = idGeneratorService.generate(),
@@ -120,18 +117,21 @@ class UserApi(
       if (command.isAdmin == true) {
         roles.add(Role.ADMIN)
       }
-      if (command.isGroupManager == true) {
+      if (command.isGroup == true) {
         roles.add(Role.GROUP)
+      }
+      if (command.isSlide == true) {
+        roles.add(Role.SLIDE)
       }
       authorityRepository.insertAuthority(account.accountId!!, Authority.forRootGroup(roles))
     } catch (ex: Exception) {
       log.error("ユーザの追加に失敗しました。", ex)
-      return when(ex) {
-          is DuplicateKeyException -> AddUserResult.DuplicateAccountName
-          else -> AddUserResult.UnknownError
+      throw when(ex) {
+          is DuplicateKeyException -> ApiException("指定のアカウント名は既に存在しています。")
+          else -> ApiException("ユーザの追加に失敗しました。")
       }
     }
-    return AddUserResult.Success
+    return true
   }
 
   enum class UpdateUserResult {
@@ -151,27 +151,63 @@ class UserApi(
       command.password?.also { account.password  = passwordEncoder.encode(command.password) }
       accountRepository.update(account)
 
-      val authority = authorityRepository.selectAuthorityByUserIdAndGroupId(command.userId, ROOT_GROUP_ID)
-        ?: Authority.forRootGroup()
-      val newRoles = authority.roles?.toMutableSet() ?: mutableListOf()
-      command.isAdmin
-        ?.also { requestFlag ->
-          val isAdmin: Boolean = newRoles.contains(Role.ADMIN)
-          when {
-            !isAdmin && requestFlag -> newRoles.add(Role.ADMIN)
-            isAdmin && !requestFlag -> newRoles.remove(Role.ADMIN)
-          }
+//      val authority = authorityRepository.selectAuthorityByUserIdAndGroupId(command.userId, ROOT_GROUP_ID)
+//        ?: Authority.forRootGroup()
+//      val newRoles = authority.roles?.toMutableSet() ?: mutableListOf()
+//      command.isAdmin
+//        ?.also { requestFlag ->
+//          val isAdmin: Boolean = newRoles.contains(Role.ADMIN)
+//          when {
+//            !isAdmin && requestFlag -> newRoles.add(Role.ADMIN)
+//            isAdmin && !requestFlag -> newRoles.remove(Role.ADMIN)
+//          }
+//        }
+//      command.isGroup
+//        ?.also { requestFlag ->
+//          val isGroup: Boolean = newRoles.contains(Role.GROUP)
+//          when {
+//            !isGroup && requestFlag -> newRoles.add(Role.GROUP)
+//            isGroup && !requestFlag -> newRoles.remove(Role.GROUP)
+//          }
+//        }
+//      command.isSlide
+//        ?.also { requestFlag ->
+//          val isSlide: Boolean = newRoles.contains(Role.SLIDE)
+//          when {
+//            !isSlide && requestFlag -> newRoles.add(Role.SLIDE)
+//            isSlide && !requestFlag -> newRoles.remove(Role.SLIDE)
+//          }
+//        }
+//      if (newRoles != authority.roles?.toSet()) {
+//      }
+
+      if ((command.isAdmin != null)
+          || (command.isGroup != null)
+          ||  (command.isSlide != null)) {
+
+        val removeRoles = mutableListOf<Role>()
+        val addRoles = mutableListOf<Role>()
+        if (command.isAdmin == true) {
+          removeRoles.add(Role.ADMIN)
+          addRoles.add(Role.ADMIN)
+        } else if (command.isAdmin == false) {
+          removeRoles.add(Role.ADMIN)
         }
-      command.isGroupManager
-        ?.also { requestFlag ->
-          val isGroupManager: Boolean = newRoles.contains(Role.GROUP)
-          when {
-            !isGroupManager && requestFlag -> newRoles.add(Role.GROUP)
-            isGroupManager && !requestFlag -> newRoles.remove(Role.GROUP)
-          }
+
+        if (command.isGroup == true) {
+          removeRoles.add(Role.GROUP)
+          addRoles.add(Role.GROUP)
+        } else if (command.isGroup == false) {
+          removeRoles.add(Role.GROUP)
         }
-      if (newRoles != authority.roles?.toSet()) {
-        authorityRepository.updateAuthority(command.userId, authority.copy(roles = newRoles))
+
+        if (command.isSlide == true) {
+          removeRoles.add(Role.SLIDE)
+          addRoles.add(Role.SLIDE)
+        } else if (command.isSlide == false) {
+          removeRoles.add(Role.SLIDE)
+        }
+        authorityRepository.updateAuthorities(listOf(command.userId), ROOT_GROUP_ID, ROOT_GROUP_GENERATION_ID, removeRoles, addRoles)
       }
     } catch (ex: Exception) {
       log.error("ユーザの追加に失敗しました。", ex)

@@ -29,14 +29,15 @@ input AddUserCommand {
   email: String
   enabled: Boolean
   isAdmin: Boolean
-  isGroupManager: Boolean
+  isGroup: Boolean
+  isSlide: Boolean
 }
 
-enum AddUserResult {
-  Success,
-  DuplicateAccountName,
-  UnknownError
-}
+#enum AddUserResult {
+#  Success,
+#  DuplicateAccountName,
+#  UnknownError
+#}
 
 input UpdateUserCommand {
   userId: ID!
@@ -46,7 +47,8 @@ input UpdateUserCommand {
   email: String
   enabled: Boolean
   isAdmin: Boolean
-  isGroupManager: Boolean
+  isGroup: Boolean
+  isSlide: Boolean
 }
 
 enum UpdateUserResult {

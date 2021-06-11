@@ -151,10 +151,8 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
     while (groupRow.getCell(ROOT_GROUP_COL - 1).stringCellValue != GROUP_ID_HEADER) {
       maxGroupColNum = max(maxGroupColNum, groupRow.lastCellNum.toInt())
       groupRow = sheet.getRow(++rowIndex)
-      if (sheet.lastRowNum <= rowIndex) {
-        // フォーマット不正
-        return
-      }
+      // フォーマット不正
+      check (sheet.lastRowNum > rowIndex)
     }
     val groupIdRow = groupRow
 

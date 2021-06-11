@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Router } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map, share } from 'rxjs/operators';
-import { studyStatus } from 'src/app/utilities';
+import { errorMessageIfNeed, studyStatus } from 'src/app/utilities';
 import { ForStudyListGQL, StudyFragment, StudyStatus, StartStadyGQL } from 'src/generated/graphql';
 
 @Component({
@@ -13,6 +14,7 @@ export class StudyListComponent implements OnInit {
   dataLoad: Observable<StudyFragment[]> | null = null;
 
   constructor(private router: Router,
+    private snackBar: MatSnackBar,
     private myStudiesGql: ForStudyListGQL,
     private startStudyGql: StartStadyGQL) {
   }
@@ -42,7 +44,11 @@ export class StudyListComponent implements OnInit {
   onStartStudy(row: StudyFragment) {
     if (row.status == StudyStatus.NotStart) {
       this.startStudyGql.mutate({slideId: row.slide.slideId})
-      .subscribe(res => this.router.navigateByUrl(`/study/slide/${res.data?.startStudy}`))
+      .subscribe(res => {
+        if(!errorMessageIfNeed(res, this.snackBar)) {
+          this.router.navigateByUrl(`/study/slide/${res.data?.startStudy}`)
+        }
+      })
     } else {
       this.router.navigateByUrl(`/study/slide/${row.studyId}`)
     }

@@ -41,8 +41,8 @@ type Mutation {
   syncRealm(realmId: String): Boolean
 
   addUser(command: AddUserCommand!): Boolean
-  updateUser(command: UpdateUserCommand!): UpdateUserResult
-  changePassword(command: ChangePasswordCommand!): ChangePasswordResult
+  updateUser(command: UpdateUserCommand!): Boolean
+  changePassword(command: ChangePasswordCommand!): Boolean
   deleteUser(userId: ID!): Boolean
 
   addNotice(command: AddNoticeCommand!): Boolean
@@ -57,8 +57,8 @@ type Mutation {
   updateGroupMember(command: GroupMemberCommand!): Boolean
   deleteGroupMember(command: DeleteGroupMemberCommand!): Boolean
 
-  switchGroupGeneration(command: SwitchGroupGenerationCommand!): SwitchGroupGenerationResult
-  importGroupGeneration(command: ImportGroupGenerationCommand!): Boolean
+  switchGroupGeneration(command: SwitchGroupGenerationCommand!): Boolean
+  importGroupGeneration(command: ImportGroupGenerationCommand!): ImportGroupGenerationResult
 
   addSlide(command: AddSlideCommand!): Boolean
   deleteSlide(slideId: ID!): Boolean

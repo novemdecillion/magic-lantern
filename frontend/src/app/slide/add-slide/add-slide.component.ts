@@ -1,5 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { errorMessageIfNeed } from 'src/app/utilities';
 import { AddSlideGQL } from 'src/generated/graphql';
 
 @Component({
@@ -16,21 +18,29 @@ export class AddSlideComponent {
 
   constructor(
     private dialogRef: MatDialogRef<AddSlideComponent>,
+    private snackBar: MatSnackBar,
     private addSlideGql: AddSlideGQL) { }
 
   onOK() {
     let file = this.slideFileInput.nativeElement.files?.item(0);
     if (!file) {
-      // TODO エラー
+      this.snackBar.open('教材(zip形式)ファイルを指定してください。', '確認');
       return;
     }
     if (file.type !== 'application/zip') {
-        // TODO エラー
+      this.snackBar.open('教材(zip形式)ファイルを指定してください。', '確認');
       return;
     }
 
     this.addSlideGql.mutate({command: { slideId: this.slideId, slideFile: file }}, { context: { useMultipart: true }})
-        .subscribe(_ => this.dialogRef.close(true))
+    .subscribe(res => {
+      if(!errorMessageIfNeed(res, this.snackBar)) {
+
+      // TODO 警告メッセージの表示
+        this.dialogRef.close(true)
+      }
+    })
+
   }
 
   // uploadFileEvt() {

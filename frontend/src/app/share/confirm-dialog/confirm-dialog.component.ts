@@ -4,7 +4,9 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 export interface ConfirmDialogParam {
   title: string;
   message?: string;
-  contentTemplateRef?: TemplateRef<any>
+  contentTemplateRef?: TemplateRef<any>,
+  data: any,
+  onlyOk?: boolean
 }
 
 @Component({

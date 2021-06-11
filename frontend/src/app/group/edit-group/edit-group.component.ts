@@ -1,7 +1,8 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { AddGroupGQL, UpdateGroupGQL, DeleteGroupGQL } from 'src/generated/graphql';
-import { GroupNode } from '../../utilities';
+import { errorMessageIfNeed, GroupNode } from '../../utilities';
 
 export interface EditGroupCommand extends GroupNode {
   // group: GroupNode;
@@ -19,6 +20,7 @@ export class EditGroupComponent implements OnInit {
   constructor(
       private dialogRef: MatDialogRef<EditGroupComponent>,
       @Inject(MAT_DIALOG_DATA) public command: EditGroupCommand,
+      private snackBar: MatSnackBar,
       private addGroupGql: AddGroupGQL,
       private editGroupGql: UpdateGroupGQL,
       private deleteGroupGql: DeleteGroupGQL) {
@@ -59,7 +61,11 @@ export class EditGroupComponent implements OnInit {
               parentGroupId: this.groupNode.parentGroupId!
             }
           })
-          .subscribe(_ => this.dialogRef.close(true));
+          .subscribe(res => {
+            if(!errorMessageIfNeed(res, this.snackBar)) {
+              this.dialogRef.close(true)
+            }
+          })
         break;
       case 'edit':
         this.editGroupGql
@@ -71,7 +77,11 @@ export class EditGroupComponent implements OnInit {
               parentGroupId: this.groupNode.parentGroupId!
             }
           })
-          .subscribe(_ => this.dialogRef.close(true));
+          .subscribe(res => {
+            if(!errorMessageIfNeed(res, this.snackBar)) {
+              this.dialogRef.close(true)
+            }
+          })
         break;
       case 'delete':
         this.deleteGroupGql
@@ -81,8 +91,12 @@ export class EditGroupComponent implements OnInit {
               currentGenerationId: this.groupNode.groupGenerationId
             }
           })
-          .subscribe(_ => this.dialogRef.close(true));
-        break;
+          .subscribe(res => {
+            if(!errorMessageIfNeed(res, this.snackBar)) {
+              this.dialogRef.close(true)
+            }
+          })
+          break;
     }
   }
 

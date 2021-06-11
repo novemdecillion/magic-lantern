@@ -5,18 +5,19 @@ import { DeleteLessonGQL, LessonWithStatisticsFragment, ManageableLessonsGQL } f
 import { MatDialog } from '@angular/material/dialog';
 import { AddLessonComponent } from '../add-lesson/add-lesson.component';
 import { ConfirmDialogComponent } from 'src/app/share/confirm-dialog/confirm-dialog.component';
+import { errorMessageIfNeed } from 'src/app/utilities';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-lesson-list',
   templateUrl: './lesson-list.component.html'
 })
 export class LessonListComponent implements OnInit {
-  @ViewChild('operationTemplate', { static: true }) private operationTemplate!: TemplateRef<any>;
-
   dataLoad: Observable<LessonWithStatisticsFragment[]> | null = null;
 
   constructor(public dialog: MatDialog,
-      private lessonsGql: ManageableLessonsGQL, private deleteLessonGql: DeleteLessonGQL) {
+    private snackBar: MatSnackBar,
+    private lessonsGql: ManageableLessonsGQL, private deleteLessonGql: DeleteLessonGQL) {
   }
 
   ngOnInit(): void {
@@ -47,8 +48,13 @@ export class LessonListComponent implements OnInit {
       .afterClosed().subscribe(res => {
         if (res) {
           this.deleteLessonGql.mutate({ lessonId: row.lessonId })
-            .subscribe(_ => this.onLoadData());
-        }
+            .subscribe(res => {
+              if(!errorMessageIfNeed(res, this.snackBar)) {
+                this.onLoadData();
+              }
+            })
+
+          }
       });
   }
 

@@ -2,7 +2,7 @@ import { Component, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { ListComponent } from 'src/app/share/list/list.component';
 import { AddLessonGQL, PrepareAddLessonGQL, SlideFragment } from 'src/generated/graphql';
 import { Observable, of } from 'rxjs';
-import { createGroupNodes, GroupNode } from 'src/app/utilities';
+import { createGroupNodes, errorMessageIfNeed, GroupNode } from 'src/app/utilities';
 import { MatRadioChange } from '@angular/material/radio';
 import { MatCheckboxChange } from '@angular/material/checkbox';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -93,7 +93,11 @@ export class AddLessonComponent implements OnInit {
       return
     }
     this.addLessonGql.mutate({command: { slideId: this.selectedSlide, groupIds: this.selectedGroups }})
-        .subscribe(_ => this.dialogRef.close(true))
+        .subscribe(res => {
+          if(!errorMessageIfNeed(res, this.snackBar)) {
+            this.dialogRef.close(true)
+          }
+        })
   }
 
   slideSelected(event: MatRadioChange, row: SlideFragment) {

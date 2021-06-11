@@ -8,6 +8,8 @@ import { EditUserComponent } from '../edit-user/edit-user.component';
 import { ConfirmDialogComponent } from 'src/app/share/confirm-dialog/confirm-dialog.component';
 import { select, Store } from '@ngrx/store';
 import { State, getUser } from 'src/app/root/store';
+import { errorMessageIfNeed } from 'src/app/utilities';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export interface UserRecord extends UserFragment {
   isAdmin: boolean;
@@ -27,6 +29,7 @@ export class UserListComponent implements OnInit {
   currentUserId$ = this.store.pipe(select(getUser), map(user => user?.userId));
 
   constructor(private dialog: MatDialog,
+    private snackBar: MatSnackBar,
     private store: Store<State>,
     private usersGql: UsersGQL,
     private deleteUserGql: DeleteUserGQL) {
@@ -37,9 +40,6 @@ export class UserListComponent implements OnInit {
   }
 
   onLoadData() {
-
-
-
     this.dataLoad = this.usersGql.fetch()
       .pipe(
         withLatestFrom(this.currentUserId$),
@@ -66,29 +66,6 @@ export class UserListComponent implements OnInit {
         }),
         share()
       );
-
-
-    // this.dataLoad = this.usersGql.fetch()
-    //   .pipe(
-    //     map(res => {
-    //       let realmToName: { [key: string]: string } = {};
-    //       (res.data.realms ?? [])
-    //         .forEach(realm => {
-    //           if (realm.realmName) {
-    //             realmToName[realm.realmId] = realm.realmName;
-    //           }
-    //         });
-
-    //       return (res.data.users ?? [])
-    //         .map((user) => {
-    //           return Object.assign(user, {
-    //             isAdmin: user.authorities.some(auth => auth.roles.includes(Role.Admin)),
-    //             realmName: realmToName[user.realmId]
-    //           });
-    //         });
-    //     }),
-    //     share()
-    //   );
   }
 
   onAddUser() {
@@ -116,11 +93,14 @@ export class UserListComponent implements OnInit {
 
   onDeleteUser(row: UserRecord) {
     this.dialog.open(ConfirmDialogComponent, { data: { title: 'ユーザ削除', message: `「${row.userName}」を削除します。よろしですか?` } })
-      .afterClosed().subscribe(res => {
-        if (res) {
+      .afterClosed().subscribe(isOk => {
+        if (isOk) {
           this.deleteUserGql.mutate({ userId: row.userId })
-            .subscribe(_ => this.onLoadData());
-        }
+          .subscribe(res => {
+            errorMessageIfNeed(res, this.snackBar)
+            this.onLoadData()
+          });
+      }
       });
   }
 

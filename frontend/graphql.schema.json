@@ -855,8 +855,8 @@
               }
             ],
             "type": {
-              "kind": "ENUM",
-              "name": "UpdateUserResult",
+              "kind": "SCALAR",
+              "name": "Boolean",
               "ofType": null
             },
             "isDeprecated": false,
@@ -884,8 +884,8 @@
               }
             ],
             "type": {
-              "kind": "ENUM",
-              "name": "ChangePasswordResult",
+              "kind": "SCALAR",
+              "name": "Boolean",
               "ofType": null
             },
             "isDeprecated": false,
@@ -1203,8 +1203,8 @@
               }
             ],
             "type": {
-              "kind": "ENUM",
-              "name": "SwitchGroupGenerationResult",
+              "kind": "SCALAR",
+              "name": "Boolean",
               "ofType": null
             },
             "isDeprecated": false,
@@ -1232,8 +1232,8 @@
               }
             ],
             "type": {
-              "kind": "SCALAR",
-              "name": "Boolean",
+              "kind": "OBJECT",
+              "name": "ImportGroupGenerationResult",
               "ofType": null
             },
             "isDeprecated": false,
@@ -2179,26 +2179,14 @@
       },
       {
         "kind": "ENUM",
-        "name": "SwitchGroupGenerationResult",
+        "name": "GroupApiResult",
         "description": null,
         "fields": null,
         "inputFields": null,
         "interfaces": null,
         "enumValues": [
           {
-            "name": "Success",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
             "name": "UnrecognizedGenerationChanged",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "UnknownError",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -2242,6 +2230,37 @@
           }
         ],
         "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "OBJECT",
+        "name": "ImportGroupGenerationResult",
+        "description": null,
+        "fields": [
+          {
+            "name": "warnings",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "LIST",
+              "name": null,
+              "ofType": {
+                "kind": "NON_NULL",
+                "name": null,
+                "ofType": {
+                  "kind": "SCALAR",
+                  "name": "String",
+                  "ofType": null
+                }
+              }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "inputFields": null,
+        "interfaces": [],
         "enumValues": null,
         "possibleTypes": null
       },
@@ -3622,29 +3641,6 @@
         "possibleTypes": null
       },
       {
-        "kind": "ENUM",
-        "name": "UpdateUserResult",
-        "description": null,
-        "fields": null,
-        "inputFields": null,
-        "interfaces": null,
-        "enumValues": [
-          {
-            "name": "Success",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "UnknownError",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          }
-        ],
-        "possibleTypes": null
-      },
-      {
         "kind": "INPUT_OBJECT",
         "name": "ChangePasswordCommand",
         "description": null,
@@ -3689,14 +3685,14 @@
       },
       {
         "kind": "ENUM",
-        "name": "ChangePasswordResult",
+        "name": "UserApiResult",
         "description": null,
         "fields": null,
         "inputFields": null,
         "interfaces": null,
         "enumValues": [
           {
-            "name": "Success",
+            "name": "UserAlreadyExist",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -3709,12 +3705,6 @@
           },
           {
             "name": "PasswordNotMatch",
-            "description": null,
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "UnknownError",
             "description": null,
             "isDeprecated": false,
             "deprecationReason": null

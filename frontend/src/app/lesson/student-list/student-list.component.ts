@@ -3,9 +3,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ForLessonStudentListGQL, GroupFragment, SlideFragment, StudyStatus, ChangeStudyStatusGQL } from 'src/generated/graphql';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { studyStatus } from 'src/app/utilities';
+import { errorMessageIfNeed, studyStatus } from 'src/app/utilities';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from 'src/app/share/confirm-dialog/confirm-dialog.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 interface StudentRecord {
   userId: string;
@@ -30,9 +31,9 @@ export class StudentListComponent implements OnInit {
   group: GroupFragment | null = null;
 
   constructor(
-    private router: Router,
     activatedRoute: ActivatedRoute,
     private dialog: MatDialog,
+    private snackBar: MatSnackBar,
     private lessonStudentListGql: ForLessonStudentListGQL,
     private changeStudyStatusGQL: ChangeStudyStatusGQL
   ) {
@@ -100,7 +101,11 @@ export class StudentListComponent implements OnInit {
         if (res) {
           this.changeStudyStatusGQL
           .mutate({ command: { studyId: row.studyId, slideId: this.slide!!.slideId, userId: row.userId, status: StudyStatus.NotStart } })
-          .subscribe(_ => this.onLoadData())
+          .subscribe(res => {
+            if(!errorMessageIfNeed(res, this.snackBar)) {
+              this.onLoadData();
+            }
+          })
         }
       });
   }
@@ -115,8 +120,12 @@ export class StudentListComponent implements OnInit {
         if (res) {
           this.changeStudyStatusGQL
           .mutate({ command: { studyId: row.studyId, slideId: this.slide!!.slideId, userId: row.userId, status: StudyStatus.Excluded } })
-          .subscribe(_ => this.onLoadData())
-        }
+          .subscribe(res => {
+            if(!errorMessageIfNeed(res, this.snackBar)) {
+              this.onLoadData();
+            }
+          })
+      }
       });
   }
 

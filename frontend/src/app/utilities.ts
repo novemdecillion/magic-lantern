@@ -230,14 +230,23 @@ export function convertToStudyStatus(slide: SlideFragment, study?: StudyFragment
   return records;
 }
 
+export function errorCode(result: ExecutionResult): string[] {
+  return result
+    .errors
+    ?.filter(error => error.extensions?.type == 'ApiException')
+    ?.map(error => error.extensions?.code as string)
+    ?.filter(code => code)
+    ?? []
+}
+
 export function errorMessageIfNeed(result: ExecutionResult, snackBar: MatSnackBar, force?: boolean): boolean {
   let errorMessage = result
     .errors
     ?.filter(error => error.extensions?.type == 'ApiException')
     ?.map(error => error.message)
-    ?.join('\n')
+    ?.join()
 
-  if (errorMessage || force) {
+  if (errorMessage || result.errors || force) {
     if (!errorMessage) {
       errorMessage = '処理に失敗しました。';
     }

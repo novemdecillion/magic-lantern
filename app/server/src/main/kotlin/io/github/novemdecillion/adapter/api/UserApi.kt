@@ -34,6 +34,12 @@ class UserApi(
     val log = logger()
   }
 
+  enum class UserApiResult {
+    UserAlreadyExist,
+    UserNotFound,
+    PasswordNotMatch,
+  }
+
   @Component
   class UserLoader(private val userRepository: AccountRepository): MappedBatchLoader<UUID, User>, LoaderFunctionMaker<UUID, User> {
     override fun load(keys: Set<UUID>): CompletionStage<Map<UUID, User>> {
@@ -125,21 +131,19 @@ class UserApi(
       }
       authorityRepository.insertAuthority(account.accountId!!, Authority.forRootGroup(roles))
     } catch (ex: Exception) {
-      log.error("ユーザの追加に失敗しました。", ex)
-      throw when(ex) {
-          is DuplicateKeyException -> ApiException("指定のアカウント名は既に存在しています。")
-          else -> ApiException("ユーザの追加に失敗しました。")
+      val apiException = ApiException("ユーザの追加に失敗しました。")
+      if (ex is DuplicateKeyException) {
+        apiException.message = "指定のアカウント名は既に存在しています。"
+        apiException.setCode(UserApiResult.UserAlreadyExist.name)
       }
+      log.error(apiException.message, ex)
+      throw apiException
     }
     return true
   }
 
-  enum class UpdateUserResult {
-    Success,
-    UnknownError
-  }
   @GraphQLApi
-  fun updateUser(command: UpdateUserCommand): UpdateUserResult {
+  fun updateUser(command: UpdateUserCommand): Boolean {
     try {
       val account = AccountEntity(
         accountId = command.userId,
@@ -151,95 +155,55 @@ class UserApi(
       command.password?.also { account.password  = passwordEncoder.encode(command.password) }
       accountRepository.update(account)
 
-//      val authority = authorityRepository.selectAuthorityByUserIdAndGroupId(command.userId, ROOT_GROUP_ID)
-//        ?: Authority.forRootGroup()
-//      val newRoles = authority.roles?.toMutableSet() ?: mutableListOf()
-//      command.isAdmin
-//        ?.also { requestFlag ->
-//          val isAdmin: Boolean = newRoles.contains(Role.ADMIN)
-//          when {
-//            !isAdmin && requestFlag -> newRoles.add(Role.ADMIN)
-//            isAdmin && !requestFlag -> newRoles.remove(Role.ADMIN)
-//          }
-//        }
-//      command.isGroup
-//        ?.also { requestFlag ->
-//          val isGroup: Boolean = newRoles.contains(Role.GROUP)
-//          when {
-//            !isGroup && requestFlag -> newRoles.add(Role.GROUP)
-//            isGroup && !requestFlag -> newRoles.remove(Role.GROUP)
-//          }
-//        }
-//      command.isSlide
-//        ?.also { requestFlag ->
-//          val isSlide: Boolean = newRoles.contains(Role.SLIDE)
-//          when {
-//            !isSlide && requestFlag -> newRoles.add(Role.SLIDE)
-//            isSlide && !requestFlag -> newRoles.remove(Role.SLIDE)
-//          }
-//        }
-//      if (newRoles != authority.roles?.toSet()) {
-//      }
-
       if ((command.isAdmin != null)
           || (command.isGroup != null)
           ||  (command.isSlide != null)) {
 
         val removeRoles = mutableListOf<Role>()
         val addRoles = mutableListOf<Role>()
-        if (command.isAdmin == true) {
-          removeRoles.add(Role.ADMIN)
-          addRoles.add(Role.ADMIN)
-        } else if (command.isAdmin == false) {
-          removeRoles.add(Role.ADMIN)
-        }
 
-        if (command.isGroup == true) {
-          removeRoles.add(Role.GROUP)
-          addRoles.add(Role.GROUP)
-        } else if (command.isGroup == false) {
-          removeRoles.add(Role.GROUP)
-        }
+        updateUserRoleFlags(Role.ADMIN, command.isAdmin, removeRoles, addRoles)
+        updateUserRoleFlags(Role.GROUP, command.isGroup, removeRoles, addRoles)
+        updateUserRoleFlags(Role.SLIDE, command.isSlide, removeRoles, addRoles)
 
-        if (command.isSlide == true) {
-          removeRoles.add(Role.SLIDE)
-          addRoles.add(Role.SLIDE)
-        } else if (command.isSlide == false) {
-          removeRoles.add(Role.SLIDE)
-        }
         authorityRepository.updateAuthorities(listOf(command.userId), ROOT_GROUP_ID, ROOT_GROUP_GENERATION_ID, removeRoles, addRoles)
       }
     } catch (ex: Exception) {
-      log.error("ユーザの追加に失敗しました。", ex)
-      return UpdateUserResult.UnknownError
+      val message = "ユーザの追加に失敗しました。"
+      log.error(message, ex)
+      throw ApiException(message)
     }
-    return UpdateUserResult.Success
+    return true
   }
 
-  enum class ChangePasswordResult {
-    Success,
-    UserNotFound,
-    PasswordNotMatch,
-    UnknownError
+  private fun updateUserRoleFlags(role: Role, flag: Boolean?, removeRoles: MutableList<Role>, addRoles: MutableList<Role>) {
+    if (flag == true) {
+      removeRoles.add(role)
+      addRoles.add(role)
+    } else if (flag == false) {
+      removeRoles.add(role)
+    }
   }
+
   @GraphQLApi
-  fun changePassword(command: ChangePasswordCommand, environment: DataFetchingEnvironment): ChangePasswordResult {
+  fun changePassword(command: ChangePasswordCommand, environment: DataFetchingEnvironment): Boolean {
     try {
       val user = environment.currentUser()
 
       val account = accountRepository.selectByAccountNameAndRealmId(user.accountName, user.realmId)
-        ?: return ChangePasswordResult.UserNotFound
+        // 本来はありえない。
+        ?: throw ApiException("ユーザが見つかりません。", UserApiResult.UserNotFound.name)
 
       if (!passwordEncoder.matches(command.oldPassword, account.password)) {
-        return ChangePasswordResult.PasswordNotMatch
+        throw ApiException("パスワードが誤っています。", UserApiResult.PasswordNotMatch.name)
       }
 
       val encodedNewPassword = passwordEncoder.encode(command.newPassword)
       accountRepository.changePassword(user.userId, encodedNewPassword)
     } catch (ex: Exception) {
-      return ChangePasswordResult.UnknownError
+      throw ApiException("パスワードの変更に失敗しました。")
     }
-    return ChangePasswordResult.Success
+    return true
   }
 
   @GraphQLApi

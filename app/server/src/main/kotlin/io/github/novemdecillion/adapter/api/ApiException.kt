@@ -4,8 +4,16 @@ import graphql.ErrorType
 import graphql.GraphQLError
 import graphql.language.SourceLocation
 
-class ApiException(@JvmField override val message: String,
-                   @JvmField val extensions : Map<String, Any> = emptyMap()) : RuntimeException(message), GraphQLError {
+class ApiException(@JvmField override var message: String, code: String = VALUE_UNKNOWN_ERROR) : RuntimeException(message), GraphQLError {
+  companion object {
+    const val KEY_CODE = "code"
+    const val VALUE_UNKNOWN_ERROR = "UnknownError"
+  }
+  @JvmField val extensions : MutableMap<String, Any> = mutableMapOf(KEY_CODE to code)
+
+  fun setCode(code: String) {
+    extensions[KEY_CODE] = code
+  }
 
   override fun getMessage(): String = message
 
@@ -13,5 +21,5 @@ class ApiException(@JvmField override val message: String,
 
   override fun getErrorType(): ErrorType = ErrorType.DataFetchingException
 
-  override fun getExtensions(): Map<String, Any> = extensions
+  override fun getExtensions(): MutableMap<String, Any> = extensions
 }

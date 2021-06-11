@@ -14,3 +14,9 @@
   </div>
 </form>
 
+<ng-template #importWarning let-data="data">
+  以下の警告があります。
+  <ul>
+    <li *ngFor="let warn of data.data">{{ warn }}</li>
+  </ul>
+</ng-template>

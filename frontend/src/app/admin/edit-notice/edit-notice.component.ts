@@ -1,7 +1,9 @@
 import { Component, Inject } from '@angular/core';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import formatISO from 'date-fns/formatISO';
 import parseISO from 'date-fns/parseISO';
+import { errorMessageIfNeed } from 'src/app/utilities';
 import { NoticeFragment, AddNoticeGQL, UpdateNoticeGQL } from 'src/generated/graphql';
 
 @Component({
@@ -16,6 +18,7 @@ export class EditNoticeComponent {
   constructor(
     private dialogRef: MatDialogRef<EditNoticeComponent>,
     @Inject(MAT_DIALOG_DATA) notice: NoticeFragment,
+    private snackBar: MatSnackBar,
     private addNoticeGql: AddNoticeGQL, private updateNoticeGql: UpdateNoticeGQL
   ) {
     if (notice) {
@@ -46,10 +49,18 @@ export class EditNoticeComponent {
 
     if (this.isEdit) {
       this.updateNoticeGql.mutate({command: this.notice})
-        .subscribe(_ => this.dialogRef.close(true))
+        .subscribe(res => {
+          if(!errorMessageIfNeed(res, this.snackBar)) {
+            this.dialogRef.close(true)
+          }
+        });
     } else {
       this.addNoticeGql.mutate({command: this.notice})
-        .subscribe(_ => this.dialogRef.close(true))
+        .subscribe(res => {
+          if(!errorMessageIfNeed(res, this.snackBar)) {
+            this.dialogRef.close(true)
+          }
+        });
     }
   }
 }

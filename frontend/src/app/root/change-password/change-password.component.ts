@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { logout } from 'src/app/utilities';
-import { ChangePasswordCommand, ChangePasswordGQL, ChangePasswordResult } from 'src/generated/graphql';
+import { errorCode, errorMessageIfNeed, logout } from 'src/app/utilities';
+import { ChangePasswordCommand, ChangePasswordGQL, UserApiResult } from 'src/generated/graphql';
 
 @Component({
   selector: 'app-change-password',
@@ -21,21 +21,13 @@ export class ChangePasswordComponent {
   onOK(): void {
     this.changePasswordGql.mutate({ command: this.command })
       .subscribe(res => {
-        switch (res.data?.changePassword) {
-          case ChangePasswordResult.Success:
-            this.dialogRef.close(true)
-            break;
-          case ChangePasswordResult.UserNotFound:
-            logout();
-            break;
-          case ChangePasswordResult.PasswordNotMatch:
-            this.snackBar.open('現在のパスワードが誤っています。', 'OK')
-            break;
-          default:
-            this.snackBar.open('パスワードの変更に失敗しました。', 'OK')
-            break;
+        if (errorCode(res).includes(UserApiResult.UserNotFound)) {
+          logout();
         }
 
+        if (!errorMessageIfNeed(res, this.snackBar, !res.data?.changePassword)) {
+          this.dialogRef.close(true)
+        }
       });
   }
 

@@ -70,7 +70,7 @@ const MODULES = [
   ],
   providers: [
     {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: { minWidth: 320 }},
-    {provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 5000}},
+    // {provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 5000}},
     {provide: MAT_DATE_LOCALE, useValue: 'ja-JP'},
   ]
 })

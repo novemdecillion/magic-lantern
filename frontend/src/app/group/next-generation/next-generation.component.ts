@@ -1,9 +1,10 @@
 import { Component, ElementRef, OnInit } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Observable } from 'rxjs';
 import { map, share } from 'rxjs/operators';
 import { ConfirmDialogComponent } from 'src/app/share/confirm-dialog/confirm-dialog.component';
-import { createGroupNodes, GroupNode } from 'src/app/utilities';
+import { createGroupNodes, errorMessageIfNeed, GroupNode } from 'src/app/utilities';
 import { ExportGroupGenerationGQL, NextGenerationGroupsGQL, SwitchGroupGenerationGQL } from 'src/generated/graphql';
 import { ImportGroupComponent } from '../import-group/import-group.component';
 import { downloadGroupGeneration } from '../utilities';
@@ -22,6 +23,7 @@ export class NextGenerationComponent implements OnInit {
 
   constructor(
     public dialog: MatDialog,
+    private snackBar: MatSnackBar,
     private groupsGql: NextGenerationGroupsGQL,
     private exportGroupGenerationGql: ExportGroupGenerationGQL,
     private switchGroupGenerationGQL: SwitchGroupGenerationGQL,
@@ -64,10 +66,13 @@ export class NextGenerationComponent implements OnInit {
 
   onSwitchGeneration() {
     this.dialog.open(ConfirmDialogComponent, { data: { title: '世代移行', message: `次世代グループを現行グループに移行します。よろしですか?` } })
-      .afterClosed().subscribe(res => {
-        if (res) {
+      .afterClosed().subscribe(isOk => {
+        if (isOk) {
           this.switchGroupGenerationGQL.mutate({ commoand: { currentGenerationId: this.currentGenerationId!, nextGenerationId: this.nextGenerationId!} })
-            .subscribe(_ => this.onLoadData());
+            .subscribe(res => {
+              errorMessageIfNeed(res, this.snackBar)
+              this.onLoadData()
+            });
         }
       });
 

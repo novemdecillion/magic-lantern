@@ -74,7 +74,7 @@ export class EditUserComponent {
       this.updateUserGql
         .mutate({ command })
         .subscribe(res =>  {
-          if (!errorMessageIfNeed(res, this.snackBar, !res.data?.updateUser)) {
+          if (!errorMessageIfNeed(res, this.snackBar)) {
             if (this.user.isCurrentUser) {
               this.store.dispatch(AppActions.loadCurrentUser());
             }
@@ -88,7 +88,7 @@ export class EditUserComponent {
       this.addUserGql
         .mutate({ command })
         .subscribe(res => {
-          if (!errorMessageIfNeed(res, this.snackBar, !res.data?.addUser)) {
+          if (!errorMessageIfNeed(res, this.snackBar)) {
             this.dialogRef.close(true);
           }
         });

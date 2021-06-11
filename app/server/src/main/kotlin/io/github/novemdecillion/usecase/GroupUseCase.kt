@@ -13,12 +13,14 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
   companion object {
     const val SHEET_NAME = "グループ構成"
     const val GROUP_ID_ROW = 0
-    const val GROUP_NAME_ROW = 1
+    const val ROOT_GROUP_NAME_ROW = 0
+    const val GROUP_NAME_START_ROW = ROOT_GROUP_NAME_ROW + 1
 
     const val USER_ID_COL = 0
     const val USER_NAME_COL = 1
     const val USER_EMAIL_COL = 2
-    const val GROUP_START_COL = 3
+    const val ROOT_GROUP_COL = 3
+    const val GROUP_START_COL = ROOT_GROUP_COL + 1
 
     const val GROUP_HIERARCHY_HEADER = "グループ階層"
     const val GROUP_ID_HEADER = "グループID"
@@ -59,21 +61,21 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
         sheet.createRow(rowIndex)
           .also {
             if (rowIndex == 0) {
-              it.createCell(GROUP_START_COL - 1)?.styleAndValue(GROUP_HIERARCHY_HEADER, groupHeaderStyle)
+              it.createCell(ROOT_GROUP_COL - 1)?.styleAndValue(GROUP_HIERARCHY_HEADER, groupHeaderStyle)
             } else {
-              it.createCell(GROUP_START_COL - 1)?.cellStyle = groupHeaderStyle
+              it.createCell(ROOT_GROUP_COL - 1)?.cellStyle = groupHeaderStyle
             }
           }
       }
     val groupIdRow = sheet.createRow(maxLayer + 1)
-    groupIdRow.createCell(GROUP_START_COL - 1).styleAndValue(GROUP_ID_HEADER, groupHeaderStyle)
+    groupIdRow.createCell(ROOT_GROUP_COL - 1).styleAndValue(GROUP_ID_HEADER, groupHeaderStyle)
     val userStartRowNum = maxLayer + 3
 
     // グループヘッダ行の出力
     groupsForHeader
       .forEachIndexed { index, groupNode ->
-        groupNameRows[groupNode.layer].createCell(index + GROUP_START_COL).setCellValue(groupNode.groupName)
-        groupIdRow.createCell(index + GROUP_START_COL).setCellValue(groupNode.groupId.toString())
+        groupNameRows[groupNode.layer].createCell(index + ROOT_GROUP_COL).setCellValue(groupNode.groupName)
+        groupIdRow.createCell(index + ROOT_GROUP_COL).setCellValue(groupNode.groupId.toString())
       }
 
     // ユーザ列の出力
@@ -96,7 +98,7 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
 
         // ルートグループの権限出力
         val roleNames = user.authorities.firstOrNull { it.groupId == ROOT_GROUP_ID }?.roleNames()
-        userRow.createCell(GROUP_START_COL).setCellValue(roleNames)
+        userRow.createCell(ROOT_GROUP_COL).setCellValue(roleNames)
 
         user.userId to userRow
       }
@@ -108,12 +110,12 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
           memberSupplier(groupNode.groupId, groupNode.groupGenerationId)
             .mapIndexed { _, user ->
               val roleNames = user.authorities.firstOrNull { it.groupId == groupNode.groupId }?.roleNames()
-              userIdToRowMap[user.userId]?.createCell(GROUP_START_COL + colIndex)?.setCellValue(roleNames)
+              userIdToRowMap[user.userId]?.createCell(ROOT_GROUP_COL + colIndex)?.setCellValue(roleNames)
             }
         }
       }
 
-    (0 until (GROUP_START_COL + groupsForHeader.size)).forEach {
+    (0 until (ROOT_GROUP_COL + groupsForHeader.size)).forEach {
       sheet.autoSizeColumn(it)
     }
     return workbook
@@ -146,7 +148,7 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
     var rowIndex = 0
     var maxGroupColNum = GROUP_START_COL
     var groupRow = sheet.getRow(rowIndex)
-    while (groupRow.getCell(GROUP_START_COL - 1).stringCellValue != GROUP_ID_HEADER) {
+    while (groupRow.getCell(ROOT_GROUP_COL - 1).stringCellValue != GROUP_ID_HEADER) {
       maxGroupColNum = max(maxGroupColNum, groupRow.lastCellNum.toInt())
       groupRow = sheet.getRow(++rowIndex)
       if (sheet.lastRowNum <= rowIndex) {
@@ -160,14 +162,14 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
 
     (GROUP_START_COL..maxGroupColNum)
       .forEach { colNum ->
-        (0 until  groupIdRow.rowNum)
+        (GROUP_NAME_START_ROW until groupIdRow.rowNum)
           .forEach rowLoop@ { rowNum ->
             val groupName = sheet.getRow(rowNum).getCell(colNum, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).stringCellValue
             if (groupName.isBlank()) {
               return@rowLoop
             }
             // グループIDが空なら新規のグループ
-            val groupId = groupIdRow.getCell(colNum).stringCellValue
+            val groupId = groupIdRow.getCell(colNum, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).stringCellValue
               .let {
                 if (it.isNotBlank()) {
                   UUID.fromString(it)
@@ -175,22 +177,17 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
               }
 
             // 所属グループに子として登録
-            val parentGroupId = if (rowNum != 0) {
-                importGroups.lastOrNull { it.layer < rowNum }?.groupId
-              } else null
+            val parentGroupId = importGroups.lastOrNull { it.layer < rowNum }?.groupId ?: ROOT_GROUP_ID
             val group = ImportGroup(Group(groupId, groupGenerationId, groupName, parentGroupId), rowNum)
             importGroups.add(group)
           }
       }
-
-    importGroups.removeIf { it.groupId == ROOT_GROUP_ID }
-
     groupConsumer(importGroups, groupGenerationId)
 
-    (groupIdRow.rowNum + 1..sheet.lastRowNum)
+    (groupIdRow.rowNum + 2..sheet.lastRowNum)
       .forEach  rowLoop@ { rowNum ->
         val userRow = sheet.getRow(rowNum)
-        val userId: UUID = userRow.getCell(USER_ID_COL).stringCellValue
+        val userId: UUID = userRow.getCell(USER_ID_COL, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).stringCellValue
           .let {
             try {
               UUID.fromString(it)
@@ -200,7 +197,7 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
             }
           }
 
-        val authorities: Collection<Authority> = (GROUP_START_COL + 1 .. userRow.lastCellNum)
+        val authorities: Collection<Authority> = (GROUP_START_COL .. userRow.lastCellNum)
           .mapNotNull colLoop@ { colNum ->
             val groupIndex = colNum - GROUP_START_COL
             if (importGroups.lastIndex < groupIndex) {
@@ -208,7 +205,7 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
             }
             val groupId = importGroups[groupIndex].groupId
 
-            val rolesText = userRow.getCell(colNum).stringCellValue
+            val rolesText = userRow.getCell(colNum, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).stringCellValue
             if (rolesText.isBlank()) {
               return@colLoop null
             }
@@ -222,7 +219,6 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
                   null to it
                 }
               }
-              .filter { it.first == null && it.second == null }
 
             val invalidTexts = roleOrInvalidTexts.mapNotNull { it.second }
             if (invalidTexts.isNotEmpty()) {

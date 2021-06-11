@@ -113,8 +113,8 @@ export type Mutation = {
   __typename?: 'Mutation';
   syncRealm?: Maybe<Scalars['Boolean']>;
   addUser?: Maybe<Scalars['Boolean']>;
-  updateUser?: Maybe<UpdateUserResult>;
-  changePassword?: Maybe<ChangePasswordResult>;
+  updateUser?: Maybe<Scalars['Boolean']>;
+  changePassword?: Maybe<Scalars['Boolean']>;
   deleteUser?: Maybe<Scalars['Boolean']>;
   addNotice?: Maybe<Scalars['Boolean']>;
   updateNotice?: Maybe<Scalars['Boolean']>;
@@ -125,8 +125,8 @@ export type Mutation = {
   addGroupMember?: Maybe<Scalars['Boolean']>;
   updateGroupMember?: Maybe<Scalars['Boolean']>;
   deleteGroupMember?: Maybe<Scalars['Boolean']>;
-  switchGroupGeneration?: Maybe<SwitchGroupGenerationResult>;
-  importGroupGeneration?: Maybe<Scalars['Boolean']>;
+  switchGroupGeneration?: Maybe<Scalars['Boolean']>;
+  importGroupGeneration?: Maybe<ImportGroupGenerationResult>;
   addSlide?: Maybe<Scalars['Boolean']>;
   deleteSlide?: Maybe<Scalars['Boolean']>;
   enableSlide?: Maybe<Scalars['Boolean']>;
@@ -320,15 +320,18 @@ export type SwitchGroupGenerationCommand = {
   nextGenerationId: Scalars['Int'];
 };
 
-export enum SwitchGroupGenerationResult {
-  Success = 'Success',
-  UnrecognizedGenerationChanged = 'UnrecognizedGenerationChanged',
-  UnknownError = 'UnknownError'
+export enum GroupApiResult {
+  UnrecognizedGenerationChanged = 'UnrecognizedGenerationChanged'
 }
 
 export type ImportGroupGenerationCommand = {
   groupGenerationId?: Maybe<Scalars['Int']>;
   generationFile: Scalars['Upload'];
+};
+
+export type ImportGroupGenerationResult = {
+  __typename?: 'ImportGroupGenerationResult';
+  warnings?: Maybe<Array<Scalars['String']>>;
 };
 
 export type GroupGeneration = {
@@ -480,21 +483,15 @@ export type UpdateUserCommand = {
   isSlide?: Maybe<Scalars['Boolean']>;
 };
 
-export enum UpdateUserResult {
-  Success = 'Success',
-  UnknownError = 'UnknownError'
-}
-
 export type ChangePasswordCommand = {
   oldPassword: Scalars['String'];
   newPassword: Scalars['String'];
 };
 
-export enum ChangePasswordResult {
-  Success = 'Success',
+export enum UserApiResult {
+  UserAlreadyExist = 'UserAlreadyExist',
   UserNotFound = 'UserNotFound',
-  PasswordNotMatch = 'PasswordNotMatch',
-  UnknownError = 'UnknownError'
+  PasswordNotMatch = 'PasswordNotMatch'
 }
 
 export type Realm = {
@@ -788,7 +785,10 @@ export type ImportGroupGenerationMutationVariables = Exact<{
 
 export type ImportGroupGenerationMutation = (
   { __typename?: 'Mutation' }
-  & Pick<Mutation, 'importGroupGeneration'>
+  & { importGroupGeneration?: Maybe<(
+    { __typename?: 'ImportGroupGenerationResult' }
+    & Pick<ImportGroupGenerationResult, 'warnings'>
+  )> }
 );
 
 export type AddGroupMutationVariables = Exact<{
@@ -1678,7 +1678,9 @@ export const ExportGroupGenerationDocument = gql`
   }
 export const ImportGroupGenerationDocument = gql`
     mutation importGroupGeneration($command: ImportGroupGenerationCommand!) {
-  importGroupGeneration(command: $command)
+  importGroupGeneration(command: $command) {
+    warnings
+  }
 }
     `;
 

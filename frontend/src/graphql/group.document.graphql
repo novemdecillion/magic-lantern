@@ -55,7 +55,9 @@ query exportGroupGeneration($groupGenerationId: Int) {
 }
 
 mutation importGroupGeneration($command: ImportGroupGenerationCommand!) {
-  importGroupGeneration(command: $command)
+  importGroupGeneration(command: $command) {
+    warnings
+  }
 }
 
 mutation addGroup($command: AddGroupCommand!) {

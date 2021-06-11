@@ -45,21 +45,15 @@ input UpdateUserCommand {
   isSlide: Boolean
 }
 
-enum UpdateUserResult {
-  Success,
-  UnknownError
-}
-
 input ChangePasswordCommand {
   oldPassword: String!
   newPassword: String!
 }
 
-enum ChangePasswordResult {
-  Success,
+enum UserApiResult {
+  UserAlreadyExist,
   UserNotFound,
   PasswordNotMatch,
-  UnknownError
 }
 
 type Realm {

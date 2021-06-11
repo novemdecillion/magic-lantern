@@ -12,14 +12,13 @@ plugins {
 
 subprojects {
   apply {
-//    plugin("org.springframework.boot")
     plugin("io.spring.dependency-management")
     plugin("org.jetbrains.kotlin.jvm")
     plugin("org.jetbrains.kotlin.plugin.spring")
   }
 
   group = "io.github.novemdecillion"
-  version = "0.0.1-SNAPSHOT"
+  version = "1.0.0"
   java.sourceCompatibility = JavaVersion.VERSION_11
   extra["testcontainersVersion"] = "1.15.3"
 

@@ -5,7 +5,8 @@ import { map, share } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from 'src/app/share/confirm-dialog/confirm-dialog.component';
 import { EditNoticeComponent } from '../edit-notice/edit-notice.component';
-import { sortNotices } from 'src/app/utilities';
+import { errorMessageIfNeed, sortNotices } from 'src/app/utilities';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-notice-list',
@@ -16,7 +17,9 @@ import { sortNotices } from 'src/app/utilities';
 export class NoticeListComponent implements OnInit {
   dataLoad: Observable<NoticeFragment[]> | null = null;
 
-  constructor(private dialog: MatDialog, private noticesGql: NoticesGQL, private deleteNoticeGql: DeleteNoticeGQL) { }
+  constructor(private dialog: MatDialog,
+    private snackBar: MatSnackBar,
+    private noticesGql: NoticesGQL, private deleteNoticeGql: DeleteNoticeGQL) { }
 
   ngOnInit(): void {
     this.onLoadData();
@@ -51,10 +54,13 @@ export class NoticeListComponent implements OnInit {
 
   onDeleteNotice(row: NoticeFragment) {
     this.dialog.open(ConfirmDialogComponent, { data: { title: '通知削除', message: `「${row.message}」を削除します。よろしですか?` } })
-      .afterClosed().subscribe(res => {
-        if (res) {
+      .afterClosed().subscribe(isOk => {
+        if (isOk) {
           this.deleteNoticeGql.mutate({ noticeId: row.noticeId })
-            .subscribe(_ => this.onLoadData());
+            .subscribe(res => {
+              errorMessageIfNeed(res, this.snackBar)
+              this.onLoadData()
+            });
         }
       });
   }

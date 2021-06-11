@@ -11,9 +11,11 @@ import io.github.novemdecillion.adapter.jooq.tables.pojos.GroupGenerationEntity
 import io.github.novemdecillion.domain.*
 import io.github.novemdecillion.usecase.GroupUseCase
 import io.github.novemdecillion.utils.lang.logger
+import org.apache.commons.lang3.StringUtils
 import org.apache.poi.EncryptedDocumentException
 import org.apache.poi.ss.usermodel.WorkbookFactory
 import org.dataloader.MappedBatchLoader
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Component
 import java.io.ByteArrayOutputStream
 import java.util.*
@@ -126,6 +128,10 @@ class GroupApi(
     val generationFile: Part? = null
   )
 
+  data class ImportGroupGenerationResult(
+    val warnings: List<String>?
+  )
+
   @GraphQLApi
   fun currentGroupGenerationId(environment: DataFetchingEnvironment): Int {
     return environment.currentGroupGenerationId()
@@ -136,31 +142,36 @@ class GroupApi(
     return groupRepository.selectCurrentAndAvailableGeneration()
   }
 
-  enum class SwitchGroupGenerationResult {
-    Success,
-    UnrecognizedGenerationChanged,
-    UnknownError
+  enum class GroupApiResult(val message: String = StringUtils.EMPTY) {
+    UnrecognizedGenerationChanged("既に世代切替されていたため、処理を中止しました。"),
+    ImportFileNotFount,
+    ImportFileNotSupportFormat,
+    ImportFileEncrypted,
+    ImportFileCanNotRead,
   }
 
   @GraphQLApi
   fun switchGroupGeneration(
     command: SwitchGroupGenerationCommand,
     environment: DataFetchingEnvironment
-  ): SwitchGroupGenerationResult {
+  ): Boolean {
     if (command.nextGenerationId == environment.currentGroupGenerationId()) {
       // 既に世代が切替後なら
-      return SwitchGroupGenerationResult.Success
+      return true
     } else if (command.currentGenerationId != environment.currentGroupGenerationId()) {
       // 切替後ではない上に、切替元も異なる
-      return SwitchGroupGenerationResult.UnrecognizedGenerationChanged
+      val apiException = ApiException(GroupApiResult.UnrecognizedGenerationChanged.message, GroupApiResult.UnrecognizedGenerationChanged.name)
+      log.error(apiException.message)
+      throw apiException
     }
     try {
       groupRepository.updateCurrentGroupGeneration(command.currentGenerationId, command.nextGenerationId)
     } catch (ex: Exception) {
-      log.error("世代の切替に失敗しました。", ex)
-      return SwitchGroupGenerationResult.UnknownError
+      val apiException = ApiException("世代の切替に失敗しました。")
+      log.error(apiException.message, ex)
+      throw apiException
     }
-    return SwitchGroupGenerationResult.Success
+    return true
   }
 
   @GraphQLApi
@@ -210,16 +221,6 @@ class GroupApi(
     return Base64.getEncoder().encodeToString(workbookBinary)
   }
 
-  enum class ImportGroupGenerationResult {
-    Success,
-    ImportFileNotFount,
-    ImportFileNotSupportFormat,
-    ImportFileEncrypted,
-    ImportFileCanNotRead,
-    UnrecognizedGenerationChanged,
-    UnknownError
-  }
-
   @GraphQLApi
   fun importGroupGeneration(
     command: ImportGroupGenerationCommand,
@@ -227,19 +228,27 @@ class GroupApi(
   ): ImportGroupGenerationResult {
     val generationFile: Part = (environment.variables["command"] as? Map<String, Part>)
       ?.get("generationFile")
-      ?: return ImportGroupGenerationResult.ImportFileNotFount
+      ?: run {
+        val apiException = ApiException("グループ構成ファイルを指定してください。", GroupApiResult.ImportFileNotFount.name)
+        log.error(apiException.message)
+        throw apiException
+      }
 
     if (generationFile.contentType != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
-      return ImportGroupGenerationResult.ImportFileNotSupportFormat
+      val apiException = ApiException("グループ構成ファイルがExcel(xlsx形式)ではありません。", GroupApiResult.ImportFileNotSupportFormat.name)
+      log.error(apiException.message)
+      throw apiException
     }
     val workbook = try {
       WorkbookFactory.create(generationFile.inputStream)
     } catch (ex: Exception) {
-      log.error("世代ファイルの読込に失敗しました。", ex)
-      return when (ex) {
-        EncryptedDocumentException::class -> ImportGroupGenerationResult.ImportFileEncrypted
-        else -> ImportGroupGenerationResult.ImportFileCanNotRead
+      val apiException = ApiException("グループ構成ファイルの読込に失敗しました。", GroupApiResult.ImportFileCanNotRead.name)
+      if (ex is EncryptedDocumentException) {
+        apiException.message = "グループ構成ファイルのパスワードを解除してください。"
+        apiException.setCode(GroupApiResult.ImportFileEncrypted.name)
       }
+      log.error(apiException.message, ex)
+      throw apiException
     }
 
     val generations = groupRepository.selectCurrentAndAvailableGeneration()
@@ -249,7 +258,9 @@ class GroupApi(
           || (generations.last().groupGenerationId != command.groupGenerationId)
         ) {
           // 世代IDの不一致
-          return ImportGroupGenerationResult.UnrecognizedGenerationChanged
+          val apiException = ApiException(GroupApiResult.UnrecognizedGenerationChanged.message, GroupApiResult.UnrecognizedGenerationChanged.name)
+          log.error(apiException.message)
+          throw apiException
         } else {
           command.groupGenerationId
         }
@@ -259,9 +270,13 @@ class GroupApi(
           groupRepository.createNewGeneration()
         } else {
           // 世代IDの不一致
-          return ImportGroupGenerationResult.UnrecognizedGenerationChanged
+          val apiException = ApiException(GroupApiResult.UnrecognizedGenerationChanged.message, GroupApiResult.UnrecognizedGenerationChanged.name)
+          log.error(apiException.message)
+          throw apiException
         }
     }
+
+    val warnings = mutableListOf<String>()
 
     groupUseCase.importGroupGeneration(resolvedGenerationId, workbook,
       { groups, groupGenerationId ->
@@ -269,10 +284,10 @@ class GroupApi(
       }, { userId, authorities ->
         authorityRepository.insertAuthorities(userId, authorities)
       }, { warningMessage ->
-        // TODO 警告メッセージの返却
+        warnings.add(warningMessage)
       })
 
-    return ImportGroupGenerationResult.Success
+    return ImportGroupGenerationResult(warnings.ifEmpty { null })
   }
 
   @GraphQLApi

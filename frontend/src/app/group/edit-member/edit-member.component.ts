@@ -4,11 +4,12 @@ import { Observable, of } from 'rxjs';
 import { map, share, tap, withLatestFrom } from 'rxjs/operators';
 import { DEFAULT_GROUP_ID } from 'src/app/constants';
 import { ListComponent } from 'src/app/share/list/list.component';
-import { RoleMap, createGroupName, createRoleName } from 'src/app/utilities';
+import { RoleMap, createGroupName, createRoleName, errorMessageIfNeed } from 'src/app/utilities';
 import { AddGroupMemberGQL, UpdateGroupMemberGQL, DeleteGroupMemberGQL, ForAddMemberGQL, ForEditMemberGQL, GroupFragment, Role } from 'src/generated/graphql';
 import { MemberRecord } from '../member-list/member-list.component';
 import { select, Store } from '@ngrx/store';
 import { State, AppActions, getUser } from 'src/app/root/store';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 type EditMemberRecord = MemberRecord & {
   selected?: boolean
@@ -44,6 +45,7 @@ export class EditMemberComponent implements OnInit {
   constructor(
     private dialogRef: MatDialogRef<EditMemberComponent>,
     @Inject(MAT_DIALOG_DATA) public command: EditMemberCommand,
+    private snackBar: MatSnackBar,
     private store: Store<State>,
     private forAddMemberGql: ForAddMemberGQL,
     private forEditMemberGql: ForEditMemberGQL,
@@ -111,7 +113,11 @@ export class EditMemberComponent implements OnInit {
           groupId: this.command.groupId,
           userIds: selectedMemberIds,
           roles: memberRoles }})
-        .subscribe(_ => this.dialogRef.close(true))
+          .subscribe(res => {
+            if(!errorMessageIfNeed(res, this.snackBar)) {
+              this.dialogRef.close(true)
+            }
+          })
         break;
       case 'update':
         this.updateGroupMemberGql.mutate({command: {
@@ -124,7 +130,9 @@ export class EditMemberComponent implements OnInit {
           if (selectedMemberIds.includes(currentUserId!!)) {
             this.store.dispatch(AppActions.loadCurrentUser());
           }
-          this.dialogRef.close(true);
+          if(!errorMessageIfNeed(res, this.snackBar)) {
+            this.dialogRef.close(true)
+          }
         });
         break;
       case 'delete':
@@ -133,8 +141,12 @@ export class EditMemberComponent implements OnInit {
           groupId: this.command.groupId,
           userIds: selectedMemberIds
         }})
-        .subscribe(_ => this.dialogRef.close(true))
-        break;
+        .subscribe(res => {
+          if(!errorMessageIfNeed(res, this.snackBar)) {
+            this.dialogRef.close(true)
+          }
+        })
+      break;
     }
   }
 

@@ -143,8 +143,8 @@ data class Study(
       .map { (answerQuestionIndex, answerChoiceIndexes) ->
         val (questionIndex, choiceIndexes) = shuffled[answerQuestionIndex]
         questionIndex to answerChoiceIndexes
-          .map { answerChoiceIndexes ->
-            choiceIndexes.withIndex().first { it.value == answerChoiceIndexes.toInt() }.index.toString()
+          .map { answerChoiceIndex ->
+            choiceIndexes.withIndex().first { it.value == answerChoiceIndex.toInt() }.index.toString()
           }
       }
       .toMap()

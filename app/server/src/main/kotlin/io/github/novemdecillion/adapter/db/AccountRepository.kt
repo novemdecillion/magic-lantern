@@ -1,6 +1,7 @@
 package io.github.novemdecillion.adapter.db
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.novemdecillion.adapter.jooq.tables.pojos.AccountEntity
 import io.github.novemdecillion.adapter.jooq.tables.pojos.RealmEntity
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountRecord
@@ -127,7 +128,7 @@ class AccountRepository(
         val authorities =
           result.into(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID, CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_GENERATION_ID, CURRENT_ACCOUNT_GROUP_AUTHORITY.ROLE)
             .map { (groupTransitionId, groupGenerationId, roles) ->
-              Authority(groupTransitionId!!, groupGenerationId!!, objectMapper.readValue(roles))
+              Authority(groupTransitionId!!, groupGenerationId!!, objectMapper.readValue<Collection<Role>?>(roles)?.sortedBy { it.ordinal })
             }
         recordMapper(account).copy(authorities = authorities)
       }

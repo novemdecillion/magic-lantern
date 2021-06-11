@@ -43,6 +43,7 @@ dependencies {
   implementation("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml")
   implementation("org.asciidoctor:asciidoctorj:2.5.1")
   implementation("org.apache.commons:commons-math3:3.6.1")
+  implementation("commons-io:commons-io:2.9.0")
   implementation("com.fasterxml.uuid:java-uuid-generator:4.0.1")
   implementation("net.lingala.zip4j:zip4j:2.7.0")
 

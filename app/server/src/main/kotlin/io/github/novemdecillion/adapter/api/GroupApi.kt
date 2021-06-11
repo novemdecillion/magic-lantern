@@ -60,8 +60,8 @@ class GroupApi(
 
   @Component
   class GroupStudentCountLoader(private val authorityRepository: GroupAuthorityRepository) :
-    MappedBatchLoader<IGroup, Int>, LoaderFunctionMaker<IGroup, Int> {
-    override fun load(keys: Set<IGroup>): CompletionStage<Map<IGroup, Int>> {
+    MappedBatchLoader<GroupKey, Int>, LoaderFunctionMaker<GroupKey, Int> {
+    override fun load(keys: Set<GroupKey>): CompletionStage<Map<GroupKey, Int>> {
       val groupToCountMap = keys
         .groupBy { it.groupGenerationId }
         .flatMap { (groupGenerationId, groups) ->
@@ -74,6 +74,11 @@ class GroupApi(
       return CompletableFuture.completedFuture(groupToCountMap)
     }
   }
+
+  data class GroupKey(
+    val groupGenerationId: Int,
+    val groupId: UUID,
+  )
 
   data class AddGroupCommand(
     val currentGenerationId: Int,

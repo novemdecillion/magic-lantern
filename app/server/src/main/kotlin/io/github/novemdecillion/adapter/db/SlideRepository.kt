@@ -5,6 +5,9 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import io.github.novemdecillion.adapter.web.AppSlideProperties
 import io.github.novemdecillion.domain.*
 import net.lingala.zip4j.ZipFile
+import org.apache.commons.io.FileUtils
+import org.apache.commons.io.filefilter.NameFileFilter
+import org.apache.commons.io.filefilter.TrueFileFilter
 import org.asciidoctor.Asciidoctor
 import org.asciidoctor.Options
 import org.springframework.dao.DuplicateKeyException
@@ -14,10 +17,9 @@ import org.springframework.util.FileSystemUtils
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
 import java.io.InputStream
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
+import java.nio.file.*
 import java.util.stream.Collectors
+import kotlin.io.FileAlreadyExistsException
 
 @Repository
 class SlideRepository(private val appSlideProperties: AppSlideProperties) {
@@ -50,16 +52,17 @@ class SlideRepository(private val appSlideProperties: AppSlideProperties) {
     zipFile.extractAll(tempFolderPath.toString())
     Files.delete(tempZipFilePath)
 
-    val slideConfigPath = Files.list(tempFolderPath).filter { it.fileName.toString() == SLIDE_CONFIG_FILE_NAME }
-      .findFirst()
-    if (slideConfigPath.isEmpty) {
+    val slideConfigPath = FileUtils.listFiles(tempFolderPath.toFile(), NameFileFilter(SLIDE_CONFIG_FILE_NAME), TrueFileFilter.INSTANCE)
+      .firstOrNull()?.toPath()
+
+    if (slideConfigPath == null) {
       FileSystemUtils.deleteRecursively(slideFolderPath)
       FileSystemUtils.deleteRecursively(tempFolderPath)
       throw FileNotFoundException("設置ファイル($SLIDE_CONFIG_FILE_NAME)が見つかっていません。")
     }
-    val slideConfigExistFolderPath = slideConfigPath.get().parent
-    Files.move(slideConfigExistFolderPath, slideFolderPath)
-    Files.deleteIfExists(tempFolderPath)
+    val slideConfigExistFolderPath = slideConfigPath.parent
+    Files.move(slideConfigExistFolderPath, slideFolderPath, StandardCopyOption.REPLACE_EXISTING)
+    FileUtils.deleteDirectory(tempFolderPath.toFile())
   }
 
   @Synchronized
@@ -74,7 +77,8 @@ class SlideRepository(private val appSlideProperties: AppSlideProperties) {
 
   @Synchronized
   fun delete(slideId: String): Boolean {
-    return Files.deleteIfExists(rootPath.resolve(slideId))
+    FileUtils.deleteDirectory(rootPath.resolve(slideId).toFile())
+    return true
   }
 
   @Synchronized

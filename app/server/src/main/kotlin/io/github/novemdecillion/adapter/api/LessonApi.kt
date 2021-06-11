@@ -79,7 +79,7 @@ class LessonWithGroupResolver(val studyRepository: StudyRepository) : GraphQLRes
 
   fun studentCount(lesson: LessonWithGroup, environment: DataFetchingEnvironment): CompletableFuture<Int> {
     val loader = environment.dataLoader(GroupApi.GroupStudentCountLoader::class)
-    return loader.load(lesson.group)
+    return loader.load(GroupApi.GroupKey(lesson.group.groupGenerationId, lesson.group.groupId))
   }
 
   fun statistics(lesson: LessonWithGroup): CompletableFuture<LessonStatistics> {

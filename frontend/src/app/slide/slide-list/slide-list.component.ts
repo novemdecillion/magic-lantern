@@ -42,11 +42,11 @@ export class SlideListComponent implements OnInit {
           this.onLoadData();
         }
       });
-
   }
 
   onDeleteSlide(row: SlideFragment) {
-    this.dialog.open(ConfirmDialogComponent, { data: { title: '教材削除', message: `教材「${row.config.title}」を削除します。よろしですか?` } })
+    this.dialog.open(ConfirmDialogComponent, { data: { title: '教材削除',
+        message: `教材「${row.config.title}」を削除します。削除すると関連する講座と受講も削除されます。よろしですか?` } })
       .afterClosed().subscribe(isOk => {
         if (isOk) {
           this.deleteSlideGql.mutate({ slideId: row.slideId })

@@ -79,6 +79,13 @@ class StudyRepository(
     return dslContext.deleteFrom(STUDY).where(STUDY.STUDY_ID.equal(studyId)).execute()
   }
 
+  fun deleteBySlideId(slideId: String): Int {
+    return dslContext
+      .deleteFrom(STUDY)
+      .where(STUDY.SLIDE_ID.equal(slideId))
+      .execute()
+  }
+
   fun deleteBySlideIdAndUserId(slideId: String, userId: UUID): Int {
     return dslContext
       .deleteFrom(STUDY)

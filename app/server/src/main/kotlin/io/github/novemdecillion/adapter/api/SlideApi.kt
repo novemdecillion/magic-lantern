@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import graphql.kickstart.tools.GraphQLMutationResolver
 import graphql.kickstart.tools.GraphQLQueryResolver
 import graphql.schema.DataFetchingEnvironment
+import io.github.novemdecillion.adapter.db.LessonRepository
 import io.github.novemdecillion.adapter.db.SlideRepository
 import io.github.novemdecillion.adapter.web.AppSlideProperties
 import io.github.novemdecillion.domain.Slide
@@ -14,7 +15,7 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.CompletionStage
 
 @Component
-class SlideApi(private val slideRepository: SlideRepository, private val appSlideProperties: AppSlideProperties) : GraphQLQueryResolver, GraphQLMutationResolver {
+class SlideApi(private val slideRepository: SlideRepository, private val lessonRepository: LessonRepository) : GraphQLQueryResolver, GraphQLMutationResolver {
   @Component
   class SlideLoader(private val slideRepository: SlideRepository): MappedBatchLoader<String, Slide>, LoaderFunctionMaker<String, Slide> {
     override fun load(keys: Set<String>): CompletionStage<Map<String, Slide>> {
@@ -58,6 +59,7 @@ class SlideApi(private val slideRepository: SlideRepository, private val appSlid
   @GraphQLApi
   fun enableSlide(slideId: String, enable: Boolean): Boolean {
     slideRepository.updateEnable(slideId, enable)
+    lessonRepository.deleteBySlideId(slideId)
     return true
   }
 }

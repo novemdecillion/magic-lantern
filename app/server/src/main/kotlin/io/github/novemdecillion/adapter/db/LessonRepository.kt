@@ -22,6 +22,10 @@ class LessonRepository(private val dslContext: DSLContext) {
     return dslContext.deleteFrom(LESSON).where(LESSON.LESSON_ID.equal(lessonId)).execute()
   }
 
+  fun deleteBySlideId(slideId: String): Int {
+    return dslContext.deleteFrom(LESSON).where(LESSON.SLIDE_ID.equal(slideId)).execute()
+  }
+
   fun selectById(lessonId: UUID): LessonWithGroup? {
     return selectLesson {
       it.where(LESSON.LESSON_ID.equal(lessonId))

@@ -43,9 +43,9 @@ class SlideApi(private val slideRepository: SlideRepository, private val lessonR
   fun addSlide(command: AddSlideCommand, environment: DataFetchingEnvironment): Boolean {
     val slideFile = (environment.variables["command"] as Map<String, Part>)["slideFile"] ?: return false
 
-    if (slideFile.contentType != "application/zip") {
-      return false
-    }
+//    if (slideFile.contentType != "application/zip") {
+//      return false
+//    }
 
     slideRepository.insert(command.slideId, slideFile.inputStream)
     return true

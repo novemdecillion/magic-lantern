@@ -27,10 +27,6 @@ export class AddSlideComponent {
       this.snackBar.open('教材(zip形式)ファイルを指定してください。', '確認');
       return;
     }
-    if (file.type !== 'application/zip') {
-      this.snackBar.open('教材(zip形式)ファイルを指定してください。', '確認');
-      return;
-    }
 
     this.addSlideGql.mutate({command: { slideId: this.slideId, slideFile: file }}, { context: { useMultipart: true }})
     .subscribe(res => {

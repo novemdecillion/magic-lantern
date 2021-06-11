@@ -29,10 +29,6 @@ export class ImportGroupComponent {
       this.snackBar.open('Excel(xlsx形式)ファイルを指定してください。', '確認');
       return;
     }
-    if (file.type !== 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') {
-      this.snackBar.open('Excel(xlsx形式)ファイルを指定してください。', '確認');
-      return;
-    }
 
     this.importGroupGql.mutate({command: { groupGenerationId: this.groupGenerationId, generationFile: file }}, { context: { useMultipart: true }})
         .subscribe(res => {

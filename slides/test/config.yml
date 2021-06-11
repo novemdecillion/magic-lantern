@@ -19,7 +19,7 @@ chapters:
   pages:
   - path: personal-1.html
     title: クレジットカード情報の不正利用
-  - path: explain-template.html
+  - path: no-title-explain-template.html
     title: フィッシングによる個人情報等の詐取
     textType: AsciiDoc
     text: |-

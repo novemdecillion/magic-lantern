@@ -51,15 +51,15 @@ class SyncKeycloakUsersService(
   @Value("\${${SPRING_SCHEDULING_ENABLED_KEY}}")
   var scheduled: Boolean = false
 
-  @EventListener
-  fun startup(event: ContextRefreshedEvent) {
-    if (scheduled) {
-      event.applicationContext.getBean(TransactionTemplate::class.java)
-        .execute {
-          sync()
-        }
-    }
-  }
+//  @EventListener
+//  fun startup(event: ContextRefreshedEvent) {
+//    if (scheduled) {
+//      event.applicationContext.getBean(TransactionTemplate::class.java)
+//        .execute {
+//          sync()
+//        }
+//    }
+//  }
 
   @Scheduled(cron = "\${app.sync-users.cron}")
   @Transactional(rollbackFor = [Throwable::class])

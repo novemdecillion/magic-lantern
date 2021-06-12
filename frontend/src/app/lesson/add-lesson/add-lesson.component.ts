@@ -83,7 +83,7 @@ export class AddLessonComponent implements OnInit {
         } else {
           this.slideDataLoad = of(slides)
 
-          this.groupNodes = createGroupNodes(res.data.authoritativeGroupsByUser)[1];
+          this.groupNodes = Object.values(createGroupNodes(res.data.authoritativeGroupsByUser)[0]);
         }
       });
   }

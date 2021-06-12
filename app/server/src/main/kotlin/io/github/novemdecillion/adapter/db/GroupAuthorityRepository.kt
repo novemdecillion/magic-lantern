@@ -8,6 +8,7 @@ import io.github.novemdecillion.domain.Authority
 import io.github.novemdecillion.domain.ROOT_GROUP_GENERATION_ID
 import io.github.novemdecillion.domain.ROOT_GROUP_ID
 import io.github.novemdecillion.domain.Role
+import org.apache.commons.lang3.StringUtils
 import org.jooq.DSLContext
 import org.jooq.JSONB
 import org.jooq.impl.DSL
@@ -107,12 +108,18 @@ class GroupAuthorityRepository(
         updateFieldStatement += "- '$it'"
 
       }
-    if (addRoles.isNotEmpty()) {
-      updateFieldStatement += addRoles.joinToString(prefix = " || '[", postfix = "]'") { """ "$it" """ }
-    }
+    val addRolesJson = if (addRoles.isNotEmpty()) {
+      addRoles.joinToString(prefix = "'[", postfix = "]'") { """ "$it" """ }
+        .also {
+          updateFieldStatement += "|| $it"
+        }
+    } else StringUtils.EMPTY
 
     dslContext.update(ACCOUNT_GROUP_AUTHORITY)
-      .set(ACCOUNT_GROUP_AUTHORITY.ROLE, DSL.field(updateFieldStatement, JSONB::class.java))
+      .set(ACCOUNT_GROUP_AUTHORITY.ROLE,
+        DSL.`when`(ACCOUNT_GROUP_AUTHORITY.ROLE.isNull, DSL.field(addRolesJson, JSONB::class.java))
+          .otherwise(DSL.field(updateFieldStatement, JSONB::class.java))
+      )
       .where(ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID.`in`(userIds)
         .and(ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(groupTransitionId))
         .and(ACCOUNT_GROUP_AUTHORITY.GROUP_GENERATION_ID.equal(groupGenerationId)))

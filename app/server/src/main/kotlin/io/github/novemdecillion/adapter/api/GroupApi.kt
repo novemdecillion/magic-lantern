@@ -64,15 +64,18 @@ class GroupApi(
   class GroupStudentCountLoader(private val authorityRepository: GroupAuthorityRepository) :
     MappedBatchLoader<GroupKey, Int>, LoaderFunctionMaker<GroupKey, Int> {
     override fun load(keys: Set<GroupKey>): CompletionStage<Map<GroupKey, Int>> {
-      val groupToCountMap = keys
+      val groupToCountMap = mutableMapOf<GroupKey, Int>()
+      keys.forEach { groupToCountMap[it] = 0 }
+
+      keys
         .groupBy { it.groupGenerationId }
-        .flatMap { (groupGenerationId, groups) ->
+        .forEach { (groupGenerationId, groups) ->
           authorityRepository.selectCount(groups.map { it.groupId }, groupGenerationId, Role.STUDY)
-            .map { (groupId, count) ->
-              groups.first { it.groupId == groupId } to count
+            .forEach { (groupId, count) ->
+              groupToCountMap[GroupKey(groupGenerationId, groupId)] = count
             }
         }
-        .toMap()
+
       return CompletableFuture.completedFuture(groupToCountMap)
     }
   }

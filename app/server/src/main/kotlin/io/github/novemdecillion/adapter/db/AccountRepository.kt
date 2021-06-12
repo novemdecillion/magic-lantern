@@ -7,9 +7,7 @@ import io.github.novemdecillion.adapter.jooq.tables.pojos.RealmEntity
 import io.github.novemdecillion.adapter.jooq.tables.records.AccountRecord
 import io.github.novemdecillion.adapter.jooq.tables.records.RealmRecord
 import io.github.novemdecillion.adapter.jooq.tables.references.*
-import io.github.novemdecillion.domain.Authority
-import io.github.novemdecillion.domain.Role
-import io.github.novemdecillion.domain.User
+import io.github.novemdecillion.domain.*
 import org.jooq.DSLContext
 import org.jooq.Record
 import org.jooq.ResultQuery
@@ -157,24 +155,44 @@ class AccountRepository(
   }
 
   fun selectAppendableMemberByGroupTransitionId(groupTransitionId: UUID, groupGenerationId: Int?): List<User> {
-    val parentGroupIdQuery = DSL.select(GROUP_TRANSITION_WITH_PATH.PARENT_GROUP_TRANSITION_ID)
-      .from(GROUP_TRANSITION_WITH_PATH)
-      .where(GROUP_TRANSITION_WITH_PATH.GROUP_TRANSITION_ID.equal(groupTransitionId))
+    val effectiveGeneration = GROUP_GENERATION.`as`("effective_generation")
+    val targetGroup = GROUP_TRANSITION_WITH_PATH.`as`("target_group")
+    return dslContext
+      .with(effectiveGeneration.name).`as`(GroupRepository.selectEffectiveGroupGenerationIds())
+      .with(targetGroup.name)
+      .`as`(DSL.select(DSL.`val`(groupTransitionId).`as`(targetGroup.GROUP_TRANSITION_ID.name))
+        .unionAll(
+          DSL.select(GROUP_TRANSITION_WITH_PATH.PARENT_GROUP_TRANSITION_ID.`as`(targetGroup.GROUP_TRANSITION_ID.name))
+            .from(GROUP_TRANSITION_WITH_PATH)
+            .join(effectiveGeneration.name)
+            .on(GROUP_TRANSITION_WITH_PATH.GROUP_TRANSITION_ID.equal(groupTransitionId).and(
+              effectiveGeneration.GROUP_GENERATION_ID.equal(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID)))
+        ))
+    .select(ACCOUNT.asterisk(), CURRENT_ACCOUNT_GROUP_AUTHORITY.asterisk())
+      .from(ACCOUNT)
+      .innerJoin(CURRENT_ACCOUNT_GROUP_AUTHORITY)
+      .on(ACCOUNT.ACCOUNT_ID.equal(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID))
 
-    val appendableAccountIdsQuery = DSL.select(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID)
-      .from(CURRENT_ACCOUNT_GROUP_AUTHORITY)
-      .where(
-        CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(groupTransitionId)
-          .or(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(parentGroupIdQuery))
-      )
-      .groupBy(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID)
-      .having(
-        DSL.arrayAgg(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID).notContains(arrayOf(groupTransitionId))
-      )
-
-    return selectWithAuthority { statement ->
-      statement.where(ACCOUNT.ACCOUNT_ID.`in`(appendableAccountIdsQuery))
-    }
+    .where(ACCOUNT.ACCOUNT_ID.`in`(
+      DSL.select(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID)
+        .from(CURRENT_ACCOUNT_GROUP_AUTHORITY)
+        .join(effectiveGeneration.name).on(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_GENERATION_ID.`in`(effectiveGeneration.GROUP_GENERATION_ID))
+        .join(targetGroup.name)
+        .on(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.`in`(targetGroup.GROUP_TRANSITION_ID))
+        .groupBy(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID)
+        .having(
+          DSL.arrayAgg(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID).notContains(arrayOf(groupTransitionId))
+        )
+    ))
+      .fetchGroups(ACCOUNT)
+      .map { (account, result) ->
+        val authorities =
+          result.into(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID, CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_GENERATION_ID, CURRENT_ACCOUNT_GROUP_AUTHORITY.ROLE)
+            .map { (groupTransitionId, groupGenerationId, roles) ->
+              Authority(groupTransitionId!!, groupGenerationId!!, objectMapper.readValue<Collection<Role>?>(roles)?.sortedBy { it.ordinal })
+            }
+        recordMapper(account).copy(authorities = authorities)
+      }
   }
 
   fun selectMemberByGroupTransitionId(groupTransitionId: UUID, groupGenerationId: Int?): List<User> {

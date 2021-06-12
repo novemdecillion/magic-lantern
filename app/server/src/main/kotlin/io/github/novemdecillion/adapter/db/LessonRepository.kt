@@ -48,7 +48,8 @@ class LessonRepository(private val dslContext: DSLContext) {
     val statement = dslContext.select(LESSON.asterisk(), GROUP_TRANSITION_WITH_PATH.asterisk())
       .from(LESSON)
       .innerJoin(GROUP_TRANSITION_WITH_PATH)
-      .on(GROUP_TRANSITION_WITH_PATH.GROUP_TRANSITION_ID.equal(LESSON.GROUP_TRANSITION_ID))
+      .on(GROUP_TRANSITION_WITH_PATH.GROUP_TRANSITION_ID.equal(LESSON.GROUP_TRANSITION_ID)
+        .and(GROUP_TRANSITION_WITH_PATH.GROUP_GENERATION_ID.`in`(GroupRepository.selectEffectiveGroupGenerationIds())))
 
     return statementModifier(statement)
       .fetch { record ->

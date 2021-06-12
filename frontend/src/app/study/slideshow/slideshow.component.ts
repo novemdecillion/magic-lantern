@@ -24,7 +24,7 @@ export class SlideshowComponent implements OnInit {
 
   ngOnInit(): void {
     this.isLoading = true;
-    this.viewer.nativeElement.src = `/slideshow/${this.studyId}/` + (this.chapterIndex? `?chapter=${this.chapterIndex}`: '');
+    this.viewer.nativeElement.src = `/slideshow/${this.studyId}/` + ((this.chapterIndex != undefined)? `?chapter=${this.chapterIndex}`: '');
   }
 
   onPrev() {

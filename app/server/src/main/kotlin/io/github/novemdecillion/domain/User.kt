@@ -140,15 +140,28 @@ data class Study(
     val chapterAnswer = answer[chapterIndex] ?: return null
     val shuffled = shuffledQuestion[chapterIndex] ?: return chapterAnswer
     var questionIndex = 0
-    return chapterAnswer
-      .map { (answerQuestionIndex, answerChoiceIndexes) ->
-        val (_, choiceIndexes) = shuffled[answerQuestionIndex]
-        questionIndex++ to answerChoiceIndexes
-          .map { answerChoiceIndex ->
-            choiceIndexes.withIndex().first { it.value == answerChoiceIndex.toInt() }.index.toString()
+
+
+    return shuffled
+      .associate { (shuffledQuestionIndex, shuffledChoiceIndexes) ->
+        val questionAnswers = chapterAnswer[shuffledQuestionIndex]
+
+        questionIndex++ to (questionAnswers
+          ?.map { answerChoiceIndex ->
+            shuffledChoiceIndexes.withIndex().first { it.value == answerChoiceIndex.toInt() }.index.toString()
           }
+          ?: emptyList())
       }
-      .toMap()
+
+//    return chapterAnswer
+//      .map { (answerQuestionIndex, answerChoiceIndexes) ->
+//        val (_, choiceIndexes) = shuffled.first { it.first == answerQuestionIndex }
+//        questionIndex++ to answerChoiceIndexes
+//          .map { answerChoiceIndex ->
+//            choiceIndexes.withIndex().first { it.value == answerChoiceIndex.toInt() }.index.toString()
+//          }
+//      }
+//      .toMap()
   }
 }
 

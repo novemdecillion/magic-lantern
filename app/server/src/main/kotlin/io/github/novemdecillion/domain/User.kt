@@ -139,10 +139,11 @@ data class Study(
   fun shuffledAnswer(chapterIndex: Int): Map<Int, List<String>>? {
     val chapterAnswer = answer[chapterIndex] ?: return null
     val shuffled = shuffledQuestion[chapterIndex] ?: return chapterAnswer
+    var questionIndex = 0
     return chapterAnswer
       .map { (answerQuestionIndex, answerChoiceIndexes) ->
-        val (questionIndex, choiceIndexes) = shuffled[answerQuestionIndex]
-        questionIndex to answerChoiceIndexes
+        val (_, choiceIndexes) = shuffled[answerQuestionIndex]
+        questionIndex++ to answerChoiceIndexes
           .map { answerChoiceIndex ->
             choiceIndexes.withIndex().first { it.value == answerChoiceIndex.toInt() }.index.toString()
           }

@@ -81,7 +81,6 @@ class SlideUseCase(
           }
         } else {
           // 未回答
-          check(0 == pageIndexInChapter)
           // 問題ページ
           modelAndView.model[ANSWER_KEY] = emptyMap<Int, List<String>>()
 

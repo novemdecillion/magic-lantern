@@ -7,15 +7,15 @@
   <ng-template pageToolbar>
     <span class="ms-auto"></span>
 
-    <button class="mx-1" (click)="onImportGeneration()">
+    <button class="mx-1" (click)="onImportGeneration()" matTooltip="インポート">
       <span class="mdi mdi-database-import-outline"></span>
     </button>
 
-    <button class="mx-1" (click)="onExportGeneration()" [disabled]="!nextGenerationId">
+    <button class="mx-1" (click)="onExportGeneration()" [disabled]="!nextGenerationId" matTooltip="エクスポート">
       <span class="mdi mdi-database-export-outline"></span>
     </button>
 
-    <button class="mx-1" (click)="onSwitchGeneration()" [disabled]="!nextGenerationId">
+    <button class="mx-1" (click)="onSwitchGeneration()" [disabled]="!nextGenerationId" matTooltip="世代移行">
       <span class="mdi mdi-arrow-up-bold-outline"></span>
     </button>
 

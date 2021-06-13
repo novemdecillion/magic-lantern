@@ -4,6 +4,14 @@
     {{ group?.groupName }} グループ {{ slide?.config?.title }} 講座状況
   </ng-template>
 
+  <ng-template pageToolbar>
+    <span class="ms-auto"></span>
+
+    <button class="mx-1" (click)="onExportStudentStatus()" matTooltip="エクスポート">
+      <span class="mdi mdi-database-export-outline"></span>
+    </button>
+  </ng-template>
+
   <app-list [dataLoad]="dataLoad">
     <app-list-column name="userName" headerName="氏名"></app-list-column>
     <app-list-column name="email" headerName="メールアドレス"></app-list-column>

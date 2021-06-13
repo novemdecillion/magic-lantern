@@ -8,9 +8,14 @@ type ExplainChapter implements IChapter{
   numberOfPages: Int!
 }
 
+type SurveyQuestion {
+  type: String!
+}
+
 type SurveyChapter implements IChapter{
   title: String!
   numberOfPages: Int!
+  questions: [SurveyQuestion!]!
 }
 
 type ExamQuestion {

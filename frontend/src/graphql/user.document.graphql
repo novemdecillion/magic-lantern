@@ -93,6 +93,14 @@ fragment notStartStudy on NotStartStudy {
 #  }
 }
 
+fragment answerDetails on StudyChapterAnswer {
+  chapterIndex
+  questions {
+    questionIndex
+    answers
+  }
+}
+
 fragment study on Study {
   studyId
   userId
@@ -105,6 +113,10 @@ fragment study on Study {
 
   scoreDetails {
     ...studyChapterRecord
+  }
+
+  answerDetails {
+    ...answerDetails
   }
 
   startAt

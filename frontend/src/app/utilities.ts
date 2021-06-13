@@ -145,21 +145,32 @@ export function downloadBlob(filename: string, blob: Blob, element: HTMLElement)
   window.URL.revokeObjectURL(url);
 }
 
+export type StudyStatusMap<R> = {[key in StudyStatus]: R};
+
+export const studyStatusDefine: StudyStatusMap<{ name: string }>
+= {
+  NOT_START: { name: '未着手'},
+  ON_GOING: { name: '実施中'},
+  PASS: { name: '合格'},
+  FAILED: { name: '不合格'},
+  EXCLUDED: { name: '対象外'}
+}
 
 export function studyStatus(study: StudyFragment): string {
+  let statusName = studyStatusDefine[study.status].name
   switch(study.status) {
     case StudyStatus.NotStart:
-      return '未着手';
+      return statusName;
     case StudyStatus.OnGoing:
-      return `実施中(${study.progressRate}%)`;
+      return `${statusName}(${study.progressRate}%)`;
     case StudyStatus.Pass:
       let sumPass = studyScore(study)
-      return `合格(得点:${sumPass[0]}点 / 合格:${sumPass[1]}点)`;
+      return `${statusName}(得点:${sumPass[0]}点 / 合格:${sumPass[1]}点)`;
     case StudyStatus.Failed:
       let sumFailed = studyScore(study)
-      return `不合格(得点:${sumFailed[0]}点 / 合格:${sumFailed[1]}点)`;
+      return `${statusName}(得点:${sumFailed[0]}点 / 合格:${sumFailed[1]}点)`;
     case StudyStatus.Excluded:
-      return '対象外';
+      return statusName;
   }
 }
 

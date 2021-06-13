@@ -397,10 +397,16 @@ export type ExplainChapter = IChapter & {
   numberOfPages: Scalars['Int'];
 };
 
+export type SurveyQuestion = {
+  __typename?: 'SurveyQuestion';
+  type: Scalars['String'];
+};
+
 export type SurveyChapter = IChapter & {
   __typename?: 'SurveyChapter';
   title: Scalars['String'];
   numberOfPages: Scalars['Int'];
+  questions: Array<SurveyQuestion>;
 };
 
 export type ExamQuestion = {
@@ -1021,6 +1027,10 @@ export type SlideConfigFragment = (
   ) | (
     { __typename?: 'SurveyChapter' }
     & Pick<SurveyChapter, 'title' | 'numberOfPages'>
+    & { questions: Array<(
+      { __typename?: 'SurveyQuestion' }
+      & Pick<SurveyQuestion, 'type'>
+    )> }
   ) | (
     { __typename?: 'ExamChapter' }
     & Pick<ExamChapter, 'passScore' | 'title' | 'numberOfPages'>
@@ -1186,6 +1196,15 @@ export type NotStartStudyFragment = (
   ) }
 );
 
+export type AnswerDetailsFragment = (
+  { __typename?: 'StudyChapterAnswer' }
+  & Pick<StudyChapterAnswer, 'chapterIndex'>
+  & { questions: Array<(
+    { __typename?: 'StudyQuestionAnswer' }
+    & Pick<StudyQuestionAnswer, 'questionIndex' | 'answers'>
+  )> }
+);
+
 export type StudyFragment = (
   { __typename?: 'Study' }
   & Pick<Study, 'studyId' | 'userId' | 'status' | 'progressRate' | 'startAt' | 'endAt'>
@@ -1195,6 +1214,9 @@ export type StudyFragment = (
   )>, scoreDetails: Array<(
     { __typename?: 'StudyChapterRecord' }
     & StudyChapterRecordFragment
+  )>, answerDetails: Array<(
+    { __typename?: 'StudyChapterAnswer' }
+    & AnswerDetailsFragment
   )>, slide: (
     { __typename?: 'Slide' }
     & SlideFragment
@@ -1315,6 +1337,11 @@ export const SlideConfigFragmentDoc = gql`
         score
       }
     }
+    ... on SurveyChapter {
+      questions {
+        type
+      }
+    }
   }
 }
     `;
@@ -1415,6 +1442,15 @@ export const StudyChapterRecordFragmentDoc = gql`
   }
 }
     `;
+export const AnswerDetailsFragmentDoc = gql`
+    fragment answerDetails on StudyChapterAnswer {
+  chapterIndex
+  questions {
+    questionIndex
+    answers
+  }
+}
+    `;
 export const StudyFragmentDoc = gql`
     fragment study on Study {
   studyId
@@ -1427,6 +1463,9 @@ export const StudyFragmentDoc = gql`
   scoreDetails {
     ...studyChapterRecord
   }
+  answerDetails {
+    ...answerDetails
+  }
   startAt
   endAt
   slide {
@@ -1435,6 +1474,7 @@ export const StudyFragmentDoc = gql`
 }
     ${StudyProgressFragmentDoc}
 ${StudyChapterRecordFragmentDoc}
+${AnswerDetailsFragmentDoc}
 ${SlideFragmentDoc}`;
 export const ForMemberListDocument = gql`
     query forMemberList($groupId: ID!) {

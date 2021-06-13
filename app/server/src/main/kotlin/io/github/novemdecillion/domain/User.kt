@@ -150,18 +150,10 @@ data class Study(
           ?.map { answerChoiceIndex ->
             shuffledChoiceIndexes.withIndex().first { it.value == answerChoiceIndex.toInt() }.index.toString()
           }
-          ?: emptyList())
+          // emptyList()だとThymeleafで実行されるSpELがcontainsメソッドを見つけられない
+          // おそらくList<String>を期待しているのに、emptyList()はList<Nothing>だからだと思う。
+          ?: mutableListOf())
       }
-
-//    return chapterAnswer
-//      .map { (answerQuestionIndex, answerChoiceIndexes) ->
-//        val (_, choiceIndexes) = shuffled.first { it.first == answerQuestionIndex }
-//        questionIndex++ to answerChoiceIndexes
-//          .map { answerChoiceIndex ->
-//            choiceIndexes.withIndex().first { it.value == answerChoiceIndex.toInt() }.index.toString()
-//          }
-//      }
-//      .toMap()
   }
 }
 

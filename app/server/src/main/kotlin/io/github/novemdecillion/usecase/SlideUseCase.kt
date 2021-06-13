@@ -8,8 +8,9 @@ import org.springframework.web.servlet.ModelAndView
 
 @Component
 class SlideUseCase(
-    private val studyRepository: IStudyRepository,
-    private val appSlideProp: AppSlideProperties) {
+  private val studyRepository: IStudyRepository,
+  private val appSlideProp: AppSlideProperties
+) {
 
   companion object {
     const val PAGE_KEY = "page"
@@ -23,13 +24,20 @@ class SlideUseCase(
     const val SLIDESHOW_PATH = "/slideshow"
     const val ENDING_PATH = "$SLIDESHOW_PATH/ending"
   }
-  
+
   enum class SlideAction {
     PREV,
     NEXT,
   }
 
-  fun showPage(study: Study, slide: Slide, chapter: IChapter, chapterIndex: Int, pageIndexInChapter: Int, modelAndView: ModelAndView) {
+  fun showPage(
+    study: Study,
+    slide: Slide,
+    chapter: IChapter,
+    chapterIndex: Int,
+    pageIndexInChapter: Int,
+    modelAndView: ModelAndView
+  ) {
     var updatedStudy = study.copy()
 
     when (chapter) {
@@ -58,7 +66,8 @@ class SlideUseCase(
           ?: run {
             chapter.shuffled()
               .let {
-                updatedStudy = updatedStudy.copy(shuffledQuestion = study.shuffledQuestion.plus(chapterIndex to it.second))
+                updatedStudy =
+                  updatedStudy.copy(shuffledQuestion = study.shuffledQuestion.plus(chapterIndex to it.second))
                 it.first
               }
           }
@@ -102,8 +111,10 @@ class SlideUseCase(
     studyRepository.update(updatedStudy)
   }
 
-  fun controlPage(study: Study, slide: Slide, pageIndex: Int, chapter: IChapter, chapterIndex: Int, pageIndexInChapter: Int,
-                  action: SlideAction, params: LinkedMultiValueMap<String, String>): Pair<String, Int> {
+  fun controlPage(
+    study: Study, slide: Slide, pageIndex: Int, chapter: IChapter, chapterIndex: Int, pageIndexInChapter: Int,
+    action: SlideAction, params: LinkedMultiValueMap<String, String>
+  ): Pair<String, Int> {
     var redirectUrl = "${SLIDESHOW_PATH}/${study.studyId}/"
     var resolvedPageIndex = pageIndex
     when (action) {
@@ -113,17 +124,31 @@ class SlideUseCase(
         } else {
           resolvedPageIndex--
         }
+
+        val (prevChapter, prevPageIndexInChapter) = slide.config.chapterAndPageIndex(resolvedPageIndex)!!
+        if ((prevChapter.value !is ExplainChapter)
+          && (1 == prevPageIndexInChapter)
+        ) {
+          // 後の章から逆戻り
+          // 回答がない?
+          if (study.answer[chapterIndex] == null) {
+            resolvedPageIndex--
+          }
+        }
       }
       SlideAction.NEXT -> {
-        var updatedStudy = study.copy()
         if (slide.config.numberOfPages() <= (resolvedPageIndex + 1)) {
           redirectUrl = ENDING_PATH
         } else {
           resolvedPageIndex++
         }
-        when (chapter) {
-          is ExamChapter ->
-            if (0 == pageIndexInChapter) {
+
+        if ((chapter !is ExplainChapter)
+          && (0 == pageIndexInChapter)
+        ) {
+          var updatedStudy = study.copy()
+          when (chapter) {
+            is ExamChapter -> {
               val answer = convertToAnswer(params, study.shuffledQuestion[chapterIndex]!!)
               updatedStudy = updatedStudy
                 .recordAnswer(
@@ -131,20 +156,23 @@ class SlideUseCase(
                   chapter.chapterRecord(Study.convertForExamAnswer(answer), slide.config.option.scoringMethod)
                 )
             }
-          is SurveyChapter ->
-            if (0 == pageIndexInChapter) {
+            is SurveyChapter -> {
               val answer = convertToAnswer(params)
               updatedStudy = updatedStudy
                 .recordAnswer(chapterIndex, answer)
             }
+          }
+          updatedStudy = updatedStudy.updateStatus()
+          studyRepository.update(updatedStudy)
         }
-        updatedStudy = updatedStudy.updateStatus()
-        studyRepository.update(updatedStudy)
+
       }
     }
+
+
     return redirectUrl to resolvedPageIndex
   }
-  
+
   private fun convertToAnswer(params: LinkedMultiValueMap<String, String>): Map<Int, List<String>> {
     return params
       .filter { it.key != ACTION_KEY }
@@ -156,7 +184,10 @@ class SlideUseCase(
       }
   }
 
-  private fun convertToAnswer(params: LinkedMultiValueMap<String, String>, shuffled: List<Pair<Int, List<Int>>>): Map<Int, List<String>> {
+  private fun convertToAnswer(
+    params: LinkedMultiValueMap<String, String>,
+    shuffled: List<Pair<Int, List<Int>>>
+  ): Map<Int, List<String>> {
     val convertedParam = convertToAnswer(params)
     return convertedParam
       .map { (questionIndex, answers) ->

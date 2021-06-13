@@ -114,7 +114,12 @@ data class Study(
       StudyStatus.ON_GOING ->if (progressRate == 100) {
         updatedEndAt = OffsetDateTime.now()
         if (isPass()) StudyStatus.PASS else StudyStatus.FAILED
-      } else status
+      } else {
+        if ( updatedStartAt == null ) {
+          updatedStartAt = OffsetDateTime.now()
+        }
+        status
+      }
 
       else -> {
         val recheckedStatus = if (isPass()) StudyStatus.PASS else StudyStatus.FAILED

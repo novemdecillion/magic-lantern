@@ -58,7 +58,7 @@ class SlideRepository(private val appSlideProperties: AppSlideProperties) {
     if (slideConfigPath == null) {
       FileSystemUtils.deleteRecursively(slideFolderPath)
       FileSystemUtils.deleteRecursively(tempFolderPath)
-      throw FileNotFoundException("設定ファイル($SLIDE_CONFIG_FILE_NAME)が見つかっていません。")
+      throw FileNotFoundException("設定ファイル($SLIDE_CONFIG_FILE_NAME)が見つかりません。")
     }
     val slideConfigExistFolderPath = slideConfigPath.parent
     Files.move(slideConfigExistFolderPath, slideFolderPath, StandardCopyOption.REPLACE_EXISTING)

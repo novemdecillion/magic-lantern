@@ -47,11 +47,11 @@ class SlideApi(private val slideRepository: SlideRepository,
   fun addSlide(command: AddSlideCommand, environment: DataFetchingEnvironment): Boolean {
     val slideFile = (environment.variables["command"] as Map<String, Part>)["slideFile"] ?: return false
 
-//    if (slideFile.contentType != "application/zip") {
-//      return false
-//    }
-
-    slideRepository.insert(command.slideId, slideFile.inputStream)
+    try {
+      slideRepository.insert(command.slideId, slideFile.inputStream)
+    } catch (ex: Exception) {
+      throw ApiException(ex.message?: "処理に失敗しました。")
+    }
     return true
   }
 

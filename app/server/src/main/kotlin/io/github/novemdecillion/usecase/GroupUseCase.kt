@@ -148,7 +148,7 @@ class GroupUseCase(val idGeneratorService: IdGeneratorService) {
     var rowIndex = 0
     var maxGroupColNum = GROUP_START_COL
     var groupRow = sheet.getRow(rowIndex)
-    while (groupRow.getCell(ROOT_GROUP_COL - 1).stringCellValue != GROUP_ID_HEADER) {
+    while (groupRow.getCell(ROOT_GROUP_COL - 1, Row.MissingCellPolicy.CREATE_NULL_AS_BLANK).stringCellValue != GROUP_ID_HEADER) {
       maxGroupColNum = max(maxGroupColNum, groupRow.lastCellNum.toInt())
       groupRow = sheet.getRow(++rowIndex)
       // フォーマット不正

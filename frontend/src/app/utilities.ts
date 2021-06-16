@@ -114,7 +114,7 @@ export function createRoleName(roles?: Role[] | null): string {
     .join(' / ')
 }
 
-export function toBlob(base64: string, mime: string): Blob | null {
+export function base64ToBlob(base64: string, mime: string): Blob | null {
   let bin = atob(base64.replace(/^.*,/, ''));
   let buffer = new Uint8Array(bin.length);
   for (var i = 0; i < bin.length; i++) {

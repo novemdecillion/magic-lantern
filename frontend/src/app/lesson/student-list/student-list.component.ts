@@ -1,9 +1,9 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { ForLessonStudentListGQL, GroupFragment, SlideFragment, StudyStatus, ChangeStudyStatusGQL, AnswerDetailsFragment } from 'src/generated/graphql';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { createGroupPathNameByGroups, errorMessageIfNeed, studyStatus, studyStatusDefine } from 'src/app/utilities';
+import { createGroupPathNameByGroups, downloadBlob, errorMessageIfNeed, studyStatus, studyStatusDefine } from 'src/app/utilities';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from 'src/app/share/confirm-dialog/confirm-dialog.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -43,7 +43,8 @@ export class StudentListComponent implements OnInit {
     private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private lessonStudentListGql: ForLessonStudentListGQL,
-    private changeStudyStatusGQL: ChangeStudyStatusGQL
+    private changeStudyStatusGQL: ChangeStudyStatusGQL,
+    private hostElementRef: ElementRef<HTMLElement>
   ) {
     this.lessonId = activatedRoute.snapshot.paramMap.get('lessonId')!!;
   }
@@ -220,14 +221,17 @@ export class StudentListComponent implements OnInit {
     const blob = new Blob([bom, this.escapeAllForCSV(data)], {type: 'text/csv'});
     const url = window.URL.createObjectURL(blob);
 
-    let link = document.createElement('a');
-    link.setAttribute('style', 'display: none');
-    link.download = `講座状況-${this.group?.groupName}-${this.slide?.config.title}-${format(new Date(), 'yyyyMMddHHmm')}.csv`;
-    link.href = url;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+    // let link = document.createElement('a');
+    // link.setAttribute('style', 'display: none');
+    // link.download = ;
+    // link.href = url;
+    // document.body.appendChild(link);
+    // link.click();
+    // document.body.removeChild(link);
+    // window.URL.revokeObjectURL(url);
+
+    downloadBlob(`講座状況-${this.group?.groupName}-${this.slide?.config.title}-${format(new Date(), 'yyyyMMddHHmm')}.csv`,
+      blob, this.hostElementRef.nativeElement);
   }
 
   escapeForCSV(s: string | undefined | null): string {

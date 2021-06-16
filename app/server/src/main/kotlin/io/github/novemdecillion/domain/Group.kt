@@ -7,7 +7,7 @@ import java.util.*
 const val SYSTEM_REALM_ID: String = "!system"
 val ROOT_GROUP_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 const val ROOT_GROUP_GENERATION_ID: Int = 0
-const val GROUP_PATH_SEPARATOR = "/"
+const val GROUP_PATH_SEPARATOR = "\t"
 
 data class Member (
   val userId: UUID,

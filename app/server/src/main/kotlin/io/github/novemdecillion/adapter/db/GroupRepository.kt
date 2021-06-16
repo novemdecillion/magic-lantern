@@ -248,8 +248,8 @@ class GroupRepository(
     }
 
     fun convertPath(pathIds: String, pathNames: String): List<GroupCore> {
-      val groupIds = pathIds.split("/").filter { it.isNotEmpty() }.map { UUID.fromString(it) }
-      val groupNames = pathNames.split("/").filter { it.isNotEmpty() }
+      val groupIds = pathIds.split(GROUP_PATH_SEPARATOR).filter { it.isNotEmpty() }.map { UUID.fromString(it) }
+      val groupNames = pathNames.split(GROUP_PATH_SEPARATOR).filter { it.isNotEmpty() }
       require(groupIds.size == groupNames.size)
       return groupIds.indices
         .filter { it != groupIds.lastIndex }

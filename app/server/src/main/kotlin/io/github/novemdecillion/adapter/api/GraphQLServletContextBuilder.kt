@@ -35,13 +35,15 @@ class GraphQLServletContextBuilder(
   val dataLoaderRegistry: DataLoaderRegistry = DataLoaderRegistry()
     .also { registry ->
       if (!loaderFunctions.isNullOrEmpty()) {
+        val options = DataLoaderOptions().setCachingEnabled(false)
+
         loaderFunctions
           .forEach {
             val dataLoader = when (it) {
-              is BatchLoader<*, *> -> DataLoader.newDataLoader(it)
-              is BatchLoaderWithContext<*, *> -> DataLoader.newDataLoader(it)
-              is MappedBatchLoader<*, *> -> DataLoader.newMappedDataLoader(it)
-              is MappedBatchLoaderWithContext<*, *> -> DataLoader.newMappedDataLoader(it)
+              is BatchLoader<*, *> -> DataLoader.newDataLoader(it, options)
+              is BatchLoaderWithContext<*, *> -> DataLoader.newDataLoader(it, options)
+              is MappedBatchLoader<*, *> -> DataLoader.newMappedDataLoader(it, options)
+              is MappedBatchLoaderWithContext<*, *> -> DataLoader.newMappedDataLoader(it, options)
               else -> return@forEach
             }
             registry.register(it::class.java.simpleName, dataLoader)

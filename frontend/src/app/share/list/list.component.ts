@@ -91,7 +91,7 @@ export class ListComponent<Record extends {[key: string]: any}> implements OnIni
         if ((val === undefined) || (val === null)) {
           return accumulator;
         }
-        return (0 < accumulator.length)? `${accumulator} ${val}`: val
+        return (0 < accumulator.length)? `${accumulator} ${val}`: val.toString();
       }, '')
       return filter.trim().split(' ').some(filterWord => dataStr.indexOf(filterWord) != -1);
     }

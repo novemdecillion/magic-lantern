@@ -14,45 +14,20 @@
 
   <app-list [dataLoad]="dataLoad">
     <app-list-column name="groupName" headerName="グループ">
-      <ng-template listCell let-row="row">
-        {{row.group.groupName}}
-      </ng-template>
     </app-list-column>
     <app-list-column name="title" headerName="教材タイトル">
-      <ng-template listCell let-row="row">
-        {{row.slide.config.title}}
-      </ng-template>
     </app-list-column>
     <app-list-column name="studentCount" headerName="受講者数">
-      <ng-template listCell let-row="row">
-        <a routerLink="/lesson/list/{{row.lessonId}}">{{row.studentCount}}</a>
-      </ng-template>
     </app-list-column>
     <app-list-column name="notStartCount" headerName="未着手数">
-      <ng-template listCell let-row="row">
-        {{row.studentCount - row.statistics.onGoingCount - row.statistics.passCount - row.statistics.failCount - row.statistics.excludedCount}}
-      </ng-template>
     </app-list-column>
     <app-list-column name="onGoingCount" headerName="実施中数">
-      <ng-template listCell let-row="row">
-        {{row.statistics.onGoingCount}}
-      </ng-template>
     </app-list-column>
     <app-list-column name="passCount" headerName="合格数">
-      <ng-template listCell let-row="row">
-        {{row.statistics.passCount}}
-      </ng-template>
     </app-list-column>
     <app-list-column name="failCount" headerName="不合格数">
-      <ng-template listCell let-row="row">
-        {{row.statistics.failCount}}
-      </ng-template>
     </app-list-column>
-
     <app-list-column name="excludedCount" headerName="対象外数">
-      <ng-template listCell let-row="row">
-        {{row.statistics.excludedCount}}
-      </ng-template>
     </app-list-column>
 
     <app-list-column name="operation" [sort]="false">

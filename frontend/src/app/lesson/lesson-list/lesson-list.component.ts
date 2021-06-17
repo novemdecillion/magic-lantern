@@ -8,12 +8,24 @@ import { ConfirmDialogComponent } from 'src/app/share/confirm-dialog/confirm-dia
 import { errorMessageIfNeed } from 'src/app/utilities';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
+export interface LessonRecord {
+  lessonId: string;
+  groupName: string;
+  title: string;
+  studentCount: number;
+  notStartCount: number;
+  onGoingCount: number;
+  passCount: number;
+  failCount: number;
+  excludedCount: number;
+}
+
 @Component({
   selector: 'app-lesson-list',
   templateUrl: './lesson-list.component.html'
 })
 export class LessonListComponent implements OnInit {
-  dataLoad: Observable<LessonWithStatisticsFragment[]> | null = null;
+  dataLoad: Observable<LessonRecord[]> | null = null;
 
   constructor(public dialog: MatDialog,
     private snackBar: MatSnackBar,
@@ -28,7 +40,19 @@ export class LessonListComponent implements OnInit {
     this.dataLoad = this.lessonsGql.fetch()
       .pipe(
         map(res => {
-          return res.data.manageableLessons
+          return res.data.manageableLessons.map(row => {
+            return {
+              lessonId: row.lessonId,
+              groupName: row.group.groupName,
+              title: row.slide.config.title,
+              studentCount: row.studentCount,
+              notStartCount: row.studentCount - row.statistics.onGoingCount - row.statistics.passCount - row.statistics.failCount - row.statistics.excludedCount,
+              onGoingCount: row.statistics.onGoingCount,
+              passCount: row.statistics.passCount,
+              failCount: row.statistics.failCount,
+              excludedCount: row.statistics.excludedCount
+            }
+          })
         }),
         share()
       );
@@ -43,8 +67,8 @@ export class LessonListComponent implements OnInit {
       });
   }
 
-  onDeleteLesson(row: LessonWithStatisticsFragment) {
-    this.dialog.open(ConfirmDialogComponent, { data: { title: '講座削除', message: `グループ「${row.group.groupName}」より教材「${row.slide.config.title}」を削除します。よろしですか?` } })
+  onDeleteLesson(row: LessonRecord) {
+    this.dialog.open(ConfirmDialogComponent, { data: { title: '講座削除', message: `グループ「${row.groupName}」より教材「${row.title}」を削除します。よろしですか?` } })
       .afterClosed().subscribe(res => {
         if (res) {
           this.deleteLessonGql.mutate({ lessonId: row.lessonId })

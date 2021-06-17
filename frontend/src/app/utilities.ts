@@ -187,6 +187,7 @@ export interface StudyStatusRecord {
   chapterIndex: number;
   title: string;
   status: string;
+  progress: string;
   pages: number
   numberOfPages: number;
 
@@ -202,6 +203,7 @@ export function convertToStudyStatus(slide: SlideFragment, study?: StudyFragment
         chapterIndex: index,
         title: chapter.title,
         status: '未着手',
+        progress: `0 / ${chapter.numberOfPages}`,
         pages: 0,
         numberOfPages: chapter.numberOfPages
       };
@@ -215,7 +217,9 @@ export function convertToStudyStatus(slide: SlideFragment, study?: StudyFragment
 
   if (study) {
     study.progressDetails.forEach(prog => {
-      records[prog.chapterIndex].pages = prog.pageIndexes.length;
+      let record = records[prog.chapterIndex];
+      record.pages = prog.pageIndexes.length;
+      record.progress = `${record.pages} / ${record.numberOfPages}`;
     })
     study.scoreDetails.forEach(score => {
       records[score.chapterIndex].score = score.questions.reduce((acc, value) => acc + (value.scoring ?? 0), 0);

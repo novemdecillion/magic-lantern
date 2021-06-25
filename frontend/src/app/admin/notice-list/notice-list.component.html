@@ -19,8 +19,8 @@
         <a style="cursor: pointer;" (click)="onEditNotice(row)">{{ row.message }}</a>
       </ng-template>
     </app-list-column>
-    <app-list-column name="startAt" headerName="掲載開始"></app-list-column>
-    <app-list-column name="endAt" headerName="掲載終了"></app-list-column>
+    <app-list-column name="formattedStartAt" headerName="掲載開始"></app-list-column>
+    <app-list-column name="formattedEndAt" headerName="掲載終了"></app-list-column>
 
     <app-list-column name="operation" [sort]="false">
       <ng-template listCell let-row="row">

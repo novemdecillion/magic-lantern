@@ -4,7 +4,13 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import formatISO from 'date-fns/formatISO';
 import parseISO from 'date-fns/parseISO';
 import { errorMessageIfNeed } from 'src/app/utilities';
-import { NoticeFragment, AddNoticeGQL, UpdateNoticeGQL } from 'src/generated/graphql';
+import { UpdateNoticeCommand, AddNoticeCommand, AddNoticeGQL, UpdateNoticeGQL } from 'src/generated/graphql';
+import { NoticeRecord } from '../notice-list/notice-list.component';
+
+// type NoticeRecord = NoticeFragment & {
+//   parsedStartAt: Date | null
+//   parsedEndAt: Date | null
+// }
 
 @Component({
   selector: 'app-edit-notice',
@@ -13,11 +19,11 @@ import { NoticeFragment, AddNoticeGQL, UpdateNoticeGQL } from 'src/generated/gra
 })
 export class EditNoticeComponent {
   isEdit: boolean
-  notice: NoticeFragment
+  notice: NoticeRecord
 
   constructor(
     private dialogRef: MatDialogRef<EditNoticeComponent>,
-    @Inject(MAT_DIALOG_DATA) notice: NoticeFragment,
+    @Inject(MAT_DIALOG_DATA) notice: NoticeRecord,
     private snackBar: MatSnackBar,
     private addNoticeGql: AddNoticeGQL, private updateNoticeGql: UpdateNoticeGQL
   ) {
@@ -25,6 +31,7 @@ export class EditNoticeComponent {
       this.isEdit = true;
       this.notice = Object.assign({}, notice);
       delete this.notice.__typename;
+      delete this.notice.updateAt;
 
       if (this.notice.startAt) {
         this.notice.startAt = parseISO(this.notice.startAt)
@@ -40,22 +47,38 @@ export class EditNoticeComponent {
   }
 
   onOK(): void {
+    let startAt = null;
     if (this.notice.startAt) {
-      this.notice.startAt = formatISO(this.notice.startAt, { representation: 'date' })
+      startAt = formatISO(this.notice.startAt, { representation: 'date' })
     }
+    let endAt = null;
     if (this.notice.endAt) {
-      this.notice.endAt = formatISO(this.notice.endAt, { representation: 'date' })
+      endAt = formatISO(this.notice.endAt, { representation: 'date' })
+    }
+
+    if (startAt && endAt && endAt < startAt) {
+      this.snackBar.open('掲載開始日は終了日より前にしてください。', '確認');
+      return
     }
 
     if (this.isEdit) {
-      this.updateNoticeGql.mutate({command: this.notice})
+      this.updateNoticeGql.mutate({command: {
+        noticeId: this.notice.noticeId,
+        message: this.notice.message,
+        startAt,
+        endAt
+      }})
         .subscribe(res => {
           if(!errorMessageIfNeed(res, this.snackBar)) {
             this.dialogRef.close(true)
           }
         });
     } else {
-      this.addNoticeGql.mutate({command: this.notice})
+      this.addNoticeGql.mutate({command: {
+        message: this.notice.message,
+        startAt,
+        endAt
+      }})
         .subscribe(res => {
           if(!errorMessageIfNeed(res, this.snackBar)) {
             this.dialogRef.close(true)

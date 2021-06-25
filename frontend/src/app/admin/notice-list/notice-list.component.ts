@@ -7,6 +7,12 @@ import { ConfirmDialogComponent } from 'src/app/share/confirm-dialog/confirm-dia
 import { EditNoticeComponent } from '../edit-notice/edit-notice.component';
 import { errorMessageIfNeed, sortNotices } from 'src/app/utilities';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { format, parseISO } from 'date-fns';
+
+export type NoticeRecord = NoticeFragment & {
+  formattedStartAt?: string
+  formattedEndAt?: string
+}
 
 @Component({
   selector: 'app-notice-list',
@@ -15,7 +21,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   ]
 })
 export class NoticeListComponent implements OnInit {
-  dataLoad: Observable<NoticeFragment[]> | null = null;
+  dataLoad: Observable<NoticeRecord[]> | null = null;
 
   constructor(private dialog: MatDialog,
     private snackBar: MatSnackBar,
@@ -28,7 +34,20 @@ export class NoticeListComponent implements OnInit {
   onLoadData() {
     this.dataLoad = this.noticesGql.fetch()
       .pipe(
-        map(res => sortNotices(res.data.notices)),
+        map(res => {
+          let notices = res.data.notices;
+
+          notices.map((notice: NoticeRecord) => {
+            if (notice.startAt) {
+              notice.formattedStartAt = format(parseISO(notice.startAt), 'yyyy/MM/dd')
+            }
+            if (notice.endAt) {
+              notice.formattedEndAt = format(parseISO(notice.endAt), 'yyyy/MM/dd')
+            }
+          })
+
+          return sortNotices(notices);
+        }),
         share()
       );
   }
@@ -43,7 +62,7 @@ export class NoticeListComponent implements OnInit {
 
   }
 
-  onEditNotice(row: NoticeFragment) {
+  onEditNotice(row: NoticeRecord) {
     this.dialog.open(EditNoticeComponent, { width: '400px', data: row })
       .afterClosed().subscribe(res => {
         if (res) {
@@ -52,7 +71,7 @@ export class NoticeListComponent implements OnInit {
       });
   }
 
-  onDeleteNotice(row: NoticeFragment) {
+  onDeleteNotice(row: NoticeRecord) {
     this.dialog.open(ConfirmDialogComponent, { data: { title: '通知削除', message: `「${row.message}」を削除します。よろしですか?` } })
       .afterClosed().subscribe(isOk => {
         if (isOk) {

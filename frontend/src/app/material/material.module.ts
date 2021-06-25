@@ -1,4 +1,4 @@
-import { NgModule } from "@angular/core";
+import { Injectable, NgModule } from "@angular/core";
 import { MatButtonModule } from '@angular/material/button';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCardModule } from '@angular/material/card';
@@ -57,6 +57,7 @@ const MODULES = [
   MatTooltipModule,
 ];
 
+@Injectable()
 class JaDateAdapter extends NativeDateAdapter {
   getDateNames(): string[] {
     const dateNames: string[] = [];

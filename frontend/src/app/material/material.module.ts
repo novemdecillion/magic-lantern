@@ -15,7 +15,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 // import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatSidenavModule } from '@angular/material/sidenav';
-import { MatSnackBarModule, MAT_SNACK_BAR_DEFAULT_OPTIONS } from '@angular/material/snack-bar';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatSortModule } from "@angular/material/sort";
 import { MatStepperModule } from '@angular/material/stepper';
 import { MatTableModule } from '@angular/material/table';
@@ -23,7 +23,7 @@ import { MatTreeModule } from '@angular/material/tree';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatAutoHeaderRowDef, MatAutoRowDef } from "./table";
-import { MatNativeDateModule, MAT_DATE_LOCALE } from "@angular/material/core";
+import { DateAdapter, MatNativeDateModule, MAT_DATE_LOCALE, NativeDateAdapter } from "@angular/material/core";
 
 const DECLARATIONS = [
   MatAutoHeaderRowDef,
@@ -57,6 +57,16 @@ const MODULES = [
   MatTooltipModule,
 ];
 
+class JaDateAdapter extends NativeDateAdapter {
+  getDateNames(): string[] {
+    const dateNames: string[] = [];
+    for (let i = 0; i < 31; i++) {
+      dateNames[i] = String(i + 1);
+    }
+    return dateNames;
+  }
+}
+
 @NgModule({
   declarations: [
     ...DECLARATIONS
@@ -72,6 +82,7 @@ const MODULES = [
     {provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: { minWidth: 320 }},
     // {provide: MAT_SNACK_BAR_DEFAULT_OPTIONS, useValue: {duration: 5000}},
     {provide: MAT_DATE_LOCALE, useValue: 'ja-JP'},
+    {provide: DateAdapter, useClass: JaDateAdapter}
   ]
 })
 export class MaterialModule { }

@@ -6,6 +6,7 @@ import io.github.novemdecillion.adapter.jooq.tables.references.NOTICE
 import org.jooq.*
 import org.springframework.stereotype.Repository
 import java.time.LocalDate
+import java.time.OffsetDateTime
 import java.util.*
 
 @Repository
@@ -18,6 +19,7 @@ class NoticeRepository(private val dslContext: DSLContext) {
         .also { record ->
           record.noticeId = notice.noticeId
           record.message = notice.message
+          record.updateAt = notice.updateAt
           notice.startAt?.let { record.startAt = it }
           notice.endAt?.let { record.endAt = it }
         })
@@ -29,6 +31,7 @@ class NoticeRepository(private val dslContext: DSLContext) {
       .executeUpdate(NoticeRecord()
         .also { record ->
           record.noticeId = notice.noticeId
+          record.updateAt = notice.updateAt
           notice.message?.also { record.message = it }
           notice.startAt?.also { record.startAt = it }
           notice.endAt?.also { record.endAt = it }

@@ -7,12 +7,12 @@
   <app-list [dataLoad]="dataLoad">
     <app-list-column name="title" headerName="教材タイトル">
       <ng-template listCell let-row="row">
-        <a [routerLink]="" (click)="onStartStudy(row)">{{ row.slide.config.title }}</a>
+        <a [routerLink]="" (click)="onStartStudy(row)">{{ row.title }}</a>
       </ng-template>
     </app-list-column>
-    <app-list-column name="status" headerName="状況">
+    <app-list-column name="studyStatus" headerName="状況">
       <ng-template listCell let-row="row">
-        <a [routerLink]="statusPath(row)">{{ studyStatus(row) }}</a>
+        <a [routerLink]="statusPath(row)">{{ row.studyStatus }}</a>
       </ng-template>
     </app-list-column>
   </app-list>

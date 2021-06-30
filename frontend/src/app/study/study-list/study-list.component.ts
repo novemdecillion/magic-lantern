@@ -6,12 +6,22 @@ import { map, share } from 'rxjs/operators';
 import { errorMessageIfNeed, studyStatus } from 'src/app/utilities';
 import { ForStudyListGQL, StudyFragment, StudyStatus, StartStadyGQL } from 'src/generated/graphql';
 
+
+
+interface StudyRecord {
+  studyId?: string;
+  slideId: string;
+  title: string;
+  status: StudyStatus;
+  studyStatus: string;
+}
+
 @Component({
   selector: 'app-study-list',
   templateUrl: './study-list.component.html'
 })
 export class StudyListComponent implements OnInit {
-  dataLoad: Observable<StudyFragment[]> | null = null;
+  dataLoad: Observable<StudyRecord[]> | null = null;
 
   constructor(private router: Router,
     private snackBar: MatSnackBar,
@@ -30,9 +40,20 @@ export class StudyListComponent implements OnInit {
           let studies = res.data.studiesByUser
           .map(study => {
             if (study.__typename == 'Study') {
-              return study as StudyFragment
+              return {
+                slideId: study.slide.slideId,
+                studyId: study.studyId,
+                title: study.slide.config.title,
+                status: study.status,
+                studyStatus: studyStatus(study)
+              }
             } else {
-              return <any>{ slide: study.slide, status: StudyStatus.NotStart}
+              return {
+                slideId: study.slide.slideId,
+                title: study.slide.config.title,
+                status: StudyStatus.NotStart,
+                studyStatus: studyStatus(<any>{ status: StudyStatus.NotStart })
+              }
             }
           })
           return studies;
@@ -41,9 +62,9 @@ export class StudyListComponent implements OnInit {
       );
   }
 
-  onStartStudy(row: StudyFragment) {
+  onStartStudy(row: StudyRecord) {
     if (row.status == StudyStatus.NotStart) {
-      this.startStudyGql.mutate({slideId: row.slide.slideId})
+      this.startStudyGql.mutate({slideId: row.slideId})
       .subscribe(res => {
         if(!errorMessageIfNeed(res, this.snackBar)) {
           this.router.navigateByUrl(`/study/slide/${res.data?.startStudy}`)
@@ -54,14 +75,10 @@ export class StudyListComponent implements OnInit {
     }
   }
 
-  statusPath(row: StudyFragment) {
+  statusPath(row: StudyRecord) {
     if (row.status == StudyStatus.NotStart) {
-      return `/study/status/slide/${row.slide.slideId}`
+      return `/study/status/slide/${row.slideId}`
     }
     return `/study/status/${row.studyId}`
-  }
-
-  studyStatus(row: StudyFragment): string {
-    return studyStatus(row)
   }
 }

@@ -10,10 +10,7 @@
         <a [routerLink]="" (click)="onStartStudy(row)">{{ row.title }}</a>
       </ng-template>
     </app-list-column>
-    <app-list-column name="prog" headerName="進捗">
-      <ng-template listCell let-row="row">
-        {{ row.pages }} / {{ row.numberOfPages }}
-      </ng-template>
+    <app-list-column name="progress" headerName="進捗">
     </app-list-column>
     <app-list-column name="status" headerName="状況">
     </app-list-column>

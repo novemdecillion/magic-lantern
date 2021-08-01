@@ -3,10 +3,10 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
   idea
   java
-  kotlin("jvm") version "1.5.10" apply false
-  kotlin("plugin.spring") version "1.5.10" apply false
+  kotlin("jvm") version "1.5.21" apply false
+  kotlin("plugin.spring") version "1.5.21" apply false
 
-  id("org.springframework.boot") version "2.5.0" apply false
+  id("org.springframework.boot") version "2.5.3" apply false
   id("io.spring.dependency-management") version "1.0.11.RELEASE" apply false
 }
 
@@ -20,7 +20,7 @@ subprojects {
   group = "io.github.novemdecillion"
   version = "1.0.0"
   java.sourceCompatibility = JavaVersion.VERSION_11
-  extra["testcontainersVersion"] = "1.15.3"
+  extra["testcontainersVersion"] = "1.16.0"
 
   repositories {
     mavenCentral()

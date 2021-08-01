@@ -1,6 +1,5 @@
 package io.github.novemdecillion.domain
 
-import org.jmolecules.architecture.onion.classical.DomainModelRing
 import java.time.OffsetDateTime
 import java.util.*
 import kotlin.math.ceil
@@ -22,7 +21,7 @@ enum class Role(val roleName: String) {
       }
       return values().firstOrNull { it.roleName == roleName }
         ?.let { it to true }
-        ?: null to false
+        ?: (null to false)
     }
   }
 }
@@ -178,7 +177,6 @@ data class Authority(
   }
 }
 
-@DomainModelRing
 data class User(
   val userId: UUID,
   val accountName: String,

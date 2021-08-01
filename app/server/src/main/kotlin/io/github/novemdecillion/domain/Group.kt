@@ -1,7 +1,5 @@
 package io.github.novemdecillion.domain
 
-import org.jmolecules.architecture.onion.classical.DomainModelRing
-import java.time.LocalDate
 import java.util.*
 
 const val SYSTEM_REALM_ID: String = "!system"
@@ -32,7 +30,6 @@ interface IGroup : IGroupCore {
   val parentGroupId: UUID?
 }
 
-@DomainModelRing
 data class Group(
   override val groupId: UUID,
   override val groupGenerationId: Int,

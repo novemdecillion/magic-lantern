@@ -1,0 +1,132 @@
+title: 情報セキュリティ10大脅威 2019
+chapters:
+  - type: Explain
+    title: 説明
+    pages:
+      - path: explain-01.html
+        title: explain-01.html
+      - path: explain-template.html
+        title: explain-template.html + HTML
+        text: <b>本文</b>
+      - path: explain-template.html
+        title: explain-template.html + AsciiDoc
+        textType: AsciiDoc
+        text: "*本文*"
+
+  - type: Exam
+    title: 試験
+    passScore: 40
+    questions:
+      - type: Radio
+        score: 30
+        text: 問題1
+        choices:
+          - text: A
+            correct: true
+          - text: B
+          - text: C
+      - type: Checkbox
+        score: 40
+        text: 問題2
+        choices:
+          - text: A
+            correct: true
+          - text: B
+            correct: true
+          - text: C
+      - type: Radio
+        score: 30
+        text: 問題3
+        choices:
+          - text: A
+            correct: true
+          - text: B
+          - text: C
+
+  - type: RandomizedExam
+    title: ランダム出題試験
+    numberOfQuestions: 3
+    scorePerQuestion: 20
+    passScore: 40
+    questions:
+      - type: Radio
+        text: 問題1
+        choices:
+          - text: A
+            correct: true
+          - text: B
+          - text: C
+      - type: Checkbox
+        text: 問題2
+        choices:
+          - text: A
+            correct: true
+          - text: B
+            correct: true
+          - text: C
+      - type: Radio
+        text: 問題3
+        choices:
+          - text: A
+            correct: true
+          - text: B
+          - text: C
+      - type: Checkbox
+        text: 問題4
+        choices:
+          - text: A
+            correct: true
+          - text: B
+            correct: true
+          - text: C
+      - type: Radio
+        text: 問題5
+        choices:
+          - text: A
+            correct: true
+          - text: B
+          - text: C
+      - type: Checkbox
+        text: 問題6
+        choices:
+          - text: A
+            correct: true
+          - text: B
+            correct: true
+          - text: C
+
+  - type: Survey
+    title: アンケート
+    questions:
+      - type: Radio
+        text: ラジオ(必須)
+        required: true
+        choices:
+          - A
+          - B
+          - C
+      - type: Checkbox
+        text: チェックボックス(必須)
+        required: true
+        choices:
+          - A
+          - B
+          - C
+      - type: Textarea
+        text: テキストエリア(必須)
+        required: true
+      - type: Radio
+        text: ラジオ
+        choices:
+          - A
+          - B
+          - C
+      - type: Checkbox
+        text: チェックボックス
+        choices:
+          - A
+          - B
+          - C
+      - type: Textarea
+        text: テキストエリア
+

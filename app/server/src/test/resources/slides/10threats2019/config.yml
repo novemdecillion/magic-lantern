@@ -24,7 +24,7 @@ chapters:
     content: |-
       image::image/000071811.png[width="750", height="420", align="center"]
       ビジネスメール詐欺（Business E-mail Compromise：BEC）は、取引先や経営者とやりとりするようなビジネスメールを装い、巧妙に細工されたメールのやりとりで企業の金銭を取り扱う担当者を騙し、攻撃者の用意した口座へ送金させる詐欺の手口である。当初は主に海外の組織が被害に遭ってきたが、ここ数年で国内企業でも被害が確認されはじめ、2018年には日本語のビジネスメール詐欺の事例も確認された。
-  - path: personal-3.html
+  - path: explain-01.html
     title: 不正アプリによるスマートフォン利用者への被害
 
 - type: Exam

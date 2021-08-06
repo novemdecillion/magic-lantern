@@ -50,6 +50,7 @@ dependencies {
   testImplementation("org.jsoup:jsoup:1.14.1")
   testImplementation("org.testcontainers:postgresql")
   testImplementation("org.testcontainers:junit-jupiter")
+  testImplementation("io.kotest:kotest-runner-junit5:4.6.1")
 }
 
 tasks.getByName<BootJar>("bootJar") {

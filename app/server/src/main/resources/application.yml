@@ -10,8 +10,8 @@ app:
         admin-name: admin
         admin-password: password123
 
-server:
-  port: 8085
+#server:
+#  port: 8085
 
 spring:
   application:

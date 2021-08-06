@@ -23,6 +23,10 @@ class SlideUseCase(
 
     const val SLIDESHOW_PATH = "/slideshow"
     const val ENDING_PATH = "$SLIDESHOW_PATH/ending"
+
+    const val DEFAULT_EXPLAIN_TEMPLATE = "explain-template"
+    const val DEFAULT_EXAM_TEMPLATE = "exam-template"
+    const val DEFAULT_SURVEY_TEMPLATE = "survey-template"
   }
 
   enum class SlideAction {
@@ -44,7 +48,7 @@ class SlideUseCase(
       is ExplainChapter -> {
         val page = chapter.pages[pageIndexInChapter]
         modelAndView.viewName = if (page.path.isNullOrBlank()) {
-          "explain-template"
+          DEFAULT_EXPLAIN_TEMPLATE
         } else {
           val pathInSlide = "${slide.slideId}/${page.path}"
           val pageResource = appSlideProp.rootPath.createRelative(pathInSlide)
@@ -57,32 +61,32 @@ class SlideUseCase(
         modelAndView.model[PAGE_KEY] = page
       }
       is ExamChapter -> {
-        val answer = study.shuffledAnswer(chapterIndex)
+        val shuffledAnswer = study.shuffledAnswer(chapterIndex)
         val examChapterRecord = study.score[chapterIndex]
         val shuffledChapter: ExamChapter = study.shuffledQuestion[chapterIndex]
           ?.let { shuffleTable ->
-            chapter.shuffled(shuffleTable)
+            chapter.replayShuffle(shuffleTable)
           }
           ?: run {
-            chapter.shuffled()
-              .let {
+            chapter.shuffle()
+              .let { (shuffledChap, shuffleTable) ->
                 updatedStudy =
-                  updatedStudy.copy(shuffledQuestion = study.shuffledQuestion.plus(chapterIndex to it.second))
-                it.first
+                  updatedStudy.copy(shuffledQuestion = study.shuffledQuestion.plus(chapterIndex to shuffleTable))
+                shuffledChap
               }
           }
 
-        modelAndView.viewName = if (shuffledChapter.path.isNullOrBlank()) "exam-template" else shuffledChapter.path
+        modelAndView.viewName = if (shuffledChapter.path.isNullOrBlank()) DEFAULT_EXAM_TEMPLATE else shuffledChapter.path
         modelAndView.model[PAGE_KEY] = shuffledChapter
-        modelAndView.model[OPTION_KEY] = slide.config.option
+        modelAndView.model[OPTION_KEY] = slide.option
 
-        if ((null != answer) && (null != examChapterRecord)) {
+        if ((null != shuffledAnswer) && (null != examChapterRecord)) {
           // 回答済み
           if (0 == pageIndexInChapter) {
-            modelAndView.model[ANSWER_KEY] = if (examChapterRecord.isPass()) answer else emptyMap()
+            modelAndView.model[ANSWER_KEY] = if (examChapterRecord.isPass()) shuffledAnswer else emptyMap()
           } else if (1 == pageIndexInChapter) {
             // 採点ページ
-            modelAndView.model[ANSWER_KEY] = answer
+            modelAndView.model[ANSWER_KEY] = shuffledAnswer
             modelAndView.model[CONFIRM_KEY] = true
             val scores = examChapterRecord.questions.map { it.scoring }
             modelAndView.model[SCORES_KEY] = scores
@@ -92,11 +96,10 @@ class SlideUseCase(
           // 未回答
           // 問題ページ
           modelAndView.model[ANSWER_KEY] = emptyMap<Int, List<String>>()
-
         }
       }
       is SurveyChapter -> {
-        modelAndView.viewName = if (chapter.path.isNullOrBlank()) "survey-template" else chapter.path
+        modelAndView.viewName = if (chapter.path.isNullOrBlank()) DEFAULT_SURVEY_TEMPLATE else chapter.path
         modelAndView.model[PAGE_KEY] = chapter
         modelAndView.model[ANSWER_KEY] = study.answer[chapterIndex] ?: emptyMap<Int, String>()
         if (1 == pageIndexInChapter) {
@@ -106,7 +109,7 @@ class SlideUseCase(
     }
 
     updatedStudy = updatedStudy
-      .recordProgress(chapterIndex, pageIndexInChapter, slide.config.numberOfPages())
+      .recordProgress(chapterIndex, pageIndexInChapter, slide.numberOfPages())
     updatedStudy = updatedStudy.updateStatus()
     studyRepository.update(updatedStudy)
   }
@@ -125,7 +128,7 @@ class SlideUseCase(
           resolvedPageIndex--
         }
 
-        val (prevChapter, prevPageIndexInChapter) = slide.config.chapterAndPageIndex(resolvedPageIndex)!!
+        val (prevChapter, prevPageIndexInChapter) = slide.chapterAndPageIndex(resolvedPageIndex)!!
         if ((prevChapter.value !is ExplainChapter)
           && (1 == prevPageIndexInChapter)
         ) {
@@ -137,7 +140,7 @@ class SlideUseCase(
         }
       }
       SlideAction.NEXT -> {
-        if (slide.config.numberOfPages() <= (resolvedPageIndex + 1)) {
+        if (slide.numberOfPages() <= (resolvedPageIndex + 1)) {
           redirectUrl = ENDING_PATH
         } else {
           resolvedPageIndex++
@@ -153,7 +156,7 @@ class SlideUseCase(
               updatedStudy = updatedStudy
                 .recordAnswer(
                   chapterIndex, answer,
-                  chapter.chapterRecord(Study.convertForExamAnswer(answer), slide.config.option.scoringMethod)
+                  chapter.chapterRecord(Study.convertForExamAnswer(answer), slide.option.scoringMethod)
                 )
             }
             is SurveyChapter -> {

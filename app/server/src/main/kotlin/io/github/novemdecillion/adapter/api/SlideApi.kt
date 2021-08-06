@@ -3,12 +3,15 @@ package io.github.novemdecillion.adapter.api
 import com.fasterxml.jackson.annotation.JsonIgnore
 import graphql.kickstart.tools.GraphQLMutationResolver
 import graphql.kickstart.tools.GraphQLQueryResolver
+import graphql.kickstart.tools.GraphQLResolver
 import graphql.schema.DataFetchingEnvironment
 import io.github.novemdecillion.adapter.db.LessonRepository
 import io.github.novemdecillion.adapter.db.SlideRepository
 import io.github.novemdecillion.adapter.db.StudyRepository
 import io.github.novemdecillion.adapter.web.AppSlideProperties
+import io.github.novemdecillion.domain.ExamChapter
 import io.github.novemdecillion.domain.Slide
+import io.github.novemdecillion.domain.Study
 import org.springframework.stereotype.Component
 import javax.servlet.http.Part
 import org.dataloader.MappedBatchLoader
@@ -70,3 +73,9 @@ class SlideApi(private val slideRepository: SlideRepository,
   }
 }
 
+@Component
+class ExamChapterResolver : GraphQLResolver<ExamChapter> {
+  fun numberOfAllQuestions(chapter: ExamChapter): CompletableFuture<Int> {
+    return CompletableFuture.completedFuture(chapter.questions.size)
+  }
+}

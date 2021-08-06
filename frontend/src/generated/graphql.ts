@@ -397,42 +397,29 @@ export type ExplainChapter = IChapter & {
   numberOfPages: Scalars['Int'];
 };
 
-export type SurveyQuestion = {
-  __typename?: 'SurveyQuestion';
-  type: Scalars['String'];
-};
-
 export type SurveyChapter = IChapter & {
   __typename?: 'SurveyChapter';
   title: Scalars['String'];
   numberOfPages: Scalars['Int'];
-  questions: Array<SurveyQuestion>;
-};
-
-export type ExamQuestion = {
-  __typename?: 'ExamQuestion';
-  score?: Maybe<Scalars['Int']>;
+  numberOfQuestions: Scalars['Int'];
 };
 
 export type ExamChapter = IChapter & {
   __typename?: 'ExamChapter';
   title: Scalars['String'];
   numberOfPages: Scalars['Int'];
-  passScore?: Maybe<Scalars['Int']>;
-  questions: Array<ExamQuestion>;
-};
-
-export type SlideConfig = {
-  __typename?: 'SlideConfig';
-  title: Scalars['String'];
-  chapters?: Maybe<Array<IChapter>>;
+  numberOfQuestions: Scalars['Int'];
+  numberOfAllQuestions: Scalars['Int'];
+  passScore: Scalars['Int'];
+  totalScore: Scalars['Int'];
 };
 
 export type Slide = {
   __typename?: 'Slide';
   slideId: Scalars['ID'];
   enable: Scalars['Boolean'];
-  config: SlideConfig;
+  title: Scalars['String'];
+  chapters?: Maybe<Array<IChapter>>;
 };
 
 export type AddSlideCommand = {
@@ -1018,36 +1005,19 @@ export type DeleteNoticeMutation = (
   & Pick<Mutation, 'deleteNotice'>
 );
 
-export type SlideConfigFragment = (
-  { __typename?: 'SlideConfig' }
-  & Pick<SlideConfig, 'title'>
+export type SlideFragment = (
+  { __typename?: 'Slide' }
+  & Pick<Slide, 'slideId' | 'enable' | 'title'>
   & { chapters?: Maybe<Array<(
     { __typename?: 'ExplainChapter' }
     & Pick<ExplainChapter, 'title' | 'numberOfPages'>
   ) | (
     { __typename?: 'SurveyChapter' }
-    & Pick<SurveyChapter, 'title' | 'numberOfPages'>
-    & { questions: Array<(
-      { __typename?: 'SurveyQuestion' }
-      & Pick<SurveyQuestion, 'type'>
-    )> }
+    & Pick<SurveyChapter, 'numberOfQuestions' | 'title' | 'numberOfPages'>
   ) | (
     { __typename?: 'ExamChapter' }
-    & Pick<ExamChapter, 'passScore' | 'title' | 'numberOfPages'>
-    & { questions: Array<(
-      { __typename?: 'ExamQuestion' }
-      & Pick<ExamQuestion, 'score'>
-    )> }
+    & Pick<ExamChapter, 'numberOfQuestions' | 'numberOfAllQuestions' | 'passScore' | 'totalScore' | 'title' | 'numberOfPages'>
   )>> }
-);
-
-export type SlideFragment = (
-  { __typename?: 'Slide' }
-  & Pick<Slide, 'slideId' | 'enable'>
-  & { config: (
-    { __typename?: 'SlideConfig' }
-    & SlideConfigFragment
-  ) }
 );
 
 export type SlidesQueryVariables = Exact<{ [key: string]: never; }>;
@@ -1325,35 +1295,26 @@ export const GroupGenerationFragmentDoc = gql`
   isCurrent
 }
     `;
-export const SlideConfigFragmentDoc = gql`
-    fragment slideConfig on SlideConfig {
+export const SlideFragmentDoc = gql`
+    fragment slide on Slide {
+  slideId
+  enable
   title
   chapters {
     title
     numberOfPages
     ... on ExamChapter {
+      numberOfQuestions
+      numberOfAllQuestions
       passScore
-      questions {
-        score
-      }
+      totalScore
     }
     ... on SurveyChapter {
-      questions {
-        type
-      }
+      numberOfQuestions
     }
   }
 }
     `;
-export const SlideFragmentDoc = gql`
-    fragment slide on Slide {
-  slideId
-  enable
-  config {
-    ...slideConfig
-  }
-}
-    ${SlideConfigFragmentDoc}`;
 export const LessonFragmentDoc = gql`
     fragment lesson on Lesson {
   lessonId

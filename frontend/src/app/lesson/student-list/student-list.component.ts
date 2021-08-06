@@ -149,7 +149,7 @@ export class StudentListComponent implements OnInit {
     data.push([
       this.group?.groupName,
       (this.group?.path != null)? createGroupPathNameByGroups(this.group.path): null,
-      this.slide?.config.title]);
+      this.slide?.title]);
     data.push([]);
 
     interface QuestionSummary {
@@ -158,24 +158,23 @@ export class StudentListComponent implements OnInit {
     }
     let chapterAndQuestionIndexes: QuestionSummary[] = [];
     let header = ['氏名', 'メールアドレス', '状態', '開始日時', '終了日時', '進捗率']
-    this.slide?.config.chapters?.map((chapter, chapterIndex) => {
+    this.slide?.chapters?.map((chapter, chapterIndex) => {
       if (chapter.__typename == 'ExamChapter') {
         let qSummary: QuestionSummary = { chapterIndex, questionCount: 0 };
         chapterAndQuestionIndexes.push(qSummary);
 
-        chapter.questions.map((_, questIndex) => {
+        for(let questIndex = 0; questIndex < chapter.numberOfAllQuestions; questIndex++) {
           qSummary.questionCount++;
           header.push(`${chapter.title}-問${questIndex + 1}`)
-        })
+        }
       } else if (chapter.__typename == 'SurveyChapter') {
         let qSummary: QuestionSummary = { chapterIndex, questionCount: 0 };
         chapterAndQuestionIndexes.push(qSummary);
 
-        chapter.questions.map((_, questIndex) => {
+        for(let questIndex = 0; questIndex < chapter.numberOfQuestions; questIndex++) {
           qSummary.questionCount++;
-
           header.push(`${chapter.title}-問${questIndex + 1}`)
-        })
+        }
       }
     })
     let chapterToQuestionStartIndex : {[key: number]: number} = {}
@@ -230,7 +229,7 @@ export class StudentListComponent implements OnInit {
     // document.body.removeChild(link);
     // window.URL.revokeObjectURL(url);
 
-    downloadBlob(`講座状況-${this.group?.groupName}-${this.slide?.config.title}-${format(new Date(), 'yyyyMMddHHmm')}.csv`,
+    downloadBlob(`講座状況-${this.group?.groupName}-${this.slide?.title}-${format(new Date(), 'yyyyMMddHHmm')}.csv`,
       blob, this.hostElementRef.nativeElement);
   }
 

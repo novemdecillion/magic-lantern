@@ -1,5 +1,7 @@
 package io.github.novemdecillion.adapter.db
 
+import com.fasterxml.jackson.annotation.JsonSubTypes
+import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
 import io.github.novemdecillion.adapter.web.AppSlideProperties
@@ -21,11 +23,69 @@ import java.nio.file.*
 import java.util.stream.Collectors
 import kotlin.io.FileAlreadyExistsException
 
+
+/**
+ *
+ */
+interface IExamChapterConfig : IChapterConfig, IPage {
+  val passScore: Int?
+}
+
+data class BasicExamQuestionConfig(
+  override val type: ExamQuestionType,
+  val score: Int,
+  override val text: String,
+  override val comment: String?,
+  override val choices: List<ExamQuestionOption>
+): IExamQuestion
+
+data class BasicExamChapterConfig(
+  override val title: String,
+  override val path: String?,
+  override val passScore: Int?,
+  override val textType: TextType?,
+  val questions: List<BasicExamQuestionConfig>
+) : IExamChapterConfig
+
+data class RandomizedExamQuestionConfig(
+  override val type: ExamQuestionType,
+  override val text: String,
+  override val comment: String?,
+  override val choices: List<ExamQuestionOption>
+): IExamQuestion
+
+data class RandomizedExamChapterConfig (
+  override val title: String,
+  override val path: String?,
+  val numberOfQuestions: Int,
+  val scorePerQuestion: Int,
+  override val passScore: Int?,
+  override val textType: TextType?,
+  val questions: List<RandomizedExamQuestionConfig>
+) : IExamChapterConfig
+
+data class SlideConfig(
+  val title: String,
+  val textType: TextType?,
+  @field:JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
+  @field:JsonSubTypes(
+    JsonSubTypes.Type(name = "Explain", value = ExplainChapter::class),
+    JsonSubTypes.Type(name = "Exam", value = BasicExamChapterConfig::class),
+    JsonSubTypes.Type(name = "RandomizedExam", value = RandomizedExamChapterConfig::class),
+    JsonSubTypes.Type(name = "Survey", value = SurveyChapter::class)
+  )
+  val chapters: List<IChapterConfig>,
+  val option: SlideConfigOption = SlideConfigOption()
+)
+
 @Repository
 class SlideRepository(private val appSlideProperties: AppSlideProperties) {
   companion object {
     val asciiDoctor: Asciidoctor = Asciidoctor.Factory.create()
     val yamlMapper: ObjectMapper = ObjectMapper(YAMLFactory()).findAndRegisterModules()
+
+    const val SLIDE_CONFIG_FILE_NAME = "config.yml"
+
     const val TEMP_FOLDER_PREFIX = "temp-"
     const val TEMP_SLIDE_ZIP_FILENAME = "slide.zip"
     const val ENABLE_FLG_FILENAME = "enable"
@@ -118,7 +178,7 @@ class SlideRepository(private val appSlideProperties: AppSlideProperties) {
         yamlMapper.readValue(inputStream, SlideConfig::class.java)
       }
 
-    val convertedChapters = slideConfig.chapters
+    val convertedChapters: List<IChapter> = slideConfig.chapters
       .map { chapter ->
         when (chapter) {
           is ExplainChapter -> {
@@ -130,18 +190,21 @@ class SlideRepository(private val appSlideProperties: AppSlideProperties) {
                     text = convertTextOrNull(page.text, textType))
                 })
           }
-          is ExamChapter -> {
+          is BasicExamChapterConfig -> {
             val textType = chapter.textType ?: slideConfig.textType
-            chapter.copy(
-              questions = chapter.questions
-                .map { question ->
-                  question.copy(
-                    text = convertText(question.text, textType),
-                    comment = convertTextOrNull(question.comment, textType),
-                    choices = question.choices.map { choice ->
-                      choice.copy(text = convertText(choice.text, textType))
-                    })
-                })
+            val questions = chapter.questions
+              .map { question ->
+                convertTo(question, question.score, textType)
+              }
+            convertTo(chapter, textType, questions.size, questions)
+          }
+          is RandomizedExamChapterConfig -> {
+            val textType = chapter.textType ?: slideConfig.textType
+            val questions = chapter.questions
+              .map { question ->
+                convertTo(question, chapter.scorePerQuestion, textType)
+              }
+            convertTo(chapter, textType, chapter.numberOfQuestions, questions)
           }
           is SurveyChapter -> {
             val textType = chapter.textType ?: slideConfig.textType
@@ -161,7 +224,8 @@ class SlideRepository(private val appSlideProperties: AppSlideProperties) {
           else -> throw UnsupportedOperationException()
         }
       }
-    return Slide(slideId, enable, slideConfig.copy(chapters = convertedChapters))
+    return Slide(slideId = slideId, enable = enable, title = slideConfig.title, textType = slideConfig.textType,
+      chapters = convertedChapters, option = slideConfig.option)
   }
 
   fun convertText(text: String, textType: TextType?): String {
@@ -179,6 +243,27 @@ class SlideRepository(private val appSlideProperties: AppSlideProperties) {
       TextType.AsciiDoc -> asciiDoctor.convert(text, Options.builder().build())
       else -> text
     }
+  }
+
+  fun convertTo(question: IExamQuestion, score: Int, textType: TextType?): ExamQuestion {
+    return ExamQuestion(
+      type = question.type,
+      score = score,
+      text = convertText(question.text, textType),
+      comment = convertTextOrNull(question.comment, textType),
+      choices = question.choices.map { choice ->
+        choice.copy(text = convertText(choice.text, textType))
+      })
+  }
+
+  fun convertTo(examChapter: IExamChapterConfig, textType: TextType?, numberOfQuestions: Int, questions: List<ExamQuestion>): ExamChapter {
+    return ExamChapter(
+      title = examChapter.title,
+      path = examChapter.path,
+      passScore = examChapter.passScore,
+      textType = textType,
+      numberOfQuestions = numberOfQuestions,
+      questions = questions)
   }
 
 }

@@ -197,7 +197,7 @@ export interface StudyStatusRecord {
 }
 
 export function convertToStudyStatus(slide: SlideFragment, study?: StudyFragment): StudyStatusRecord[] {
-  let records = slide.config.chapters
+  let records = slide.chapters
     ?.map((chapter, index) => {
       let record: StudyStatusRecord = {
         chapterIndex: index,
@@ -209,7 +209,7 @@ export function convertToStudyStatus(slide: SlideFragment, study?: StudyFragment
       };
       if (chapter.__typename == 'ExamChapter') {
         record.passScore = chapter.passScore ?? 0;
-        record.totalScore = chapter.questions.reduce((acc, value) => acc + (value.score ?? 0), 0);
+        record.totalScore = chapter.totalScore;
       }
       return record
     })

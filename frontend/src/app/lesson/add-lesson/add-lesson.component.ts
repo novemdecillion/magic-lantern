@@ -35,40 +35,6 @@ export class AddLessonComponent implements OnInit {
     private prepareAddLessonGql: PrepareAddLessonGQL, private addLessonGql: AddLessonGQL) { }
 
   ngOnInit(): void {
-    // this.slideColumns = [
-    //   {
-    //     name: 'selected',
-    //     headerName: '選択',
-    //     cellTemplate: this.selectSlideTemplate,
-    //   },
-    //   {
-    //     name: 'slideId',
-    //     headerName: '教材ID'
-    //   },
-    //   {
-    //     name: 'title',
-    //     valueFrom: (_, row) => row.config.title,
-    //     headerName: '教材タイトル'
-    //   }
-    // ];
-
-    // this.groupColumns = [
-    //   {
-    //     name: 'selected',
-    //     headerName: '選択',
-    //     cellTemplate: this.selectGroupTemplate,
-    //     headerCellTemplate: this.selectGroupHeaderTemplate
-    //   },
-    //   {
-    //     name: 'groupName',
-    //     headerName: 'グループ名'
-    //   },
-    //   {
-    //     name: 'parentGroupName',
-    //     headerName: '所属グループ名'
-    //   },
-    // ];
-
     this.prepareAddLessonGql.fetch()
       .subscribe(res => {
         res.data.slides.forEach(slide => this.slideAssignedStatus[slide.slideId] = []);

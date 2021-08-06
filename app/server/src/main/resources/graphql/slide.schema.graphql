@@ -8,36 +8,26 @@ type ExplainChapter implements IChapter{
   numberOfPages: Int!
 }
 
-type SurveyQuestion {
-  type: String!
-}
-
 type SurveyChapter implements IChapter{
   title: String!
   numberOfPages: Int!
-  questions: [SurveyQuestion!]!
+  numberOfQuestions: Int!
 }
 
-type ExamQuestion {
-  score: Int
-}
-
-type ExamChapter implements IChapter{
+type ExamChapter implements IChapter {
   title: String!
   numberOfPages: Int!
-  passScore: Int
-  questions: [ExamQuestion!]!
-}
-
-type SlideConfig {
-  title: String!
-  chapters: [IChapter!]
+  numberOfQuestions: Int!
+  numberOfAllQuestions: Int!
+  passScore: Int!
+  totalScore: Int!
 }
 
 type Slide {
   slideId: ID!
   enable: Boolean!
-  config: SlideConfig!
+  title: String!
+  chapters: [IChapter!]
 }
 
 input AddSlideCommand {

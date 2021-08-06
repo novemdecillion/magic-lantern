@@ -43,14 +43,14 @@ export class StudyListComponent implements OnInit {
               return {
                 slideId: study.slide.slideId,
                 studyId: study.studyId,
-                title: study.slide.config.title,
+                title: study.slide.title,
                 status: study.status,
                 studyStatus: studyStatus(study)
               }
             } else {
               return {
                 slideId: study.slide.slideId,
-                title: study.slide.config.title,
+                title: study.slide.title,
                 status: StudyStatus.NotStart,
                 studyStatus: studyStatus(<any>{ status: StudyStatus.NotStart })
               }

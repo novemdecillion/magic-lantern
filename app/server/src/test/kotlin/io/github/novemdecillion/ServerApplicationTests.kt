@@ -80,8 +80,8 @@ class ServerApplicationTests {
       .let { it as FormElement }
       .submit()
       .also {
-        it.data("username").value("user0001")
-        it.data("password").value("password123")
+        it.data("username")!!.value("user0001")
+        it.data("password")!!.value("password123")
       }
       .cookies(cookieHolder)
       .followRedirects(false)
@@ -90,7 +90,7 @@ class ServerApplicationTests {
         Assertions.assertThat(it.statusCode()).isEqualTo(302)
         cookieHolder.putAll(it.cookies())
       }
-      .header(HttpHeaders.LOCATION)
+      .header(HttpHeaders.LOCATION)!!
 
 
     // OAuth2認証コードへリダイレクト

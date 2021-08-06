@@ -3,20 +3,14 @@ package io.github.novemdecillion.domain
 import com.fasterxml.jackson.annotation.JsonSubTypes
 import com.fasterxml.jackson.annotation.JsonTypeInfo
 import org.apache.commons.math3.fraction.Fraction
-import org.jmolecules.architecture.onion.classical.DomainModelRing
 import java.lang.IllegalArgumentException
 
-const val SLIDE_CONFIG_FILE_NAME = "config.yml"
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
-@JsonSubTypes(
-  JsonSubTypes.Type(name = "Explain", value = ExplainChapter::class),
-  JsonSubTypes.Type(name = "Exam", value = ExamChapter::class),
-  JsonSubTypes.Type(name = "Survey", value = SurveyChapter::class)
-)
-interface IChapter {
+interface IChapterConfig {
   val title: String
-  val numberOfPages: Int
+}
+
+interface IChapter: IChapterConfig {
+  fun numberOfPages(): Int
 }
 
 interface IPage {
@@ -43,7 +37,7 @@ data class ExplainChapter(
   override val title: String,
   val pages: List<ExplainPage>
 ) : IChapter {
-  override val numberOfPages: Int = pages.size
+  override fun numberOfPages(): Int = pages.size
 }
 
 /**
@@ -58,22 +52,29 @@ data class ExamQuestionOption(
   val correct: Boolean = false
 )
 
-data class ExamQuestion(
-  val type: ExamQuestionType,
-  val score: Int,
-  val text: String,
-  val comment: String?,
+interface IExamQuestion {
+  val type: ExamQuestionType
+  val text: String
+  val comment: String?
   val choices: List<ExamQuestionOption>
-) {
-  fun score(answer: List<Int>, scoringMethod: ScoringMethod): Int = when (scoringMethod) {
-    ScoringMethod.Neutralize -> scoringNeutralize(answer)
-    ScoringMethod.AllOrNothing -> scoringAllOrNothing(answer)
+}
+
+data class ExamQuestion(
+  override val type: ExamQuestionType,
+  val score: Int,
+  override val text: String,
+  override val comment: String?,
+  override val choices: List<ExamQuestionOption>
+): IExamQuestion {
+  fun score(answer: List<Int>, scoringMethod: ScoringMethod, score: Int): Int = when (scoringMethod) {
+    ScoringMethod.Neutralize -> scoringNeutralize(answer, score)
+    ScoringMethod.AllOrNothing -> scoringAllOrNothing(answer, score)
   }
 
   /**
    * 得点
    */
-  fun scoringNeutralize(answer: List<Int>): Int {
+  fun scoringNeutralize(answer: List<Int>, score: Int): Int {
     // 正解選択肢数
     val numberOfCorrectChoice = choices.count { it.correct }
     // 正解選択肢あたりの点数
@@ -102,7 +103,7 @@ data class ExamQuestion(
   /**
    * 得点
    */
-  fun scoringAllOrNothing(answer: List<Int>): Int {
+  fun scoringAllOrNothing(answer: List<Int>, score: Int): Int {
     // 正解選択肢数
     val numberOfCorrectChoice = choices.count { it.correct }
     answer
@@ -152,9 +153,10 @@ data class ExamChapter(
   override val path: String?,
   val passScore: Int?,
   override val textType: TextType?,
-  val questions: List<ExamQuestion>
+  val questions: List<ExamQuestion>,
+  val numberOfQuestions: Int
 ) : IChapter, IPage {
-  override val numberOfPages: Int = 2
+  override fun numberOfPages(): Int = 2
 
   /**
    * 得点
@@ -162,7 +164,7 @@ data class ExamChapter(
   fun questionRecords(answer: Map<Int, List<Int>>, scoringMethod: ScoringMethod): List<ExamQuestionRecord>
     = questions
     .mapIndexed { index, question ->
-      ExamQuestionRecord(answer[index]?.let { question.score(it, scoringMethod) } ?: 0, question.score)
+      ExamQuestionRecord(answer[index]?.let { question.score(it, scoringMethod, question.score) } ?: 0, question.score)
     }
 
   fun chapterRecord(answer: Map<Int, List<Int>>, scoringMethod: ScoringMethod): ExamChapterRecord
@@ -176,14 +178,18 @@ data class ExamChapter(
     = scoringPerQuestion(answer, scoringMethod).sum()
 
   fun passScore(): Int {
-    return passScore
-      ?: questions.map { it.score }.sum()
+    return passScore ?: totalScore()
   }
 
-  fun shuffled(): Pair<ExamChapter, List<Pair<Int, List<Int>>>> {
+  fun totalScore(): Int {
+    return questions.sumOf { it.score }
+  }
+
+  fun shuffle(): Pair<ExamChapter, List<Pair<Int, List<Int>>>> {
     val shuffledIndexes: MutableList<Pair<Int, List<Int>>> = mutableListOf()
 
     val shuffledQuestions = questions.withIndex().shuffled()
+      .subList(0, numberOfQuestions)
       .map { (index, question) ->
         val shuffledChoices = question.choices.withIndex().shuffled()
         shuffledIndexes.add(index to shuffledChoices.map { it.index })
@@ -192,7 +198,7 @@ data class ExamChapter(
     return this.copy(questions = shuffledQuestions) to shuffledIndexes
   }
 
-  fun shuffled(shuffledIndexes: List<Pair<Int, List<Int>>>): ExamChapter {
+  fun replayShuffle(shuffledIndexes: List<Pair<Int, List<Int>>>): ExamChapter {
     val shuffledQuestions = shuffledIndexes
       .map { (chapterIndex, choiceIndexes) ->
         val question = this.questions[chapterIndex]
@@ -202,6 +208,7 @@ data class ExamChapter(
     return this.copy(questions = shuffledQuestions)
   }
 }
+
 
 /**
  * アンケート
@@ -245,7 +252,8 @@ data class SurveyChapter(
   override val textType: TextType?,
   val questions: List<ISurveyQuestion>
 ) : IChapter, IPage {
-  override val numberOfPages: Int = 2
+  override fun numberOfPages(): Int = 2
+  fun numberOfQuestions(): Int = questions.size
 }
 
 enum class ScoringMethod {
@@ -257,17 +265,18 @@ data class SlideConfigOption(
   val showCorrectAnswer: Boolean = true
 )
 
-data class SlideConfig(
+data class Slide(
+  val slideId: String,
+  val enable: Boolean,
   val title: String,
   val textType: TextType?,
   val chapters: List<IChapter>,
   val option: SlideConfigOption = SlideConfigOption()
 ) {
-  
   private val chapterPageRange = chapters
     .fold(mutableListOf<Pair<IntRange, IChapter>>()){ acc, chapter ->
       val prevLast: Int = acc.lastOrNull()?.first?.last ?: -1
-      acc.add(IntRange(prevLast + 1, prevLast + chapter.numberOfPages) to chapter)
+      acc.add(IntRange(prevLast + 1, prevLast + chapter.numberOfPages()) to chapter)
       acc
     }
   
@@ -276,7 +285,7 @@ data class SlideConfig(
    */
   fun numberOfPages(): Int {
     return chapters
-      .sumOf{ it.numberOfPages }
+      .sumOf{ it.numberOfPages() }
   }
 
   fun chapterAndPageIndex(pageIndex: Int): Pair<IndexedValue<IChapter>, Int>? {
@@ -316,10 +325,3 @@ data class SlideConfig(
       .sum()
   }
 }
-
-@DomainModelRing
-class Slide(
-  val slideId: String,
-  val enable: Boolean,
-  val config: SlideConfig,
-)

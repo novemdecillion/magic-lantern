@@ -5,7 +5,7 @@ chapters:
   pages:
   - path: explain-template.html
     title: <a href="https://www.ipa.go.jp/security/vuln/10threats2019.html">「情報セキュリティ10大脅威 2019」</a>の概要
-    content: |-
+    text: |-
       <a href="https://www.ipa.go.jp/index.html">独立行政法人 情報処理推進機構</a>が
       2018年に発生した社会的に影響が大きかったと考えられる情報セキュリティにおける事案から脅威候補を選出し、
       情報セキュリティ分野の研究者、企業の実務担当者など約120名のメンバーからなる「10大脅威選考会」が脅威候補に対して審議・投票を行い、
@@ -20,8 +20,8 @@ chapters:
     title: クレジットカード情報の不正利用
   - path: explain-template.html
     title: フィッシングによる個人情報等の詐取
-    contentType: AsciiDoc
-    content: |-
+    textType: AsciiDoc
+    text: |-
       image::image/000071811.png[width="750", height="420", align="center"]
       ビジネスメール詐欺（Business E-mail Compromise：BEC）は、取引先や経営者とやりとりするようなビジネスメールを装い、巧妙に細工されたメールのやりとりで企業の金銭を取り扱う担当者を騙し、攻撃者の用意した口座へ送金させる詐欺の手口である。当初は主に海外の組織が被害に遭ってきたが、ここ数年で国内企業でも被害が確認されはじめ、2018年には日本語のビジネスメール詐欺の事例も確認された。
   - path: explain-01.html
@@ -29,10 +29,10 @@ chapters:
 
 - type: Exam
   title: 確認試験1
+  passScore: 40
   questions:
   - type: Radio
     score: 40
-    passScore: 40
     text: 以下の選択肢より、誤っているものを選択しなさい。
     choices:
     - text: 不正トラベルによる被害は、世界的な認知の広まりにより、減少してきている。

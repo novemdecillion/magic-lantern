@@ -1,29 +1,21 @@
-fragment slideConfig on SlideConfig {
+fragment slide on Slide {
+  slideId
+  enable
   title
   chapters {
     title
     numberOfPages
 
     ... on ExamChapter {
+      numberOfQuestions
+      numberOfAllQuestions
       passScore
-      questions {
-        score
-      }
+      totalScore
     }
 
     ... on SurveyChapter {
-      questions {
-        type
-      }
+      numberOfQuestions
     }
-  }
-}
-
-fragment slide on Slide {
-  slideId
-  enable
-  config {
-    ...slideConfig
   }
 }
 

@@ -143,11 +143,11 @@ class SlideShowController(
     }
 
     val (chapter, pageIndexInChapter) = if (requestChapterIndex == null) {
-      slide.config.chapterAndPageIndex(slideProgress.pageIndex)
+      slide.chapterAndPageIndex(slideProgress.pageIndex)
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
     } else {
-      slideProgress.pageIndex = slide.config.chapterStartPageIndex(requestChapterIndex)
-      IndexedValue(requestChapterIndex, slide.config.chapters[requestChapterIndex]) to 0
+      slideProgress.pageIndex = slide.chapterStartPageIndex(requestChapterIndex)
+      IndexedValue(requestChapterIndex, slide.chapters[requestChapterIndex]) to 0
     }
 
     return callback(study, slide, chapter.value, chapter.index, pageIndexInChapter)

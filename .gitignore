@@ -43,3 +43,6 @@ __MACOSX
 ### Node ###
 /sandbox/
 node_modules/
+
+##
+/slides/

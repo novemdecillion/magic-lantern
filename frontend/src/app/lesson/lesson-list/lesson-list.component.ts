@@ -44,7 +44,7 @@ export class LessonListComponent implements OnInit {
             return {
               lessonId: row.lessonId,
               groupName: row.group.groupName,
-              title: row.slide.config.title,
+              title: row.slide.title,
               studentCount: row.studentCount,
               notStartCount: row.studentCount - row.statistics.onGoingCount - row.statistics.passCount - row.statistics.failCount - row.statistics.excludedCount,
               onGoingCount: row.statistics.onGoingCount,

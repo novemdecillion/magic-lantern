@@ -8,12 +8,18 @@ import io.github.novemdecillion.adapter.db.StudyRepository
 import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.domain.*
 import io.github.novemdecillion.domain.Slide
+import io.github.novemdecillion.utils.lang.logger
+import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.CompletableFuture
 
 @Component
 class StudyApi(private val studyRepository: StudyRepository, private val idGeneratorService: IdGeneratorService): GraphQLQueryResolver, GraphQLMutationResolver {
+  companion object {
+    val log = logger()
+  }
+
   data class ChangeStudyStatus (
     val userId: UUID,
     val slideId: String,
@@ -51,8 +57,6 @@ class StudyApi(private val studyRepository: StudyRepository, private val idGener
 
   @GraphQLApi
   fun changeStudyStatus(command: ChangeStudyStatus, environment: DataFetchingEnvironment): Boolean {
-    require((command.status == StudyStatus.NOT_START) || (command.status == StudyStatus.EXCLUDED))
-
     when (command.status) {
       StudyStatus.NOT_START -> studyRepository.deleteBySlideIdAndUserId(command.slideId, command.userId)
       StudyStatus.EXCLUDED ->
@@ -65,8 +69,13 @@ class StudyApi(private val studyRepository: StudyRepository, private val idGener
           )
           studyRepository.saveStatus(startStudy)
         } else {
-          studyRepository.updateStatus(command.studyId, command.userId, command.status)
+          studyRepository.updateStatus(command.studyId, command.status)
         }
+      else -> {
+        val apiException = ApiException("無効な要求です。")
+        log.error("${apiException.message} status=${command.status}")
+        throw apiException
+      }
     }
     return true
   }

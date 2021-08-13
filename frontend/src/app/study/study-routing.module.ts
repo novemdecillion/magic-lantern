@@ -9,12 +9,16 @@ const routes: Routes = [
     path: 'list',
     component: StudyListComponent
   },
+  // {
+  //   path: 'status/slide/:slideId',
+  //   component: StudyStatusComponent
+  // },
+  // {
+  //   path: 'status/:studyId',
+  //   component: StudyStatusComponent
+  // },
   {
-    path: 'status/slide/:slideId',
-    component: StudyStatusComponent
-  },
-  {
-    path: 'status/:studyId',
+    path: 'status/:slideId',
     component: StudyStatusComponent
   },
   {

@@ -31,6 +31,7 @@ export type Query = {
   effectiveGroupsByUser: Array<Group>;
   isTopManageableGroupByUser: Scalars['Boolean'];
   studiesByUser: Array<INotStartStudy>;
+  latestStudiesByUser: Array<INotStartStudy>;
   users: Array<User>;
   userCount: Scalars['Int'];
   realms: Array<Realm>;
@@ -64,6 +65,11 @@ export type QueryEffectiveGroupsByUserArgs = {
 
 export type QueryIsTopManageableGroupByUserArgs = {
   groupId: Scalars['ID'];
+};
+
+
+export type QueryStudiesByUserArgs = {
+  slideId?: Maybe<Scalars['ID']>;
 };
 
 
@@ -556,6 +562,7 @@ export type Study = INotStartStudy & {
   studyId: Scalars['ID'];
   userId: Scalars['ID'];
   slideId: Scalars['ID'];
+  index?: Maybe<Scalars['Int']>;
   status: StudyStatus;
   progressDetails: Array<StudyProgress>;
   progressRate?: Maybe<Scalars['Int']>;
@@ -570,6 +577,7 @@ export type Study = INotStartStudy & {
 export type ChangeStudyStatus = {
   userId: Scalars['ID'];
   slideId: Scalars['ID'];
+  index?: Maybe<Scalars['Int']>;
   studyId?: Maybe<Scalars['ID']>;
   status: StudyStatus;
 };
@@ -630,7 +638,7 @@ export type ForStudyListQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type ForStudyListQuery = (
   { __typename?: 'Query' }
-  & { studiesByUser: Array<(
+  & { latestStudiesByUser: Array<(
     { __typename?: 'NotStartStudy' }
     & NotStartStudyFragment
   ) | (
@@ -1177,7 +1185,7 @@ export type AnswerDetailsFragment = (
 
 export type StudyFragment = (
   { __typename?: 'Study' }
-  & Pick<Study, 'studyId' | 'userId' | 'status' | 'progressRate' | 'startAt' | 'endAt'>
+  & Pick<Study, 'studyId' | 'userId' | 'index' | 'status' | 'progressRate' | 'startAt' | 'endAt'>
   & { progressDetails: Array<(
     { __typename?: 'StudyProgress' }
     & StudyProgressFragment
@@ -1201,6 +1209,22 @@ export type StudyQueryVariables = Exact<{
 export type StudyQuery = (
   { __typename?: 'Query' }
   & { study?: Maybe<(
+    { __typename?: 'Study' }
+    & StudyFragment
+  )> }
+);
+
+export type StudiesByUserQueryVariables = Exact<{
+  slideId: Scalars['ID'];
+}>;
+
+
+export type StudiesByUserQuery = (
+  { __typename?: 'Query' }
+  & { studiesByUser: Array<(
+    { __typename?: 'NotStartStudy' }
+    & NotStartStudyFragment
+  ) | (
     { __typename?: 'Study' }
     & StudyFragment
   )> }
@@ -1416,6 +1440,7 @@ export const StudyFragmentDoc = gql`
     fragment study on Study {
   studyId
   userId
+  index
   status
   progressDetails {
     ...studyProgress
@@ -1509,7 +1534,7 @@ ${UserFragmentDoc}`;
   }
 export const ForStudyListDocument = gql`
     query forStudyList {
-  studiesByUser {
+  latestStudiesByUser {
     ... on Study {
       ...study
     }
@@ -2178,6 +2203,30 @@ export const StudyDocument = gql`
   })
   export class StudyGQL extends Apollo.Query<StudyQuery, StudyQueryVariables> {
     document = StudyDocument;
+    
+    constructor(apollo: Apollo.Apollo) {
+      super(apollo);
+    }
+  }
+export const StudiesByUserDocument = gql`
+    query studiesByUser($slideId: ID!) {
+  studiesByUser(slideId: $slideId) {
+    ... on Study {
+      ...study
+    }
+    ... on NotStartStudy {
+      ...notStartStudy
+    }
+  }
+}
+    ${StudyFragmentDoc}
+${NotStartStudyFragmentDoc}`;
+
+  @Injectable({
+    providedIn: 'root'
+  })
+  export class StudiesByUserGQL extends Apollo.Query<StudiesByUserQuery, StudiesByUserQueryVariables> {
+    document = StudiesByUserDocument;
     
     constructor(apollo: Apollo.Apollo) {
       super(apollo);

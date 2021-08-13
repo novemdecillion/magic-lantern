@@ -10,7 +10,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 
 export interface LessonRecord {
   lessonId: string;
-  groupName: string;
   title: string;
   studentCount: number;
   notStartCount: number;
@@ -43,8 +42,7 @@ export class LessonListComponent implements OnInit {
           return res.data.manageableLessons.map(row => {
             return {
               lessonId: row.lessonId,
-              groupName: row.group.groupName,
-              title: row.slide.title,
+              title: `${row.group.groupName} - ${row.slide.title}`,
               studentCount: row.studentCount,
               notStartCount: row.studentCount - row.statistics.onGoingCount - row.statistics.passCount - row.statistics.failCount - row.statistics.excludedCount,
               onGoingCount: row.statistics.onGoingCount,
@@ -68,7 +66,7 @@ export class LessonListComponent implements OnInit {
   }
 
   onDeleteLesson(row: LessonRecord) {
-    this.dialog.open(ConfirmDialogComponent, { data: { title: '講座削除', message: `グループ「${row.groupName}」より教材「${row.title}」を削除します。よろしですか?` } })
+    this.dialog.open(ConfirmDialogComponent, { data: { title: '講座削除', message: `講座「${row.title}」を削除します。よろしですか?` } })
       .afterClosed().subscribe(res => {
         if (res) {
           this.deleteLessonGql.mutate({ lessonId: row.lessonId })

@@ -12,6 +12,7 @@ interface StudyRecord {
   studyId?: string;
   slideId: string;
   title: string;
+  index: number;
   status: StudyStatus;
   studyStatus: string;
 }
@@ -37,20 +38,22 @@ export class StudyListComponent implements OnInit {
     this.dataLoad = this.myStudiesGql.fetch()
       .pipe(
         map(res => {
-          let studies = res.data.studiesByUser
+          let studies = res.data.latestStudiesByUser
           .map(study => {
             if (study.__typename == 'Study') {
-              return {
+              return <StudyRecord>{
                 slideId: study.slide.slideId,
                 studyId: study.studyId,
                 title: study.slide.title,
+                index: (study.index ?? 0) + 1,
                 status: study.status,
                 studyStatus: studyStatus(study)
               }
             } else {
-              return {
+              return <StudyRecord>{
                 slideId: study.slide.slideId,
                 title: study.slide.title,
+                index: 1,
                 status: StudyStatus.NotStart,
                 studyStatus: studyStatus(<any>{ status: StudyStatus.NotStart })
               }
@@ -62,8 +65,8 @@ export class StudyListComponent implements OnInit {
       );
   }
 
-  onStartStudy(row: StudyRecord) {
-    if (row.status == StudyStatus.NotStart) {
+  onStartStudy(row: StudyRecord, restart: boolean = false) {
+    if ((row.status == StudyStatus.NotStart) || (restart)) {
       this.startStudyGql.mutate({slideId: row.slideId})
       .subscribe(res => {
         if(!errorMessageIfNeed(res, this.snackBar)) {
@@ -76,9 +79,30 @@ export class StudyListComponent implements OnInit {
   }
 
   statusPath(row: StudyRecord) {
-    if (row.status == StudyStatus.NotStart) {
-      return `/study/status/slide/${row.slideId}`
+    // if (row.status == StudyStatus.NotStart) {
+    //   return `/study/status/slide/${row.slideId}`
+    // }
+    // return `/study/status/${row.studyId}`
+    return `/study/status/${row.slideId}`
+  }
+
+  canStartStudy(row: StudyRecord): boolean {
+    switch (row.status) {
+      case StudyStatus.NotStart:
+      case StudyStatus.OnGoing:
+        return true;
+      default:
+        return false;
     }
-    return `/study/status/${row.studyId}`
+  }
+
+  canOperation(row: StudyRecord): boolean {
+    switch (row.status) {
+      case StudyStatus.Pass:
+      case StudyStatus.Failed:
+        return true;
+      default:
+        return false;
+    }
   }
 }

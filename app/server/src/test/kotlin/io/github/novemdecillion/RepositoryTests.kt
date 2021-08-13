@@ -138,20 +138,20 @@ class RepositoryTests(
   @Test
   fun `StudyRepository正常系`() {
 
-    studyRepository.selectByUserIdAndExcludeStatus(STUDENT_A_USER_ID)
+    studyRepository.selectByUserIdAndExcludeStatusAndSlideId(STUDENT_A_USER_ID)
       .also {
         Assertions.assertThat(it).hasSize(1)
       }
-    studyRepository.selectNotStartStudyByUserId(STUDENT_A_USER_ID)
+    studyRepository.selectNotStartStudyByUserIdAndSlideId(STUDENT_A_USER_ID)
       .also {
         Assertions.assertThat(it).hasSize(0)
       }
 
-    studyRepository.selectByUserIdAndExcludeStatus(STUDENT_B_USER_ID)
+    studyRepository.selectByUserIdAndExcludeStatusAndSlideId(STUDENT_B_USER_ID)
       .also {
         Assertions.assertThat(it).hasSize(0)
       }
-    studyRepository.selectNotStartStudyByUserId(STUDENT_B_USER_ID)
+    studyRepository.selectNotStartStudyByUserIdAndSlideId(STUDENT_B_USER_ID)
       .also {
         Assertions.assertThat(it).hasSize(1)
       }

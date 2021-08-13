@@ -26,12 +26,12 @@ enum class Role(val roleName: String) {
   }
 }
 
-enum class StudyStatus {
-  NOT_START,
-  ON_GOING,
-  PASS,
-  FAILED,
-  EXCLUDED
+enum class StudyStatus(val statusName: String) {
+  NOT_START("未着手"),
+  ON_GOING("実施中"),
+  PASS("合格"),
+  FAILED("不合格"),
+  EXCLUDED("対象外")
 }
 
 interface INotStartStudy {
@@ -53,6 +53,7 @@ data class Study(
   override val userId: UUID,
   override val slideId: String,
   override val status: StudyStatus = StudyStatus.NOT_START,
+  val index: Int = START_INDEX,
   val progress: Map<Int, Set<Int>> = emptyMap(),
   val progressRate: Int = 0,
   val answer: Map<Int, Map<Int, List<String>>> = emptyMap(),
@@ -62,12 +63,20 @@ data class Study(
   val endAt: OffsetDateTime? = null): INotStartStudy {
 
   companion object {
+    const val START_INDEX = 0
     fun convertForExamAnswer(answer: Map<Int, List<String>>): Map<Int, List<Int>> {
       return answer
         .map { (key, value) ->
           key to value.map { it.toInt() }
         }
         .toMap()
+    }
+  }
+
+  fun isComplete(): Boolean {
+    return when(status) {
+      StudyStatus.PASS, StudyStatus.FAILED -> true
+      else -> false
     }
   }
 

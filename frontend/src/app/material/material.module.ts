@@ -6,7 +6,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import {MatDatepickerModule} from '@angular/material/datepicker';
 import { MatDialogModule, MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatGridListModule } from '@angular/material/grid-list';
 // import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatListModule } from '@angular/material/list';
@@ -24,6 +23,7 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatAutoHeaderRowDef, MatAutoRowDef } from "./table";
 import { DateAdapter, MatNativeDateModule, MAT_DATE_LOCALE, NativeDateAdapter } from "@angular/material/core";
+import { FlexLayoutModule } from '@angular/flex-layout';
 
 const DECLARATIONS = [
   MatAutoHeaderRowDef,
@@ -38,7 +38,6 @@ const MODULES = [
   MatDatepickerModule,
   MatDialogModule,
   MatExpansionModule,
-  MatGridListModule,
   // MatIconModule,
   MatInputModule,
   MatListModule,
@@ -55,6 +54,8 @@ const MODULES = [
   MatTreeModule,
   MatToolbarModule,
   MatTooltipModule,
+
+  FlexLayoutModule
 ];
 
 @Injectable()

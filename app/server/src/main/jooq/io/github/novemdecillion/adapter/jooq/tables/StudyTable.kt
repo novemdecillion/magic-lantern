@@ -5,7 +5,7 @@ package io.github.novemdecillion.adapter.jooq.tables
 
 
 import io.github.novemdecillion.adapter.jooq.DefaultSchema
-import io.github.novemdecillion.adapter.jooq.keys.STUDY_ACCOUNT_ID_SLIDE_ID_KEY
+import io.github.novemdecillion.adapter.jooq.keys.STUDY_ACCOUNT_ID_SLIDE_ID_INDEX_KEY
 import io.github.novemdecillion.adapter.jooq.keys.STUDY_PKEY
 import io.github.novemdecillion.adapter.jooq.keys.STUDY__STUDY_ACCOUNT_ID_FKEY
 import io.github.novemdecillion.adapter.jooq.tables.records.StudyRecord
@@ -21,7 +21,7 @@ import org.jooq.ForeignKey
 import org.jooq.JSONB
 import org.jooq.Name
 import org.jooq.Record
-import org.jooq.Row11
+import org.jooq.Row12
 import org.jooq.Schema
 import org.jooq.Table
 import org.jooq.TableField
@@ -122,6 +122,11 @@ open class StudyTable(
      */
     val END_AT: TableField<StudyRecord, OffsetDateTime?> = createField(DSL.name("end_at"), SQLDataType.TIMESTAMPWITHTIMEZONE(6), this, "")
 
+    /**
+     * The column <code>study.index</code>.
+     */
+    val INDEX: TableField<StudyRecord, Int?> = createField(DSL.name("index"), SQLDataType.INTEGER.defaultValue(DSL.field("1", SQLDataType.INTEGER)), this, "")
+
     private constructor(alias: Name, aliased: Table<StudyRecord>?): this(alias, null, null, aliased, null)
     private constructor(alias: Name, aliased: Table<StudyRecord>?, parameters: Array<Field<*>?>?): this(alias, null, null, aliased, parameters)
 
@@ -143,7 +148,7 @@ open class StudyTable(
     constructor(child: Table<out Record>, key: ForeignKey<out Record, StudyRecord>): this(Internal.createPathAlias(child, key), child, key, STUDY, null)
     override fun getSchema(): Schema = DefaultSchema.DEFAULT_SCHEMA
     override fun getPrimaryKey(): UniqueKey<StudyRecord> = STUDY_PKEY
-    override fun getKeys(): List<UniqueKey<StudyRecord>> = listOf(STUDY_PKEY, STUDY_ACCOUNT_ID_SLIDE_ID_KEY)
+    override fun getKeys(): List<UniqueKey<StudyRecord>> = listOf(STUDY_PKEY, STUDY_ACCOUNT_ID_SLIDE_ID_INDEX_KEY)
     override fun getReferences(): List<ForeignKey<StudyRecord, *>> = listOf(STUDY__STUDY_ACCOUNT_ID_FKEY)
 
     private lateinit var _account: AccountTable
@@ -167,7 +172,7 @@ open class StudyTable(
     override fun rename(name: Name): StudyTable = StudyTable(name, null)
 
     // -------------------------------------------------------------------------
-    // Row11 type methods
+    // Row12 type methods
     // -------------------------------------------------------------------------
-    override fun fieldsRow(): Row11<UUID?, UUID?, String?, StudyStatus?, JSONB?, Int?, JSONB?, JSONB?, JSONB?, OffsetDateTime?, OffsetDateTime?> = super.fieldsRow() as Row11<UUID?, UUID?, String?, StudyStatus?, JSONB?, Int?, JSONB?, JSONB?, JSONB?, OffsetDateTime?, OffsetDateTime?>
+    override fun fieldsRow(): Row12<UUID?, UUID?, String?, StudyStatus?, JSONB?, Int?, JSONB?, JSONB?, JSONB?, OffsetDateTime?, OffsetDateTime?, Int?> = super.fieldsRow() as Row12<UUID?, UUID?, String?, StudyStatus?, JSONB?, Int?, JSONB?, JSONB?, JSONB?, OffsetDateTime?, OffsetDateTime?, Int?>
 }

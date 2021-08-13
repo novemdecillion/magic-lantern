@@ -120,6 +120,7 @@ type Study implements INotStartStudy {
   studyId: ID!
   userId: ID!
   slideId: ID!
+  index: Int
   status: StudyStatus!
 
   progressDetails: [StudyProgress!]!
@@ -136,6 +137,7 @@ type Study implements INotStartStudy {
 input ChangeStudyStatus {
   userId: ID!
   slideId: ID!
+  index: Int
   studyId: ID
   status: StudyStatus!
 }

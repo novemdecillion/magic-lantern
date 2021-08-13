@@ -146,4 +146,14 @@ open class StudyDao(configuration: Configuration?) : DAOImpl<StudyRecord, StudyE
      * Fetch records that have <code>end_at IN (values)</code>
      */
     fun fetchByEndAtTable(vararg values: OffsetDateTime): List<StudyEntity> = fetch(StudyTable.STUDY.END_AT, *values)
+
+    /**
+     * Fetch records that have <code>index BETWEEN lowerInclusive AND upperInclusive</code>
+     */
+    fun fetchRangeOfIndexTable(lowerInclusive: Int?, upperInclusive: Int?): List<StudyEntity> = fetchRange(StudyTable.STUDY.INDEX, lowerInclusive, upperInclusive)
+
+    /**
+     * Fetch records that have <code>index IN (values)</code>
+     */
+    fun fetchByIndexTable(vararg values: Int): List<StudyEntity> = fetch(StudyTable.STUDY.INDEX, *values.toTypedArray())
 }

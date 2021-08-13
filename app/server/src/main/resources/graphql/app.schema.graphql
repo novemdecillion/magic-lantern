@@ -8,7 +8,8 @@ type Query {
   authoritativeGroupsByUser(role: Role!): [Group!]!
   effectiveGroupsByUser(role: Role!): [Group!]!
   isTopManageableGroupByUser(groupId: ID!): Boolean!
-  studiesByUser: [INotStartStudy!]!
+  studiesByUser(slideId: ID): [INotStartStudy!]!
+  latestStudiesByUser: [INotStartStudy!]!
 
   users: [User!]!
   userCount: Int!

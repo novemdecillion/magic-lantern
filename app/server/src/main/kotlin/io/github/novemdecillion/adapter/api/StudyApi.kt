@@ -9,7 +9,6 @@ import io.github.novemdecillion.adapter.id.IdGeneratorService
 import io.github.novemdecillion.domain.*
 import io.github.novemdecillion.domain.Slide
 import io.github.novemdecillion.utils.lang.logger
-import org.springframework.dao.DuplicateKeyException
 import org.springframework.stereotype.Component
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -23,6 +22,7 @@ class StudyApi(private val studyRepository: StudyRepository, private val idGener
   data class ChangeStudyStatus (
     val userId: UUID,
     val slideId: String,
+    val index: Int,
     val studyId: UUID?,
     val status: StudyStatus
   )
@@ -34,21 +34,48 @@ class StudyApi(private val studyRepository: StudyRepository, private val idGener
   }
 
   @GraphQLApi
-  fun studiesByUser(environment: DataFetchingEnvironment): List<INotStartStudy> {
+  fun studiesByUser(slideId: String?, environment: DataFetchingEnvironment): List<INotStartStudy> {
     val userId = environment.currentUser().userId
     val list = mutableListOf<INotStartStudy>()
-    list.addAll(studyRepository.selectByUserIdAndExcludeStatus(userId, StudyStatus.EXCLUDED))
-    list.addAll(studyRepository.selectNotStartStudyByUserId(userId))
+    list.addAll(studyRepository.selectByUserIdAndExcludeStatusAndSlideId(userId, StudyStatus.EXCLUDED, slideId))
+    list.addAll(studyRepository.selectNotStartStudyByUserIdAndSlideId(userId, slideId))
+    return list
+  }
+
+  @GraphQLApi
+  fun latestStudiesByUser(environment: DataFetchingEnvironment): List<INotStartStudy> {
+    val userId = environment.currentUser().userId
+    val list = mutableListOf<INotStartStudy>()
+    list.addAll(studyRepository.selectLatestByUserIdAndExcludeStatus(userId, StudyStatus.EXCLUDED))
+    list.addAll(studyRepository.selectNotStartStudyByUserIdAndSlideId(userId))
     return list
   }
 
   @GraphQLApi
   fun startStudy(slideId: String, environment: DataFetchingEnvironment): UUID {
     val userId = environment.currentUser().userId
+
+    // TODO SQLで最大index値を取得する
+    val lastStudy = studyRepository.selectBySlideIdAndUserId(slideId, userId)
+      .maxByOrNull { it.index }
+
+    val index = if (lastStudy == null) {
+      Study.START_INDEX
+    } else {
+      if (lastStudy.isComplete()) {
+        lastStudy.index + 1
+      } else {
+        val apiException = ApiException("未完了の受講があるため再受講できません。")
+        log.error(apiException.message)
+        throw apiException
+      }
+    }
+
     val startStudy = Study(
       studyId = idGeneratorService.generate(),
       slideId = slideId,
       userId = userId,
+      index = index,
       status = StudyStatus.ON_GOING
     )
     studyRepository.insert(startStudy)
@@ -58,13 +85,15 @@ class StudyApi(private val studyRepository: StudyRepository, private val idGener
   @GraphQLApi
   fun changeStudyStatus(command: ChangeStudyStatus, environment: DataFetchingEnvironment): Boolean {
     when (command.status) {
-      StudyStatus.NOT_START -> studyRepository.deleteBySlideIdAndUserId(command.slideId, command.userId)
+      StudyStatus.NOT_START -> studyRepository.deleteBySlideIdAndUserId(command.slideId, command.userId, command.index)
       StudyStatus.EXCLUDED ->
         if (command.studyId == null) {
+          // この条件は1回も受講していない時だけ。
           val startStudy = Study(
             studyId = idGeneratorService.generate(),
             slideId = command.slideId,
             userId = command.userId,
+            /* studyIdがnullなのでindexはデフォルトの1 */
             status = command.status
           )
           studyRepository.saveStatus(startStudy)

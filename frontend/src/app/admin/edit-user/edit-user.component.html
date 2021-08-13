@@ -1,78 +1,98 @@
 <form #form="ngForm">
   <h1 mat-dialog-title>{{ isEdit? 'ユーザ編集' : 'ユーザ追加' }}</h1>
   <div mat-dialog-content>
-    <mat-grid-list cols="2" rowHeight="9:4">
-      <mat-grid-tile>
-        <mat-form-field appearance="standard" class="mb-2">
-          <mat-label>認証サーバ</mat-label>
-          <input matInput type="text" [value]="user.realmName" readonly>
-        </mat-form-field>
-      </mat-grid-tile>
 
-      <mat-grid-tile>
-        <mat-form-field [appearance]="isEdit? 'standard': 'outline'" class="mb-2">
-          <mat-label>アカウント名</mat-label>
-          <input matInput type="text" [(ngModel)]="user.accountName" #accountNameInput="ngModel" name="accountName" required pattern="[a-zA-Z0-9]+" [readonly]="isEdit">
-          <mat-hint *ngIf="accountNameInput.errors?.required" class="text-danger">入力してください。</mat-hint>
-          <mat-hint *ngIf="accountNameInput.errors?.pattern" class="text-danger">半角英数字にしてください。</mat-hint>
-        </mat-form-field>
-      </mat-grid-tile>
+    <div gdAuto>
 
-      <mat-grid-tile>
-        <mat-form-field [appearance]="isEditOuterRealmUser? 'standard': 'outline'" class="mb-2">
-          <mat-label>氏名</mat-label>
-          <input matInput type="text" [(ngModel)]="user.userName" #userNameInput="ngModel" name="userName" required [readonly]="isEditOuterRealmUser">
-          <mat-hint *ngIf="userNameInput.errors?.required" class="text-danger">入力してください。</mat-hint>
-        </mat-form-field>
-      </mat-grid-tile>
+      <div fxLayout="row" fxFlexFill>
+        <div fxFlex="50%">
+          <mat-form-field appearance="standard" class="mb-2">
+            <mat-label>認証サーバ</mat-label>
+            <input matInput type="text" [value]="user.realmName" readonly>
+          </mat-form-field>
+        </div>
 
-      <mat-grid-tile>
-        <mat-form-field [appearance]="isEditOuterRealmUser? 'standard': 'outline'" class="mb-2">
-          <mat-label>メールアドレス</mat-label>
-          <input matInput type="text" [(ngModel)]="user.email" #userNameInput="ngModel" name="email" [readonly]="isEditOuterRealmUser">
-        </mat-form-field>
-      </mat-grid-tile>
+        <div fxFlex="50%">
+          <mat-form-field [appearance]="isEdit? 'standard': 'outline'" class="mb-2">
+            <mat-label>アカウント名</mat-label>
+            <input matInput type="text" [(ngModel)]="user.accountName" #accountNameInput="ngModel" name="accountName"
+              required pattern="[a-zA-Z0-9]+" [readonly]="isEdit">
+            <mat-hint *ngIf="accountNameInput.errors?.required" class="text-danger">入力してください。</mat-hint>
+            <mat-hint *ngIf="accountNameInput.errors?.pattern" class="text-danger">半角英数字にしてください。</mat-hint>
+          </mat-form-field>
+        </div>
+      </div>
 
-      <mat-grid-tile colspan="2" *ngIf="isEditSystemRealmUser">
-        <mat-checkbox color="warn" [(ngModel)]="isEditPassword" name="changePassword" >パスワード変更</mat-checkbox>
-      </mat-grid-tile>
+      <div fxLayout="row" fxFlexFill>
+        <div fxFlex="50%">
+          <mat-form-field [appearance]="isEditOuterRealmUser? 'standard': 'outline'" class="mb-2">
+            <mat-label>氏名</mat-label>
+            <input matInput type="text" [(ngModel)]="user.userName" #userNameInput="ngModel" name="userName" required
+              [readonly]="isEditOuterRealmUser">
+            <mat-hint *ngIf="userNameInput.errors?.required" class="text-danger">入力してください。</mat-hint>
+          </mat-form-field>
+        </div>
 
-      <mat-grid-tile *ngIf='isEditPassword'>
+        <div fxFlex="50%">
+          <mat-form-field [appearance]="isEditOuterRealmUser? 'standard': 'outline'" class="mb-2">
+            <mat-label>メールアドレス</mat-label>
+            <input matInput type="text" [(ngModel)]="user.email" #userNameInput="ngModel" name="email"
+              [readonly]="isEditOuterRealmUser">
+          </mat-form-field>
+        </div>
+      </div>
+
+      <div fxLayout="row" fxFlexFill>
+
+        <div fxFlex="auto" *ngIf="isEditSystemRealmUser">
+          <mat-checkbox color="warn" [(ngModel)]="isEditPassword" name="changePassword">パスワード変更</mat-checkbox>
+        </div>
+      </div>
+
+      <div fxLayout="row" fxFlexFill>
+
+        <div fxFlex="50%" *ngIf='isEditPassword'>
           <mat-form-field appearance="outline" class="mb-2">
             <mat-label>パスワード</mat-label>
-            <input matInput type="password" [(ngModel)]="password" #passwordInput="ngModel" name="password" required pattern="(?=.*\d)(?=.*[a-zA-Z]).{8,}" autocomplete="new-password">
+            <input matInput type="password" [(ngModel)]="password" #passwordInput="ngModel" name="password" required
+              pattern="(?=.*\d)(?=.*[a-zA-Z]).{8,}" autocomplete="new-password">
             <mat-hint *ngIf="passwordInput.errors?.required" class="text-danger">入力してください。</mat-hint>
             <mat-hint *ngIf="passwordInput.errors?.pattern" class="text-danger">半角の英字と数字を含む8文字以上にしてください。</mat-hint>
           </mat-form-field>
-      </mat-grid-tile>
+        </div>
 
-      <mat-grid-tile *ngIf='isEditPassword'>
-        <mat-form-field appearance="outline" class="mb-2">
+        <div fxFlex="50%" *ngIf='isEditPassword'>
+          <mat-form-field appearance="outline" class="mb-2">
             <mat-label>パスワードの確認</mat-label>
-            <input matInput type="password" [(ngModel)]="confirmPassword" #confirmPasswordInput="ngModel" name="confirmPassword" required pattern="{{ password }}" autocomplete="new-password">
+            <input matInput type="password" [(ngModel)]="confirmPassword" #confirmPasswordInput="ngModel"
+              name="confirmPassword" required pattern="{{ password }}" autocomplete="new-password">
             <mat-hint *ngIf="confirmPasswordInput.errors?.required" class="text-danger">パスワードを再入力してください。</mat-hint>
             <mat-hint *ngIf="confirmPasswordInput.errors?.pattern" class="text-danger">パスワードが異なります。</mat-hint>
           </mat-form-field>
-      </mat-grid-tile>
+        </div>
+      </div>
 
-      <mat-grid-tile>
-        <section class="my-2">
-          <mat-checkbox color="warn" [(ngModel)]="user.enabled" name="enable" [disabled]="user.isCurrentUser">アカウント有効</mat-checkbox>
-        </section>
-      </mat-grid-tile>
 
-      <mat-grid-tile>
+      <div fxLayout="row" fxFlexFill>
+        <div fxFlex="50%">
+          <section class="my-2">
+            <mat-checkbox color="warn" [(ngModel)]="user.enabled" name="enable" [disabled]="user.isCurrentUser">アカウント有効
+            </mat-checkbox>
+          </section>
+        </div>
 
-        <fieldset>
-          <legend>権限</legend>
-          <mat-checkbox class="me-2" color="warn" [(ngModel)]="user.isAdmin" name="isAdmin" [disabled]="isBuiltInAdminUser()">システム</mat-checkbox>
-          <mat-checkbox class="me-2" color="warn" [(ngModel)]="user.isGroup" name="isGroup">グループ</mat-checkbox>
-          <mat-checkbox class="me-2" color="warn" [(ngModel)]="user.isSlide" name="isSlide">教材</mat-checkbox>
-        </fieldset>
+        <div fxFlex="50%">
+          <fieldset>
+            <legend>権限</legend>
+            <mat-checkbox class="me-2" color="warn" [(ngModel)]="user.isAdmin" name="isAdmin"
+              [disabled]="isBuiltInAdminUser()">システム</mat-checkbox>
+            <mat-checkbox class="me-2" color="warn" [(ngModel)]="user.isGroup" name="isGroup">グループ</mat-checkbox>
+            <mat-checkbox class="me-2" color="warn" [(ngModel)]="user.isSlide" name="isSlide">教材</mat-checkbox>
+          </fieldset>
+        </div>
+      </div>
+    </div>
 
-      </mat-grid-tile>
-
-    </mat-grid-list>
   </div>
   <div mat-dialog-actions>
     <button mat-raised-button color="primary" (click)="onOK()" [disabled]="form.invalid">OK</button>

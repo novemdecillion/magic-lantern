@@ -17,6 +17,7 @@ class SlideUseCase(
     const val ANSWER_KEY = "answer"
     const val ACTION_KEY = "action"
     const val CONFIRM_KEY = "confirm"
+    const val COMPLETED_KEY = "completed"
     const val SCORES_KEY = "scores"
     const val TOTAL_SCORE_KEY = "totalScore"
     const val OPTION_KEY = "option"
@@ -34,17 +35,27 @@ class SlideUseCase(
     NEXT,
   }
 
+  fun chapterStartPageIndex(study: Study, slide: Slide, chapterIndex: Int): Pair<Int, Int> {
+    var pageIndex = slide.chapterStartPageIndex(chapterIndex)
+    var pageIndexInChapter = 0
+
+    if (study.isComplete() && (slide.chapters[chapterIndex] !is ExplainChapter)) {
+      pageIndex++
+      pageIndexInChapter++
+    }
+    return pageIndex to pageIndexInChapter
+  }
+
   fun showPage(
     study: Study,
     slide: Slide,
-    chapter: IChapter,
     chapterIndex: Int,
     pageIndexInChapter: Int,
     modelAndView: ModelAndView
   ) {
     var updatedStudy = study.copy()
 
-    when (chapter) {
+    when (val chapter: IChapter = slide.chapters[chapterIndex]) {
       is ExplainChapter -> {
         val page = chapter.pages[pageIndexInChapter]
         modelAndView.viewName = if (page.path.isNullOrBlank()) {
@@ -79,7 +90,7 @@ class SlideUseCase(
         modelAndView.viewName = if (shuffledChapter.path.isNullOrBlank()) DEFAULT_EXAM_TEMPLATE else shuffledChapter.path
         modelAndView.model[PAGE_KEY] = shuffledChapter
         modelAndView.model[OPTION_KEY] = slide.option
-
+        modelAndView.model[COMPLETED_KEY] = study.isComplete()
         if ((null != shuffledAnswer) && (null != examChapterRecord)) {
           // 回答済み
           if (0 == pageIndexInChapter) {
@@ -102,78 +113,112 @@ class SlideUseCase(
         modelAndView.viewName = if (chapter.path.isNullOrBlank()) DEFAULT_SURVEY_TEMPLATE else chapter.path
         modelAndView.model[PAGE_KEY] = chapter
         modelAndView.model[ANSWER_KEY] = study.answer[chapterIndex] ?: emptyMap<Int, String>()
+        modelAndView.model[COMPLETED_KEY] = study.isComplete()
         if (1 == pageIndexInChapter) {
           modelAndView.model[CONFIRM_KEY] = true
         }
       }
     }
 
-    updatedStudy = updatedStudy
-      .recordProgress(chapterIndex, pageIndexInChapter, slide.numberOfPages())
-    updatedStudy = updatedStudy.updateStatus()
-    studyRepository.update(updatedStudy)
+    // 未完了ならレコードを更新
+    if (!study.isComplete()) {
+      updatedStudy = updatedStudy
+        .recordProgress(chapterIndex, pageIndexInChapter, slide.numberOfPages())
+      updatedStudy = updatedStudy.updateStatus()
+      studyRepository.update(updatedStudy)
+    }
   }
 
   fun controlPage(
-    study: Study, slide: Slide, pageIndex: Int, chapter: IChapter, chapterIndex: Int, pageIndexInChapter: Int,
+    study: Study, slide: Slide, pageIndex: Int, chapterIndex: Int, pageIndexInChapter: Int,
     action: SlideAction, params: LinkedMultiValueMap<String, String>
   ): Pair<String, Int> {
     var redirectUrl = "${SLIDESHOW_PATH}/${study.studyId}/"
     var resolvedPageIndex = pageIndex
-    when (action) {
-      SlideAction.PREV -> {
-        if ((resolvedPageIndex - 1) < 0) {
-          redirectUrl = ENDING_PATH
-        } else {
-          resolvedPageIndex--
-        }
+    val chapter: IChapter = slide.chapters[chapterIndex]
 
-        val (prevChapter, prevPageIndexInChapter) = slide.chapterAndPageIndex(resolvedPageIndex)!!
-        if ((prevChapter.value !is ExplainChapter)
-          && (1 == prevPageIndexInChapter)
-        ) {
-          // 後の章から逆戻り
-          // 回答がない?
-          if (study.answer[chapterIndex] == null) {
+    if (study.isComplete()) {
+      when (action) {
+        SlideAction.PREV -> {
+          if ((resolvedPageIndex - 1) < 0) {
+            redirectUrl = ENDING_PATH
+          } else {
+            resolvedPageIndex--
+          }
+          // 試験またはアンケートの章で、先頭ページの表示なら
+          if (doIfExamOrSurveyPage(slide, resolvedPageIndex, 0)) {
             resolvedPageIndex--
           }
         }
-      }
-      SlideAction.NEXT -> {
-        if (slide.numberOfPages() <= (resolvedPageIndex + 1)) {
-          redirectUrl = ENDING_PATH
-        } else {
-          resolvedPageIndex++
-        }
-
-        if ((chapter !is ExplainChapter)
-          && (0 == pageIndexInChapter)
-        ) {
-          var updatedStudy = study.copy()
-          when (chapter) {
-            is ExamChapter -> {
-              val answer = convertToAnswer(params, study.shuffledQuestion[chapterIndex]!!)
-              updatedStudy = updatedStudy
-                .recordAnswer(
-                  chapterIndex, answer,
-                  chapter.chapterRecord(Study.convertForExamAnswer(answer), slide.option.scoringMethod)
-                )
-            }
-            is SurveyChapter -> {
-              val answer = convertToAnswer(params)
-              updatedStudy = updatedStudy
-                .recordAnswer(chapterIndex, answer)
-            }
+        SlideAction.NEXT -> {
+          if (slide.numberOfPages() <= (resolvedPageIndex + 1)) {
+            redirectUrl = ENDING_PATH
+          } else {
+            resolvedPageIndex++
           }
-          updatedStudy = updatedStudy.updateStatus()
-          studyRepository.update(updatedStudy)
+          // 試験またはアンケートの章で、先頭ページの表示なら
+          if (doIfExamOrSurveyPage(slide, resolvedPageIndex, 0)) {
+            resolvedPageIndex++
+          }
         }
+      }
+    } else {
+      when (action) {
+        SlideAction.PREV -> {
+          if ((resolvedPageIndex - 1) < 0) {
+            redirectUrl = ENDING_PATH
+          } else {
+            resolvedPageIndex--
+          }
 
+          // 後の章から逆戻りが試験またはアンケートの章で、回答がない?
+          if (doIfExamOrSurveyPage(slide, resolvedPageIndex, 1)
+            && (study.answer[chapterIndex] == null)
+          ) {
+            // 採点 or 確認 ページではなく、出題ページを表示させる
+            resolvedPageIndex--
+          }
+        }
+        SlideAction.NEXT -> {
+          if (slide.numberOfPages() <= (resolvedPageIndex + 1)) {
+            redirectUrl = ENDING_PATH
+          } else {
+            resolvedPageIndex++
+          }
+
+          if ((chapter !is ExplainChapter)
+            && (0 == pageIndexInChapter)
+          ) {
+            var updatedStudy = study.copy()
+            when (chapter) {
+              is ExamChapter -> {
+                val answer = convertToAnswer(params, study.shuffledQuestion[chapterIndex]!!)
+                updatedStudy = updatedStudy
+                  .recordAnswer(
+                    chapterIndex, answer,
+                    chapter.chapterRecord(Study.convertForExamAnswer(answer), slide.option.scoringMethod)
+                  )
+              }
+              is SurveyChapter -> {
+                val answer = convertToAnswer(params)
+                updatedStudy = updatedStudy
+                  .recordAnswer(chapterIndex, answer)
+              }
+            }
+            updatedStudy = updatedStudy.updateStatus()
+            studyRepository.update(updatedStudy)
+          }
+        }
       }
     }
 
-
     return redirectUrl to resolvedPageIndex
+  }
+
+  private fun doIfExamOrSurveyPage(slide: Slide, pageIndex: Int, pageIndexInChapter: Int): Boolean {
+    val (prevChapter, prevPageIndexInChapter) = slide.chapterAndPageIndex(pageIndex)!!
+    return (prevChapter.value !is ExplainChapter)
+      && (prevPageIndexInChapter == pageIndexInChapter)
   }
 
   private fun convertToAnswer(params: LinkedMultiValueMap<String, String>): Map<Int, List<String>> {

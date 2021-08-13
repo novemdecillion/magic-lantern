@@ -14,6 +14,7 @@ interface StudentRecord {
   userId: string;
   userName: string;
   email?: string;
+  no: number;
   status: string;
   studyId?: string;
   studyStatus: StudyStatus;
@@ -70,6 +71,7 @@ export class StudentListComponent implements OnInit {
                   userId: study.userId,
                   userName: study.user.userName,
                   email: study.user.email ?? undefined,
+                  no: (study.index) ? study.index + 1 : 1,
                   status: studyStatus(study),
                   studyId: study.studyId,
                   studyStatus: study.status,
@@ -83,7 +85,8 @@ export class StudentListComponent implements OnInit {
                   userId: study.userId,
                   userName: study.user.userName,
                   email: study.user.email ?? undefined,
-                  status: '未着手',
+                  no: 1,
+                  status: studyStatusDefine[StudyStatus.NotStart].name,
                   studyStatus: StudyStatus.NotStart
                 })
               }
@@ -105,7 +108,14 @@ export class StudentListComponent implements OnInit {
 
 
   canChangeNotStart(row: StudentRecord): boolean {
-    return row.studyStatus != StudyStatus.NotStart;
+    switch (row.studyStatus) {
+      case StudyStatus.OnGoing:
+      case StudyStatus.Excluded:
+        return (row.no == 1);
+
+      default:
+        return false;
+    }
   }
 
   onChangeNotStart(row: StudentRecord) {
@@ -113,7 +123,7 @@ export class StudentListComponent implements OnInit {
       .afterClosed().subscribe(res => {
         if (res) {
           this.changeStudyStatusGQL
-          .mutate({ command: { studyId: row.studyId, slideId: this.slide!!.slideId, userId: row.userId, status: StudyStatus.NotStart } })
+          .mutate({ command: { studyId: row.studyId, slideId: this.slide!!.slideId, userId: row.userId, index: row.no - 1, status: StudyStatus.NotStart } })
           .subscribe(res => {
             if(!errorMessageIfNeed(res, this.snackBar)) {
               this.onLoadData();
@@ -124,7 +134,14 @@ export class StudentListComponent implements OnInit {
   }
 
   canChangeExcluded(row: StudentRecord): boolean {
-    return row.studyStatus != StudyStatus.Excluded;
+    switch (row.studyStatus) {
+      case StudyStatus.OnGoing:
+      case StudyStatus.NotStart:
+        return (row.no == 1);
+
+      default:
+        return false;
+    }
   }
 
   onChangeExcluded(row: StudentRecord) {
@@ -132,7 +149,7 @@ export class StudentListComponent implements OnInit {
       .afterClosed().subscribe(res => {
         if (res) {
           this.changeStudyStatusGQL
-          .mutate({ command: { studyId: row.studyId, slideId: this.slide!!.slideId, userId: row.userId, status: StudyStatus.Excluded } })
+          .mutate({ command: { studyId: row.studyId, slideId: this.slide!!.slideId, userId: row.userId, index: row.no - 1, status: StudyStatus.Excluded } })
           .subscribe(res => {
             if(!errorMessageIfNeed(res, this.snackBar)) {
               this.onLoadData();
@@ -157,7 +174,7 @@ export class StudentListComponent implements OnInit {
       questionCount: number;
     }
     let chapterAndQuestionIndexes: QuestionSummary[] = [];
-    let header = ['氏名', 'メールアドレス', '状態', '開始日時', '終了日時', '進捗率']
+    let header = ['氏名', 'メールアドレス', '状態', '受講順番', '開始日時', '終了日時', '進捗率']
     this.slide?.chapters?.map((chapter, chapterIndex) => {
       if (chapter.__typename == 'ExamChapter') {
         let qSummary: QuestionSummary = { chapterIndex, questionCount: 0 };
@@ -190,7 +207,8 @@ export class StudentListComponent implements OnInit {
 
       let line = [
         study.userName, study.email,
-        studyStatusDefine[study.studyStatus].name
+        studyStatusDefine[study.studyStatus].name,
+        study.no
       ];
       switch (study.studyStatus) {
         case StudyStatus.NotStart:

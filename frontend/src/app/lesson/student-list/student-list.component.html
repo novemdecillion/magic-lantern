@@ -1,7 +1,7 @@
 <app-page [dataLoad]="dataLoad" (onLoadData)="onLoadData()">
   <ng-template pageTitle>
     <span class="mdi mdi-school"></span>
-    {{ group?.groupName }} グループ {{ slide?.title }} 講座状況
+    {{ group?.groupName }} - {{ slide?.title }} 講座状況
   </ng-template>
 
   <ng-template pageToolbar>
@@ -15,6 +15,8 @@
   <app-list [dataLoad]="dataLoad">
     <app-list-column name="userName" headerName="氏名"></app-list-column>
     <app-list-column name="email" headerName="メールアドレス"></app-list-column>
+    <app-list-column name="no" headerName="受講順番"></app-list-column>
+
     <app-list-column name="status" headerName="状況">
       <ng-template listCell let-row="row">
         <a *ngIf="isShowStudentStatusLink(row)" routerLink="/lesson/status/{{row.studyId}}">{{ row.status }}</a>
@@ -24,13 +26,15 @@
 
     <app-list-column name="operation" [sort]="false">
       <ng-template listCell let-row="row">
-        <button mat-icon-button [matMenuTriggerFor]="menu">
-          <span class="mdi mdi-dots-vertical"></span>
-        </button>
-        <mat-menu #menu="matMenu">
-          <button *ngIf="canChangeNotStart(row)" mat-menu-item (click)="onChangeNotStart(row)">未着手にする</button>
-          <button *ngIf="canChangeExcluded(row)" mat-menu-item (click)="onChangeExcluded(row)">対象外にする</button>
-        </mat-menu>
+        <ng-container *ngIf="canChangeNotStart(row) || canChangeExcluded(row)">
+          <button mat-icon-button [matMenuTriggerFor]="menu">
+            <span class="mdi mdi-dots-vertical"></span>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button *ngIf="canChangeNotStart(row)" mat-menu-item (click)="onChangeNotStart(row)">未着手にする</button>
+            <button *ngIf="canChangeExcluded(row)" mat-menu-item (click)="onChangeExcluded(row)">対象外にする</button>
+          </mat-menu>
+        </ng-container>
       </ng-template>
     </app-list-column>
 

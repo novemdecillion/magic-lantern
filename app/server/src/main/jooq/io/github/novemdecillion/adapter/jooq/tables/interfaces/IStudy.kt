@@ -29,6 +29,7 @@ interface IStudy : Serializable {
     var shuffledQuestion: JSONB?
     var startAt: OffsetDateTime?
     var endAt: OffsetDateTime?
+    var index: Int?
 
     // -------------------------------------------------------------------------
     // FROM and INTO

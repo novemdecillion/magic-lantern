@@ -13,9 +13,10 @@
 
 
   <app-list [dataLoad]="dataLoad">
-    <app-list-column name="groupName" headerName="グループ">
-    </app-list-column>
-    <app-list-column name="title" headerName="教材タイトル">
+    <app-list-column name="title" headerName="グループ - 教材タイトル">
+      <ng-template listCell let-row="row">
+        <a routerLink="/lesson/list/{{row.lessonId}}">{{ row.title }}</a>
+      </ng-template>
     </app-list-column>
     <app-list-column name="studentCount" headerName="受講者数">
     </app-list-column>

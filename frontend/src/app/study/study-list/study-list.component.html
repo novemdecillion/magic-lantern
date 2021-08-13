@@ -7,13 +7,38 @@
   <app-list [dataLoad]="dataLoad">
     <app-list-column name="title" headerName="教材タイトル">
       <ng-template listCell let-row="row">
-        <a [routerLink]="" (click)="onStartStudy(row)">{{ row.title }}</a>
+        <ng-container *ngIf="canStartStudy(row); else noStartStudy">
+          <a routerLink (click)="onStartStudy(row)">{{ row.title }}</a>
+        </ng-container>
+        <ng-template #noStartStudy>
+          {{ row.title }}
+        </ng-template>
+
       </ng-template>
     </app-list-column>
-    <app-list-column name="studyStatus" headerName="状況">
+    <app-list-column name="index" headerName="受講回数">
+      <!-- <ng-template listCell let-row="row">
+        <a routerLink (click)="onStartStudy(row)">{{ row.index }}</a>
+      </ng-template> -->
+    </app-list-column>
+    <app-list-column name="studyStatus" headerName="最新受講状況">
       <ng-template listCell let-row="row">
         <a [routerLink]="statusPath(row)">{{ row.studyStatus }}</a>
       </ng-template>
     </app-list-column>
+
+    <app-list-column name="operation" [sort]="false">
+      <ng-template listCell let-row="row">
+        <ng-container *ngIf="canOperation(row)">
+          <button mat-icon-button [matMenuTriggerFor]="menu">
+            <span class="mdi mdi-dots-vertical"></span>
+          </button>
+          <mat-menu #menu="matMenu">
+            <button mat-menu-item (click)="onStartStudy(row, true)">再受講</button>
+          </mat-menu>
+        </ng-container>
+      </ng-template>
+    </app-list-column>
+
   </app-list>
 </app-page>

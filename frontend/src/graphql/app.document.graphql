@@ -30,7 +30,7 @@ query forAddMember($groupId: ID!) {
 }
 
 query forStudyList {
-  studiesByUser {
+  latestStudiesByUser {
     ... on Study {
       ...study
     }

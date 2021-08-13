@@ -28,7 +28,8 @@ data class StudyEntity(
     override var score: JSONB? = null, 
     override var shuffledQuestion: JSONB? = null, 
     override var startAt: OffsetDateTime? = null, 
-    override var endAt: OffsetDateTime? = null
+    override var endAt: OffsetDateTime? = null, 
+    override var index: Int? = null
 ): IStudy {
 
 
@@ -46,6 +47,7 @@ data class StudyEntity(
         sb.append(", ").append(shuffledQuestion)
         sb.append(", ").append(startAt)
         sb.append(", ").append(endAt)
+        sb.append(", ").append(index)
 
         sb.append(")")
         return sb.toString()
@@ -67,6 +69,7 @@ data class StudyEntity(
         shuffledQuestion = from.shuffledQuestion
         startAt = from.startAt
         endAt = from.endAt
+        index = from.index
     }
 
     override fun <E : IStudy> into(into: E): E {

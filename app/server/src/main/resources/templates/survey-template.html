@@ -11,7 +11,10 @@
     <div class="row mb-2">
       <div class="col">
         <span class="fs-2" th:text="${page.title}" ></span>
-        <div th:if="${confirm == true}" class="alert alert-info">以下の内容で回答します。</div>
+        <th:block th:if="${confirm == true}">
+          <div th:if="${completed == false}" class="alert alert-info">以下の内容で回答します。</div>
+          <div th:if="${completed == true}" class="alert alert-info">以下の内容で回答しました。</div>
+        </th:block>
       </div>
     </div>
     <div class="row mb-2 fs-5" th:each="question : ${page.questions}">

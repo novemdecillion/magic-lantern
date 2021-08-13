@@ -102,8 +102,14 @@ class SlideShowController(
                 modelAndView: ModelAndView): ModelAndView {
     val currentUser = currentUser()
 
-    handleStudy(studyId, currentUser.userId, chapter) { study, slide, currentChapter, chapterIndex, pageIndexInChapter ->
-      slideUseCase.showPage(study, slide, currentChapter, chapterIndex, pageIndexInChapter, modelAndView)
+    handleStudy(studyId, currentUser.userId) { study, slide, chapterIndex, pageIndexInChapter ->
+      if (chapter != null) {
+        val (updatedPageIndex, updatedPageIndexInChapter) = slideUseCase.chapterStartPageIndex(study, slide, chapter)
+        slideProgress.pageIndex = updatedPageIndex
+        slideUseCase.showPage(study, slide, chapter, updatedPageIndexInChapter, modelAndView)
+      } else {
+        slideUseCase.showPage(study, slide, chapterIndex, pageIndexInChapter, modelAndView)
+      }
     }
 
     return modelAndView
@@ -119,8 +125,8 @@ class SlideShowController(
 
     val currentUser = currentUser()
 
-    val redirectUrl = handleStudy(studyId, currentUser.userId,null) { study, slide, chapter, chapterIndex, pageIndexInChapter ->
-      slideUseCase.controlPage(study, slide, slideProgress.pageIndex, chapter, chapterIndex, pageIndexInChapter, action, params)
+    val redirectUrl = handleStudy(studyId, currentUser.userId) { study, slide, chapterIndex, pageIndexInChapter ->
+      slideUseCase.controlPage(study, slide, slideProgress.pageIndex, chapterIndex, pageIndexInChapter, action, params)
         .let { (url, pageIndex) ->
           slideProgress.pageIndex = pageIndex
           url
@@ -131,8 +137,7 @@ class SlideShowController(
 
   fun <T> handleStudy(
     studyId: UUID, userId: UUID,
-    requestChapterIndex: Int?,
-    callback: (study: Study, slide: Slide, chapter: IChapter, chapterIndex: Int, pageIndexInChapter: Int) -> T
+    callback: (study: Study, slide: Slide, chapterIndex: Int, pageIndexInChapter: Int) -> T
   ): T {
     val study = studyRepository.selectById(studyId) ?: throw ResponseStatusException(HttpStatus.FORBIDDEN)
 
@@ -142,14 +147,9 @@ class SlideShowController(
       slideProgress.update(studyId, study.slideId, 0)
     }
 
-    val (chapter, pageIndexInChapter) = if (requestChapterIndex == null) {
-      slide.chapterAndPageIndex(slideProgress.pageIndex)
+    val (chapter, pageIndexInChapter) = slide.chapterAndPageIndex(slideProgress.pageIndex)
         ?: throw ResponseStatusException(HttpStatus.NOT_FOUND)
-    } else {
-      slideProgress.pageIndex = slide.chapterStartPageIndex(requestChapterIndex)
-      IndexedValue(requestChapterIndex, slide.chapters[requestChapterIndex]) to 0
-    }
 
-    return callback(study, slide, chapter.value, chapter.index, pageIndexInChapter)
+    return callback(study, slide, chapter.index, pageIndexInChapter)
   }
 }

@@ -183,7 +183,7 @@ export function studyScore(study: StudyFragment): [number, number, number] {
   }, [0, 0, 0]);
 }
 
-export interface StudyStatusRecord {
+export interface ChapterStatusRecord {
   chapterIndex: number;
   title: string;
   status: string;
@@ -196,13 +196,13 @@ export interface StudyStatusRecord {
   totalScore?: number;
 }
 
-export function convertToStudyStatus(slide: SlideFragment, study?: StudyFragment): StudyStatusRecord[] {
+export function convertToChapterStatus(slide: SlideFragment, study?: StudyFragment): ChapterStatusRecord[] {
   let records = slide.chapters
     ?.map((chapter, index) => {
-      let record: StudyStatusRecord = {
+      let record: ChapterStatusRecord = {
         chapterIndex: index,
         title: chapter.title,
-        status: '未着手',
+        status: studyStatusDefine[StudyStatus.NotStart].name,
         progress: `0 / ${chapter.numberOfPages}`,
         pages: 0,
         numberOfPages: chapter.numberOfPages

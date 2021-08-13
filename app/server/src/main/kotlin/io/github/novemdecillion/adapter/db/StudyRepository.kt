@@ -24,6 +24,7 @@ class StudyRepository(
       userId = study.accountId!!,
       slideId = study.slideId!!,
       status = study.status!!,
+      index = study.index!!,
 
       progress = study.progress?.let { objectMapper.readValue(it.data()) } ?: emptyMap(),
       progressRate = study.progressRate ?: 0,
@@ -41,6 +42,8 @@ class StudyRepository(
     record.studyId = study.studyId
     record.accountId = study.userId
     record.slideId = study.slideId
+    record.index = study.index
+
     objectMapper.writeValueAsJsonb(study.progress.ifEmpty { null })?.also { record.progress = it }
     record.progressRate = study.progressRate
     objectMapper.writeValueAsJsonb(study.answer.ifEmpty { null })?.also { record.answer = it }
@@ -60,17 +63,17 @@ class StudyRepository(
     dslContext.executeUpdate(recordMapper(study))
   }
 
-  fun updateStatus(studyId: UUID, userId: UUID, status: StudyStatus): Int {
+  fun updateStatus(studyId: UUID, status: StudyStatus): Int {
     return dslContext.update(STUDY)
       .set(STUDY.STATUS, status)
-      .where(STUDY.STUDY_ID.equal(studyId).and(STUDY.ACCOUNT_ID.equal(userId)))
+      .where(STUDY.STUDY_ID.equal(studyId))
       .execute()
   }
 
   fun saveStatus(study: Study): Int {
     val record = recordMapper(study)
     return dslContext.insertInto(STUDY).set(record)
-      .onConflict(STUDY.SLIDE_ID, STUDY.ACCOUNT_ID)
+      .onConflict(STUDY.SLIDE_ID, STUDY.ACCOUNT_ID, STUDY.INDEX)
       .doUpdate().set(STUDY.STATUS, study.status)
       .execute()
   }
@@ -86,11 +89,12 @@ class StudyRepository(
       .execute()
   }
 
-  fun deleteBySlideIdAndUserId(slideId: String, userId: UUID): Int {
+  fun deleteBySlideIdAndUserId(slideId: String, userId: UUID, index: Int): Int {
     return dslContext
       .deleteFrom(STUDY)
       .where(STUDY.SLIDE_ID.equal(slideId)
-        .and(STUDY.ACCOUNT_ID.equal(userId)))
+        .and(STUDY.ACCOUNT_ID.equal(userId))
+        .and(STUDY.INDEX.equal(index)))
       .execute()
   }
 
@@ -100,14 +104,36 @@ class StudyRepository(
       .fetchOne(::recordMapper)
   }
 
-  fun selectByUserIdAndExcludeStatus(userId: UUID, excludeStatus: StudyStatus? = null): List<Study> {
-    return dslContext.selectFrom(STUDY)
+  fun selectLatestByUserIdAndExcludeStatus(userId: UUID, excludeStatus: StudyStatus? = null): List<Study> {
+
+    val selectLatestStudyIdsStatement = DSL.selectDistinct(DSL.firstValue(STUDY.STUDY_ID)
+      .over(DSL.partitionBy(STUDY.ACCOUNT_ID, STUDY.SLIDE_ID).orderBy(STUDY.INDEX.desc())))
+      .from(STUDY)
       .where(STUDY.ACCOUNT_ID.equal(userId)
         .let {
           if (excludeStatus != null) {
             it.and(STUDY.STATUS.notEqual(excludeStatus))
           } else it
         })
+
+    return dslContext.selectFrom(STUDY).where(STUDY.STUDY_ID.`in`(selectLatestStudyIdsStatement))
+      .fetch(::recordMapper)
+  }
+
+  fun selectByUserIdAndExcludeStatusAndSlideId(userId: UUID, excludeStatus: StudyStatus? = null, slideId: String? = null): List<Study> {
+    return dslContext.selectFrom(STUDY)
+      .where(STUDY.ACCOUNT_ID.equal(userId)
+        .let {
+          if (excludeStatus != null) {
+            it.and(STUDY.STATUS.notEqual(excludeStatus))
+          } else it
+        }
+        .let {
+          if (slideId != null) {
+            it.and(STUDY.SLIDE_ID.equal(slideId))
+          } else it
+        }
+      )
       .fetch(::recordMapper)
   }
 
@@ -126,12 +152,12 @@ class StudyRepository(
       }
   }
 
-  fun selectBySlideIdAndUserId(slideId: String, userId: UUID): Study? {
+  fun selectBySlideIdAndUserId(slideId: String, userId: UUID): List<Study> {
     return dslContext
       .selectFrom(STUDY)
       .where(STUDY.SLIDE_ID.equal(slideId)
         .and(STUDY.ACCOUNT_ID.equal(userId)))
-      .fetchOne {
+      .fetch {
         recordMapper(it)
       }
   }
@@ -153,12 +179,17 @@ class StudyRepository(
       }
   }
 
-  fun selectNotStartStudyByUserId(userId: UUID): List<NotStartStudy> {
+  fun selectNotStartStudyByUserIdAndSlideId(userId: UUID, slideId: String? = null): List<NotStartStudy> {
     return dslContext.select(LESSON.SLIDE_ID)
       .from(LESSON)
       .innerJoin(CURRENT_ACCOUNT_GROUP_AUTHORITY)
       .on(CURRENT_ACCOUNT_GROUP_AUTHORITY.GROUP_TRANSITION_ID.equal(LESSON.GROUP_TRANSITION_ID)
         .and(CURRENT_ACCOUNT_GROUP_AUTHORITY.ACCOUNT_ID.equal(userId))
+        .let {
+          if (null != slideId) {
+            it.and(LESSON.SLIDE_ID.equal(slideId))
+          } else it
+        }
         .and(DSL.jsonbExists(CURRENT_ACCOUNT_GROUP_AUTHORITY.ROLE,"""$ ? (@ == "${Role.STUDY.name}")"""))
       )
       .where(LESSON.SLIDE_ID.notIn(DSL.select(STUDY.SLIDE_ID).from(STUDY).where(STUDY.ACCOUNT_ID.equal(userId))))

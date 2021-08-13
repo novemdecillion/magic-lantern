@@ -84,6 +84,24 @@ class LessonWithGroupResolver(val studyRepository: StudyRepository) : GraphQLRes
 
   fun statistics(lesson: LessonWithGroup): CompletableFuture<LessonStatistics> {
     val lessonStatistics = studyRepository.selectBySlideIdAndGroupId(lesson.slideId, lesson.group.groupId)
+      .groupBy { it.userId }
+      .map { (userId, studies) ->
+        studies.firstOrNull { it.status == PASS }
+          ?.let { PASS }
+          ?: run {
+            studies.firstOrNull { it.status == FAILED }
+              ?.let { FAILED }
+              ?: run {
+                studies.firstOrNull { it.status == ON_GOING }
+                  ?.let { ON_GOING }
+                  ?: run {
+                    studies.firstOrNull { it.status == EXCLUDED }
+                      ?.let { EXCLUDED }
+                      ?: NOT_START
+                  }
+              }
+          }
+      }
       .let { studies ->
         var onGoingCount = 0
         var passCount = 0
@@ -91,7 +109,7 @@ class LessonWithGroupResolver(val studyRepository: StudyRepository) : GraphQLRes
         var excludedCount = 0
         studies
           .forEach {
-            when(it.status) {
+            when(it) {
               ON_GOING -> onGoingCount++
               PASS -> passCount++
               FAILED -> failCount++

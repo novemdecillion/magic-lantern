@@ -104,6 +104,7 @@ fragment answerDetails on StudyChapterAnswer {
 fragment study on Study {
   studyId
   userId
+  index
   status
 
   progressDetails {
@@ -130,6 +131,17 @@ fragment study on Study {
 query study($studyId: ID!) {
   study(studyId: $studyId) {
     ...study
+  }
+}
+
+query studiesByUser($slideId: ID!) {
+  studiesByUser(slideId: $slideId) {
+    ... on Study {
+      ...study
+    }
+    ... on NotStartStudy {
+      ...notStartStudy
+    }
   }
 }
 

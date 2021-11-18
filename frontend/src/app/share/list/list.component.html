@@ -36,7 +36,7 @@
 </ng-container>
 
 <ng-template #defaultHeaderTextCell let-column="column">
-  {{ ((column.headerName === null) || (column.headerName === undefined))? '' : (column.headerName || column.name) }}
+  {{ (column.headerName == null)? '' : (column.headerName || column.name) }}
 </ng-template>
 
 <ng-template #defaultTextCell let-column="column" let-row="row">

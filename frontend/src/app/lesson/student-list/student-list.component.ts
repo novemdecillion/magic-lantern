@@ -251,11 +251,14 @@ export class StudentListComponent implements OnInit {
       blob, this.hostElementRef.nativeElement);
   }
 
-  escapeForCSV(s: string | undefined | null): string {
+  escapeForCSV(s: any): string {
     if ((s === null) || (s === undefined)) {
-      return '';
+      return 'aaaa';
     }
-    return `"${s.replace(/\"/g, '\"\"')}"`
+    if (!isNaN(s)) {
+      return `${s}`;
+    }
+    return `"${s.replace(/\"/g, '\"\"')}"`;
   }
 
   escapeAllForCSV(arr: any[][], colDelimeter=',', rowDelimeter='\n') {

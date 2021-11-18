@@ -252,7 +252,7 @@ export class StudentListComponent implements OnInit {
   }
 
   escapeForCSV(s: string | undefined | null): string {
-    if (s == null) {
+    if ((s === null) || (s === undefined)) {
       return '';
     }
     return `"${s.replace(/\"/g, '\"\"')}"`

@@ -196,7 +196,7 @@ class SlideRepository(private val appSlideProperties: AppSlideProperties) {
               .map { question ->
                 convertTo(question, question.score, textType)
               }
-            convertTo(chapter, textType, questions.size, questions)
+            convertTo(chapter, textType, questions.size, questions, slideConfig.option)
           }
           is RandomizedExamChapterConfig -> {
             val textType = chapter.textType ?: slideConfig.textType
@@ -204,7 +204,7 @@ class SlideRepository(private val appSlideProperties: AppSlideProperties) {
               .map { question ->
                 convertTo(question, chapter.scorePerQuestion, textType)
               }
-            convertTo(chapter, textType, chapter.numberOfQuestions, questions)
+            convertTo(chapter, textType, chapter.numberOfQuestions, questions, slideConfig.option)
           }
           is SurveyChapter -> {
             val textType = chapter.textType ?: slideConfig.textType
@@ -256,14 +256,16 @@ class SlideRepository(private val appSlideProperties: AppSlideProperties) {
       })
   }
 
-  fun convertTo(examChapter: IExamChapterConfig, textType: TextType?, numberOfQuestions: Int, questions: List<ExamQuestion>): ExamChapter {
+  fun convertTo(examChapter: IExamChapterConfig, textType: TextType?, numberOfQuestions: Int, questions: List<ExamQuestion>, option: SlideConfigOption): ExamChapter {
     return ExamChapter(
       title = examChapter.title,
       path = examChapter.path,
       passScore = examChapter.passScore,
       textType = textType,
       numberOfQuestions = numberOfQuestions,
-      questions = questions)
+      questions = questions,
+      option = option
+    )
   }
 
 }

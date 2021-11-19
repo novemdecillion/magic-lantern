@@ -154,7 +154,8 @@ data class ExamChapter(
   val passScore: Int?,
   override val textType: TextType?,
   val questions: List<ExamQuestion>,
-  val numberOfQuestions: Int
+  val numberOfQuestions: Int,
+  val option: SlideConfigOption
 ) : IChapter, IPage {
   override fun numberOfPages(): Int = 2
 
@@ -174,8 +175,8 @@ data class ExamChapter(
     = questionRecords(answer, scoringMethod)
       .map { it.scoring }
 
-  fun scoring(answer: Map<Int, List<Int>>, scoringMethod: ScoringMethod): Int
-    = scoringPerQuestion(answer, scoringMethod).sum()
+  fun scoring(answer: Map<Int, List<Int>>): Int
+    = scoringPerQuestion(answer, option.scoringMethod).sum()
 
   fun passScore(): Int {
     return passScore ?: totalScore()
@@ -188,10 +189,22 @@ data class ExamChapter(
   fun shuffle(): Pair<ExamChapter, List<Pair<Int, List<Int>>>> {
     val shuffledIndexes: MutableList<Pair<Int, List<Int>>> = mutableListOf()
 
-    val shuffledQuestions = questions.withIndex().shuffled()
+    val shuffledQuestions = questions.withIndex()
+      .let {
+        if (option.shuffleQuestions) {
+          // 問題の並べ替え
+          it.shuffled()
+        } else it.toList()
+      }
       .subList(0, numberOfQuestions)
       .map { (index, question) ->
-        val shuffledChoices = question.choices.withIndex().shuffled()
+        val shuffledChoices = question.choices.withIndex()
+          .let {
+            if (option.shuffleChoices) {
+              // 選択肢の並べ替え
+              it.shuffled()
+            } else it.toList()
+          }
         shuffledIndexes.add(index to shuffledChoices.map { it.index })
         question.copy(choices = shuffledChoices.map { it.value })
       }
@@ -262,6 +275,8 @@ enum class ScoringMethod {
 
 data class SlideConfigOption(
   val scoringMethod: ScoringMethod = ScoringMethod.Neutralize,
+  val shuffleQuestions: Boolean = true,
+  val shuffleChoices: Boolean = true,
   val showCorrectAnswer: Boolean = true
 )
 
@@ -319,7 +334,7 @@ data class Slide(
     return answer
       .map {
         (chapters[it.key] as? ExamChapter)
-          ?.scoring(it.value, option.scoringMethod)
+          ?.scoring(it.value)
           ?: throw IllegalArgumentException()
       }
       .sum()

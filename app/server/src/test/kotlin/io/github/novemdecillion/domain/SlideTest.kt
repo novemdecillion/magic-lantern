@@ -22,7 +22,8 @@ class SlideTest: StringSpec({
           comment = null,
           choices = (1..3).map { ExamQuestionOption("選択肢$it") }
         )
-      })
+      },
+      option = SlideConfigOption())
 
   "出題ランダム化" {
     forAll(

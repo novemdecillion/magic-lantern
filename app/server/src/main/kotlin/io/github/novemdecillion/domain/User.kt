@@ -64,12 +64,16 @@ data class Study(
 
   companion object {
     const val START_INDEX = 0
+    const val CURRENT_PAGE_INDEX = -1
     fun convertForExamAnswer(answer: Map<Int, List<String>>): Map<Int, List<Int>> {
       return answer
         .map { (key, value) ->
           key to value.map { it.toInt() }
         }
         .toMap()
+    }
+    fun progressWithoutCurrentPageIndex(progress: Map<Int, Set<Int>>): Map<Int, Set<Int>> {
+      return progress.filter { it.key != CURRENT_PAGE_INDEX }
     }
   }
 
@@ -80,10 +84,23 @@ data class Study(
     }
   }
 
+  fun progressWithoutCurrentPageIndex(): Map<Int, Set<Int>> {
+    return progressWithoutCurrentPageIndex(this.progress)
+  }
+
+  fun currentPageIndex(): Int {
+    return progress.getOrDefault(CURRENT_PAGE_INDEX, setOf(0)).first()
+  }
+
+  fun recordCurrentPage(pageIndex: Int): Study {
+    val updatedProgress = progress.plus(CURRENT_PAGE_INDEX to setOf(pageIndex))
+    return this.copy(progress = updatedProgress)
+  }
+
   fun recordProgress(chapterIndex: Int, pageIndexInChapter: Int, totalPage: Int): Study {
     val progressInChapter = progress.getOrDefault(chapterIndex, setOf())
     val updatedProgress = progress.plus(chapterIndex to progressInChapter.plus(pageIndexInChapter))
-    val updatedProgressRate = ceil (updatedProgress.map { it.value.size }.sum().toDouble() / totalPage * 100).toInt()
+    val updatedProgressRate = ceil (Companion.progressWithoutCurrentPageIndex(updatedProgress).map { it.value.size }.sum().toDouble() / totalPage * 100).toInt()
     return this.copy(progress = updatedProgress, progressRate = updatedProgressRate)
   }
 

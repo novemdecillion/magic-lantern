@@ -49,6 +49,7 @@ class SlideUseCase(
   fun showPage(
     study: Study,
     slide: Slide,
+    pageIndex: Int,
     chapterIndex: Int,
     pageIndexInChapter: Int,
     modelAndView: ModelAndView
@@ -120,13 +121,16 @@ class SlideUseCase(
       }
     }
 
+    // 現在ページを更新
+    updatedStudy = updatedStudy.recordCurrentPage(pageIndex)
+
     // 未完了ならレコードを更新
     if (!study.isComplete()) {
       updatedStudy = updatedStudy
         .recordProgress(chapterIndex, pageIndexInChapter, slide.numberOfPages())
       updatedStudy = updatedStudy.updateStatus()
-      studyRepository.update(updatedStudy)
     }
+    studyRepository.update(updatedStudy)
   }
 
   fun controlPage(
@@ -136,6 +140,7 @@ class SlideUseCase(
     var redirectUrl = "${SLIDESHOW_PATH}/${study.studyId}/"
     var resolvedPageIndex = pageIndex
     val chapter: IChapter = slide.chapters[chapterIndex]
+    var updatedStudy = study.copy()
 
     if (study.isComplete()) {
       when (action) {
@@ -189,7 +194,6 @@ class SlideUseCase(
           if ((chapter !is ExplainChapter)
             && (0 == pageIndexInChapter)
           ) {
-            var updatedStudy = study.copy()
             when (chapter) {
               is ExamChapter -> {
                 val answer = convertToAnswer(params, study.shuffledQuestion[chapterIndex]!!)
@@ -206,11 +210,14 @@ class SlideUseCase(
               }
             }
             updatedStudy = updatedStudy.updateStatus()
-            studyRepository.update(updatedStudy)
           }
         }
       }
     }
+
+    // 現在ページを更新
+    updatedStudy = updatedStudy.recordCurrentPage(resolvedPageIndex)
+    studyRepository.update(updatedStudy)
 
     return redirectUrl to resolvedPageIndex
   }

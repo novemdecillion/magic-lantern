@@ -133,7 +133,7 @@ data class StudyProgress(
 @Component
 class StudyResolver : AbstractNotStartStudyResolver<Study>(), GraphQLResolver<Study> {
   fun progressDetails(study: Study, environment: DataFetchingEnvironment): CompletableFuture<List<StudyProgress>> {
-    return CompletableFuture.completedFuture(study.progress.map { StudyProgress(it.key, it.value) })
+    return CompletableFuture.completedFuture(study.progressWithoutCurrentPageIndex().map { StudyProgress(it.key, it.value) })
   }
 
   fun answerDetails(study: Study, environment: DataFetchingEnvironment): CompletableFuture<List<StudyChapterAnswer>> {

@@ -316,6 +316,13 @@ data class Slide(
     return chapterPageRange[chapterIndex].first.first
   }
 
+  fun pageIndex(chapterIndex: Int, pageIndexInChapter: Int): Int {
+    require(0 <= chapterIndex && chapterIndex < chapters.size)
+    require(0 <= pageIndexInChapter && pageIndexInChapter < chapters[chapterIndex].numberOfPages())
+
+    return chapterPageRange[chapterIndex].first.first + pageIndexInChapter
+  }
+
   /**
    * 満点
    */
@@ -323,7 +330,7 @@ data class Slide(
     return chapters
       .filterIsInstance(ExamChapter::class.java)
       .sumOf { examChapter ->
-        examChapter.questions.sumBy { it.score }
+        examChapter.questions.sumOf { it.score }
       }
   }
 

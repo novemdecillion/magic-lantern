@@ -88,6 +88,9 @@ logging:
   level:
     root: info
 #    graphql: debug
+    io:
+      github:
+        novemdecillion: debug
     org:
       jooq:
         tools:

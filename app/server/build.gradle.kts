@@ -15,7 +15,7 @@ dependencies {
   // DB
   implementation("org.springframework.boot:spring-boot-starter-jooq")
   runtimeOnly("org.postgresql:postgresql")
-  runtimeOnly("org.flywaydb:flyway-core")
+  implementation("org.flywaydb:flyway-core")
 
   // Web
   implementation("org.springframework.boot:spring-boot-starter-web")

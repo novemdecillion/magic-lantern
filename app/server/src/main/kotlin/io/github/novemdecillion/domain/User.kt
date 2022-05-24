@@ -185,6 +185,17 @@ data class Study(
           ?: mutableListOf())
       }
   }
+
+  fun shuffledScore(chapterIndex: Int): List<Int>? {
+    val chapterRecord = score[chapterIndex] ?: return null
+    val shuffled = shuffledQuestion[chapterIndex]
+      ?: return chapterRecord.questions.map { it.scoring }
+
+    return shuffled
+      .map { (shuffledQuestionIndex, _) ->
+        chapterRecord.questions[shuffledQuestionIndex].scoring
+      }
+  }
 }
 
 data class Authority(

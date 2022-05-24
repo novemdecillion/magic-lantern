@@ -87,12 +87,13 @@ class SlideUseCase(
                 shuffledChap
               }
           }
+        val scores = study.shuffledScore(chapterIndex)
 
         modelAndView.viewName = if (shuffledChapter.path.isNullOrBlank()) DEFAULT_EXAM_TEMPLATE else shuffledChapter.path
         modelAndView.model[PAGE_KEY] = shuffledChapter
         modelAndView.model[OPTION_KEY] = slide.option
         modelAndView.model[COMPLETED_KEY] = study.isComplete()
-        if ((null != shuffledAnswer) && (null != examChapterRecord)) {
+        if ((null != shuffledAnswer) && (null != examChapterRecord) && (null != scores)) {
           // 回答済み
           if (0 == pageIndexInChapter) {
             modelAndView.model[ANSWER_KEY] = if (examChapterRecord.isPass()) shuffledAnswer else emptyMap()
@@ -100,7 +101,6 @@ class SlideUseCase(
             // 採点ページ
             modelAndView.model[ANSWER_KEY] = shuffledAnswer
             modelAndView.model[CONFIRM_KEY] = true
-            val scores = examChapterRecord.questions.map { it.scoring }
             modelAndView.model[SCORES_KEY] = scores
             modelAndView.model[TOTAL_SCORE_KEY] = scores.sum()
           }

@@ -26,17 +26,21 @@
         <!--/* 問題文 */-->
         <div>
           <span class="fs-4" th:text="|問${questionStat.index + 1}|"></span>
-          <span th:if="${confirm != true}" th:text="|(配点:${question.score}点)|"></span>
 
-          <th:block th:if="${confirm == true}" th:with="isCorrect=${question.score == scores[questionStat.index]}">
-            <th:block th:if="${isCorrect == true}">
-              <span class="ms-3 fs-4 text-success">正解</span>
+          <th:block th:switch="${(confirm == true) && (option.showCorrect == true)}">
+            <th:block th:case="true" th:with="isCorrect=${question.score == scores[questionStat.index]}">
+              <th:block th:if="${isCorrect == true}">
+                <span class="ms-3 fs-4 text-success">正解</span>
+              </th:block>
+              <th:block th:if="${isCorrect == false}">
+                <span class="ms-3 fs-4 text-danger">不正解</span>
+              </th:block>
+              <span th:text="|(配点:${question.score}点, 得点:${scores[questionStat.index]}点)|"></span>
             </th:block>
-            <th:block th:if="${isCorrect == false}">
-              <span class="ms-3 fs-4 text-danger">不正解</span>
-            </th:block>
-            <span th:text="|(配点:${question.score}点, 得点:${scores[questionStat.index]}点)|"></span>
+
+            <span th:case="*" th:text="|(配点:${question.score}点)|"></span>
           </th:block>
+
         </div>
         <div>
           <span th:utext="${question.text}"></span>

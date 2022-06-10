@@ -277,6 +277,7 @@ data class SlideConfigOption(
   val scoringMethod: ScoringMethod = ScoringMethod.Neutralize,
   val shuffleQuestions: Boolean = true,
   val shuffleChoices: Boolean = true,
+  val showCorrect: Boolean = true,
   val showCorrectAnswer: Boolean = true
 )
 

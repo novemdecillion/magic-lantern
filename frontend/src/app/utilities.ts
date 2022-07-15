@@ -3,6 +3,7 @@ import { AuthorityFragment, GroupCore, GroupFragment, NoticeFragment, Role, Slid
 import { DEFAULT_GROUP_ID } from './constants';
 import { ExecutionResult } from 'graphql';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { SafeHtml } from '@angular/platform-browser';
 
 export function logout() {
   location.href = '/login';
@@ -15,7 +16,13 @@ export function parseISOIfExist(dateTime?: string): Date | null {
   return null;
 }
 
-export function sortNotices(notices: NoticeFragment[]): NoticeFragment[] {
+export type NoticeRecord = NoticeFragment & {
+  safeHtmlMessage: SafeHtml
+  formattedStartAt?: string
+  formattedEndAt?: string
+};
+
+export function sortNotices(notices: NoticeRecord[]): NoticeRecord[] {
   return notices.sort((a, b) => {
     if(a.updateAt < b.updateAt) {
       return 1;

@@ -14,9 +14,9 @@
 
   <app-list [dataLoad]="dataLoad">
 
-    <app-list-column name="message" headerName="メッセージ">
+    <app-list-column name="safeHtmlMessage" headerName="メッセージ">
       <ng-template listCell let-row="row">
-        <a style="cursor: pointer;" (click)="onEditNotice(row)">{{ row.message }}</a>
+        <a style="cursor: pointer;" (click)="onEditNotice(row)" [innerHtml]="row.safeHtmlMessage"></a>
       </ng-template>
     </app-list-column>
     <app-list-column name="formattedStartAt" headerName="掲載開始"></app-list-column>

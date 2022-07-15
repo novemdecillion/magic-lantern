@@ -5,14 +5,10 @@ import { map, share } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
 import { ConfirmDialogComponent } from 'src/app/share/confirm-dialog/confirm-dialog.component';
 import { EditNoticeComponent } from '../edit-notice/edit-notice.component';
-import { errorMessageIfNeed, sortNotices } from 'src/app/utilities';
+import { errorMessageIfNeed, NoticeRecord, sortNotices } from 'src/app/utilities';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { format, parseISO } from 'date-fns';
-
-export type NoticeRecord = NoticeFragment & {
-  formattedStartAt?: string
-  formattedEndAt?: string
-}
+import { DomSanitizer } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-notice-list',
@@ -23,7 +19,9 @@ export type NoticeRecord = NoticeFragment & {
 export class NoticeListComponent implements OnInit {
   dataLoad: Observable<NoticeRecord[]> | null = null;
 
-  constructor(private dialog: MatDialog,
+  constructor(
+    private domSanitizer: DomSanitizer,
+    private dialog: MatDialog,
     private snackBar: MatSnackBar,
     private noticesGql: NoticesGQL, private deleteNoticeGql: DeleteNoticeGQL) { }
 
@@ -35,15 +33,18 @@ export class NoticeListComponent implements OnInit {
     this.dataLoad = this.noticesGql.fetch()
       .pipe(
         map(res => {
-          let notices = res.data.notices;
+          let notices = res.data.notices.map((notice: NoticeFragment) => {
+            let safeHtmlNotice: NoticeRecord = Object.assign({
+              safeHtmlMessage: this.domSanitizer.bypassSecurityTrustHtml(notice.message)
+            }, notice);
 
-          notices.map((notice: NoticeRecord) => {
             if (notice.startAt) {
-              notice.formattedStartAt = format(parseISO(notice.startAt), 'yyyy/MM/dd')
+              safeHtmlNotice.formattedStartAt = format(parseISO(notice.startAt), 'yyyy/MM/dd')
             }
             if (notice.endAt) {
-              notice.formattedEndAt = format(parseISO(notice.endAt), 'yyyy/MM/dd')
+              safeHtmlNotice.formattedEndAt = format(parseISO(notice.endAt), 'yyyy/MM/dd')
             }
+            return safeHtmlNotice;
           })
 
           return sortNotices(notices);

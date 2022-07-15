@@ -3,9 +3,8 @@ import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import formatISO from 'date-fns/formatISO';
 import parseISO from 'date-fns/parseISO';
-import { errorMessageIfNeed } from 'src/app/utilities';
-import { UpdateNoticeCommand, AddNoticeCommand, AddNoticeGQL, UpdateNoticeGQL } from 'src/generated/graphql';
-import { NoticeRecord } from '../notice-list/notice-list.component';
+import { errorMessageIfNeed, NoticeRecord } from 'src/app/utilities';
+import { AddNoticeGQL, UpdateNoticeGQL } from 'src/generated/graphql';
 
 // type NoticeRecord = NoticeFragment & {
 //   parsedStartAt: Date | null

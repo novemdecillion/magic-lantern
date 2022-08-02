@@ -2,7 +2,7 @@ package io.github.novemdecillion.domain
 
 import java.time.OffsetDateTime
 import java.util.*
-import kotlin.math.ceil
+import kotlin.math.floor
 
 val BUILT_IN_ADMIN_USER_ID: UUID = UUID.fromString("00000000-0000-0000-0000-000000000000")
 
@@ -100,7 +100,7 @@ data class Study(
   fun recordProgress(chapterIndex: Int, pageIndexInChapter: Int, totalPage: Int): Study {
     val progressInChapter = progress.getOrDefault(chapterIndex, setOf())
     val updatedProgress = progress.plus(chapterIndex to progressInChapter.plus(pageIndexInChapter))
-    val updatedProgressRate = ceil (Companion.progressWithoutCurrentPageIndex(updatedProgress).map { it.value.size }.sum().toDouble() / totalPage * 100).toInt()
+    val updatedProgressRate = floor (Companion.progressWithoutCurrentPageIndex(updatedProgress).map { it.value.size }.sum().toDouble() / totalPage * 100).toInt()
     return this.copy(progress = updatedProgress, progressRate = updatedProgressRate)
   }
 

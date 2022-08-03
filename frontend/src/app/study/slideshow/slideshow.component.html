@@ -3,11 +3,11 @@
 </iframe>
 
 <div class="panel d-flex w-75" *ngIf="!isLoading">
-  <button mat-fab (click)="onPrev()">
+  <button mat-fab (click)="onPrev()" [disabled]="isLoading">
     <span class="mdi mdi-chevron-left"></span>
   </button>
   <span class="flex-fill"></span>
-  <button mat-fab (click)="onNext()">
+  <button mat-fab (click)="onNext()" [disabled]="isLoading">
     <span class="mdi mdi-chevron-right"></span>
   </button>
 </div>

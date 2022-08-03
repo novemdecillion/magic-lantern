@@ -34,6 +34,7 @@ export class SlideshowComponent implements OnInit {
   onNext() {
     let submitElement = this.viewer.nativeElement.contentDocument?.querySelector<HTMLInputElement>('form input[type="submit"]');
     if (submitElement) {
+      this.isLoading = true;
       submitElement.click();
     } else {
       this.postFromViewer(`${this.currentLocation()}?action=NEXT`);

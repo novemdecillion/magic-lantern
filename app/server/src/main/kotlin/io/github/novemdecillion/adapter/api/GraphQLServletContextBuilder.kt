@@ -32,27 +32,25 @@ class GraphQLServletContextBuilder(
   private val groupRepository: GroupRepository,
   @Autowired(required = false) private val loaderFunctions: Collection<LoaderFunctionMaker<*, *>>?) : DefaultGraphQLServletContextBuilder() {
 
-  val dataLoaderRegistry: DataLoaderRegistry = DataLoaderRegistry()
-    .also { registry ->
-      if (!loaderFunctions.isNullOrEmpty()) {
-        val options = DataLoaderOptions().setCachingEnabled(false)
-
-        loaderFunctions
-          .forEach {
-            val dataLoader = when (it) {
-              is BatchLoader<*, *> -> DataLoader.newDataLoader(it, options)
-              is BatchLoaderWithContext<*, *> -> DataLoader.newDataLoader(it, options)
-              is MappedBatchLoader<*, *> -> DataLoader.newMappedDataLoader(it, options)
-              is MappedBatchLoaderWithContext<*, *> -> DataLoader.newMappedDataLoader(it, options)
-              else -> return@forEach
-            }
-            registry.register(it::class.java.simpleName, dataLoader)
-          }
-      }
-    }
-
   @Transactional(rollbackFor = [Throwable::class])
   override fun build(request: HttpServletRequest, response: HttpServletResponse): GraphQLContext {
+    val dataLoaderRegistry: DataLoaderRegistry = DataLoaderRegistry()
+      .also { registry ->
+        if (!loaderFunctions.isNullOrEmpty()) {
+          loaderFunctions
+            .forEach {
+              val dataLoader = when (it) {
+                is BatchLoader<*, *> -> DataLoader.newDataLoader(it)
+                is BatchLoaderWithContext<*, *> -> DataLoader.newDataLoader(it)
+                is MappedBatchLoader<*, *> -> DataLoader.newMappedDataLoader(it)
+                is MappedBatchLoaderWithContext<*, *> -> DataLoader.newMappedDataLoader(it)
+                else -> return@forEach
+              }
+              registry.register(it::class.java.simpleName, dataLoader)
+            }
+        }
+      }
+
     val (accountName, realmId) = currentAccount()
     val user = userRepository.selectByAccountNameAndRealmWithAuthority(accountName, realmId)!!
     val currentGroupGenerationId = groupRepository.selectCurrentGroupGenerationId()!!
